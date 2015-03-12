@@ -1,2 +1,2 @@
 #!/bin/python
-"""Main file of swift"""
+"""Main file of swift - FCA data converter"""
