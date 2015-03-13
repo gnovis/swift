@@ -23,10 +23,18 @@ class Attribute(object):
 
 A = Attribute(0, "vaha")
 A.name = "delka"
-print A.name, A.index
+# print A.name, A.index
 
-result = re.findall("(?:[0-9]+(?:>=|<=|>|<))?x(?:>=|<=|>|<)[0-9]+", "A=a[10<=x<=100], B=b[x<=50]")
+pattern = re.compile("(\w+)=(\w+)" +
+                     "((?:\((?:[0-9]+(?:>=|<=|>|<))?x(?:>=|<=|>|<)[0-9]+\)i)|" +
+                     "(?:\(.*\)r))?")
 
-x = 50
-for expr in result:
-    print eval(expr)
+attrs = pattern.findall("a=b, novy1=puvodni1(10<=x<=100)i, novy2=puvodni2(x<=50)i, novy3=puvodni3(man)r")
+
+for at in attrs:
+    print at
+
+m = "(a[ho?j]ky)r"
+new = m[1:-2]
+print new
+
