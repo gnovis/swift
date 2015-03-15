@@ -1,6 +1,8 @@
 #!/bin/python3
 """Main file of swift - FCA data converter"""
 
+import re
+
 
 class Attribute:
     def __init__(self, index, name, attr_type):
@@ -53,7 +55,7 @@ class AttrScaleNumeric(AttrScale):
 
     def scale(self, attrs, values):
         x = super().scale(attrs, values)  # NOQA
-        return int(eval(self._expr_pattern))  # int cast, because want 0 or 1
+        return eval(self._expr_pattern)  # int cast, because want 0 or 1
 
 
 class AttrScaleEnum(AttrScale):
@@ -61,21 +63,63 @@ class AttrScaleEnum(AttrScale):
         super().__init__(index, name, self.AttrType.NOMINAL,
                          attr_pattern, expr_pattern)
 
+    def scale(self, attrs, values):
+        old_val = super().scale(attrs, values)
+        return old_val == self._expr_pattern
+
 
 class AttrScaleString(AttrScale):
     def __init__(self, index, name, attr_pattern, expr_pattern):
         super().__init__(index, name, self.AttrType.STRING,
                          attr_pattern, expr_pattern)
+        self._regex = re.compile(self._expr_pattern)
+
+    def scale(self, attrs, values):
+        old_val = super().scale(attrs, values)
+        if self._regex.search(old_val):
+            return True
+        else:
+            return False
 
 
-attrs_old = {val: i for i, val in enumerate(['age', 'length', 'height'])}
-values = [50, 745, 152]
+class Object:
+    def __init__(self, name):
+        self._name = name
+
+    @property
+    def name(self):
+        return self._name
+
+
+class DataFile:
+    attr_pattern = re.compile(
+        "(\w+)=(\w+)((?:\((?:[0-9]+(?:>=|<=|>|<))?x" +
+        "(?:>=|<=|>|<)[0-9]+\)i)|(?:\(.*\)r))?")
+
+    def __init__(self, str_attrs, str_objects):
+        pass
+
+    def make_attrs(self, str_attrs):
+        pass
+        # attributes = []
+        # for attr in attr_pattern.findall(str_attrs):
+
+
+# Tests
+attrs_old = {val: i for i, val in enumerate(['age', 'note', 'sex'])}
+values = [50, '00000ah21jky', "woman"]
 
 attr = AttrScaleNumeric(0, 'scale-age', 'age', '(x<70)')
 print(attr.scale(attrs_old, values))
 
+attr2 = AttrScaleEnum(2, 'scale-sex', 'sex', 'man')
+print(attr2.scale(attrs_old, values))
+
+attr3 = AttrScaleString(1, 'scale-note', 'note', 'ah[123]j')
+print(attr3.scale(attrs_old, values))
+
+
 """
-import re
 #create dict from list
 #{val : i for i, val in enumerate(l)}
 
