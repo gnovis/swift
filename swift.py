@@ -91,18 +91,99 @@ class Object:
         return self._name
 
 
-class DataFile:
-    attr_pattern = re.compile(
-        "(\w+)=(\w+)((?:\((?:[0-9]+(?:>=|<=|>|<))?x" +
-        "(?:>=|<=|>|<)[0-9]+\)i)|(?:\(.*\)r))?")
+class Data:
+    """Base class of all data"""
+    def __init__(self, source, str_attrs=None, str_objects=None):
+        """
+        str_ before param name means that it is
+        string representation and must be parsed
+        """
+        self._source = source
+        self._str_attrs = str_attrs
+        self._str_object = str_objects
+        self._data_start = 0
 
-    def __init__(self, str_attrs, str_objects):
+    def prepare(self):
+        """
+        Prepare information about data.
+        Create attributes and objects
+        Set index of line where data start
+        """
         pass
 
-    def make_attrs(self, str_attrs):
+    def write(self, old_values, output):
+        """
+        Will write data to output in new format
+        based on old_values - list of string values
+        """
         pass
-        # attributes = []
-        # for attr in attr_pattern.findall(str_attrs):
+
+
+class DataScale(Data):
+    """
+    Base class for data in CSV and ARFF format
+    Data whitch can be scaled.
+    """
+
+    def parse_attrs(self, str_attrs):
+        attr_classes = {'n': AttrScaleNumeric,
+                        'e': AttrScaleEnum,
+                        's': AttrScaleString}
+        attr_pattern = re.compile(
+            "(\w+)=(\w+)" +
+            "((?:\((?:[0-9]+(?:>=|<=|>|<))?x(?:>=|<=|>|<)[0-9]+\)n)" +
+            "|(?:\(\w+\)e)|(?:\(.+\)s))?")
+        values = attr_pattern.findall(str_attrs)
+        print(values)
+        self._attributes = []
+        for i, attr in enumerate(values):
+            new_name = attr[0]
+            attr_pattern = attr[1]
+            formula = attr[2]
+
+            if formula == '':
+                attr_class = AttrScale
+                expr_pattern = ''
+            else:
+                attr_class = attr_classes[formula[-1]]
+                expr_pattern = formula[1:-2]
+
+            new_attr = attr_class(i, new_name,
+                                  attr_pattern,
+                                  expr_pattern)
+            self._attributes.append(new_attr)
+
+
+class DataArff(DataScale):
+    pass
+
+
+class DataCsv(DataScale):
+    pass
+
+
+class DataBivalent(Data):
+    """
+    Base class for data in CXT and DAT format
+    Values must be bivalent (true/1 or false/0)
+    """
+    pass
+
+
+class DataCxt(DataBivalent):
+    pass
+
+
+class DataDat(DataBivalent):
+    pass
+
+
+# Notes
+#
+# Třída Convertor bude obsahovat sloty: in_data, out_data a metodu convert,
+# ta bude procházet data v in_data a na každý řádek zavolá metodu write
+# objektu out_data, tato metoda podle své instance zapíše
+# přeformátované/škálované hodnoty do výstupního souboru
 
 
 # Tests
@@ -117,7 +198,6 @@ print(attr2.scale(attrs_old, values))
 
 attr3 = AttrScaleString(1, 'scale-note', 'note', 'ah[123]j')
 print(attr3.scale(attrs_old, values))
-
 
 """
 #create dict from list
