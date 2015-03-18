@@ -103,13 +103,17 @@ class Data:
         self._str_object = str_objects
         self._data_start = 0
 
+    """class variables"""
+    _separator = ","
+
     def prepare(self):
         """
         Prepare information about data.
         Create attributes and objects
         Set index of line where data start
         """
-        pass
+        self._attributes = self._str_attrs.split(Data._separator)
+        self._objects = self._str_objects.split(Data._separator)
 
     def write(self, old_values, output):
         """
