@@ -21,7 +21,7 @@ b. scale (attributes)
 					 - in form: (x operator value) or (value operator x operator value)
 					 - 'x' must be used!
      - identifier = s - string data
-				    n - numeric data
+					n - numeric data
 					e - enumeration data
  
    - formula in format new_attr=old_attr
