@@ -101,7 +101,7 @@ class Data:
         self._source = source
         self._str_attrs = str_attrs
         self._str_object = str_objects
-        self._data_start = 0
+        self.prepare()
 
     """class variables"""
     _separator = ","
@@ -112,8 +112,13 @@ class Data:
         Create attributes and objects
         Set index of line where data start
         """
-        self._attributes = self._str_attrs.split(Data._separator)
-        self._objects = self._str_objects.split(Data._separator)
+        self._data_start = 0
+
+        if self._str_attrs:
+            self._attributes = self._str_attrs.split(Data._separator)
+
+        if self._str_objects:
+            self._objects = self._str_objects.split(Data._separator)
 
     def write(self, old_values, output):
         """
@@ -126,10 +131,16 @@ class Data:
 class DataScale(Data):
     """
     Base class for data in CSV and ARFF format
-    Data whitch can be scaled.
+    Data whitch can be scaled. Class provide some
+    functionality to prepare args to attributes scale.
     """
 
-    def parse_attrs(self, str_attrs):
+    def parse_new_attrs(self, str_attrs):
+        """
+        Parse and create list of scale attributes,
+        take it into _attributes (this slot is rewritten).
+        Call this method to use data as target in scaling.
+        """
         attr_classes = {'n': AttrScaleNumeric,
                         'e': AttrScaleEnum,
                         's': AttrScaleString}
@@ -156,6 +167,16 @@ class DataScale(Data):
                                   attr_pattern,
                                   expr_pattern)
             self._attributes.append(new_attr)
+
+    def parse_old_attrs(self, str_attrs):
+        """
+        Take into _attributes dictionary,
+        where key are strings and values are indexes
+        of attributes (this slot is rwritten).
+        Call this method to use data object as pattern in scaling.
+        """
+        values = str_attrs.split(Data._separator)
+        self._attributes = {val: i for i, val in enumerate(values)}
 
 
 class DataArff(DataScale):
