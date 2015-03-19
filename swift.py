@@ -2,6 +2,7 @@
 """Main file of swift - FCA data converter"""
 
 import re
+import os
 
 
 class Attribute:
@@ -101,7 +102,6 @@ class Data:
         self._source = source
         self._str_attrs = str_attrs
         self._str_object = str_objects
-        self.prepare()
 
     """class variables"""
     _separator = ","
@@ -111,6 +111,7 @@ class Data:
         Prepare information about data.
         Create attributes and objects
         Set index of line where data start
+        Call this method if data file is not target in scaling.
         """
         self._data_start = 0
 
@@ -203,6 +204,38 @@ class DataDat(DataBivalent):
     pass
 
 
+class Convertor:
+    def __init__(self, old_data_file, new_data_file,
+                 old_str_attrs=None, old_str_objects=None,
+                 new_str_attrs=None, new_str_objects=None):
+
+        # suffixes of input files
+        old_suff = os.path.splitext(old_data_file)[1]
+        new_suff = os.path.splitext(new_data_file)[1]
+
+        self._old_data = Convertor.extensions[old_suff](old_data_file,
+                                                        old_str_attrs,
+                                                        old_str_objects)
+        self._new_data = Convertor.extensions[new_suff](new_data_file,
+                                                        new_str_attrs,
+                                                        new_str_objects)
+        # check if should scale
+        if (old_suff == '.csv' or
+            old_suff == '.arff') and (new_suff == '.dat' or
+                                      new_suff == '.cxt'):
+            self._scaling = True
+            self._old_data.parse_old_attrs(old_str_attrs)
+            self._new_data.parse_new_attrs(new_str_attrs)
+
+    """class variables"""
+    extensions = {'.csv': DataCsv,
+                  '.arff': DataArff,
+                  '.dat': DataDat,
+                  '.cxt': DataCxt}
+
+    def convert(self):
+        pass
+
 # Notes
 #
 # Třída Convertor bude obsahovat sloty: in_data, out_data a metodu convert,
@@ -212,6 +245,10 @@ class DataDat(DataBivalent):
 
 
 # Tests
+with open('test.csv') as f:
+    for i, line in enumerate(f):
+        print(i, ": ", list(map(lambda s: s.strip(), line.split(';'))))
+"""
 attrs_old = {val: i for i, val in enumerate(['age', 'note', 'sex'])}
 values = [50, '00000ah21jky', "woman"]
 
@@ -224,7 +261,6 @@ print(attr2.scale(attrs_old, values))
 attr3 = AttrScaleString(1, 'scale-note', 'note', 'ah[123]j')
 print(attr3.scale(attrs_old, values))
 
-"""
 #create dict from list
 #{val : i for i, val in enumerate(l)}
 
