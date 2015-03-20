@@ -5,11 +5,22 @@ import re
 import os
 
 
+class AttrType:
+    NUMERIC = 0
+    NOMINAL = 1
+    STRING = 2
+    NOT_SPECIFIED = 3
+
+
 class Attribute:
     def __init__(self, index, name, attr_type):
         self._name = name
         self._index = index
         self._attr_type = attr_type
+
+    types = {'n': AttrType.NUMERIC,
+             'e': AttrType.NOMINAL,
+             's': AttrType.STRING}
 
     @property
     def name(self):
@@ -22,11 +33,6 @@ class Attribute:
     @property
     def attr_type(self):
         return self._attr_type
-
-    class AttrType:
-        NUMERIC = 0
-        NOMINAL = 1
-        STRING = 2
 
 
 class AttrScale(Attribute):
@@ -51,7 +57,7 @@ class AttrScale(Attribute):
 
 class AttrScaleNumeric(AttrScale):
     def __init__(self, index, name, attr_pattern, expr_pattern):
-        super().__init__(index, name, self.AttrType.NUMERIC,
+        super().__init__(index, name, AttrType.NUMERIC,
                          attr_pattern, expr_pattern)
 
     def scale(self, attrs, values):
@@ -61,7 +67,7 @@ class AttrScaleNumeric(AttrScale):
 
 class AttrScaleEnum(AttrScale):
     def __init__(self, index, name, attr_pattern, expr_pattern):
-        super().__init__(index, name, self.AttrType.NOMINAL,
+        super().__init__(index, name, AttrType.NOMINAL,
                          attr_pattern, expr_pattern)
 
     def scale(self, attrs, values):
@@ -71,7 +77,7 @@ class AttrScaleEnum(AttrScale):
 
 class AttrScaleString(AttrScale):
     def __init__(self, index, name, attr_pattern, expr_pattern):
-        super().__init__(index, name, self.AttrType.STRING,
+        super().__init__(index, name, AttrType.STRING,
                          attr_pattern, expr_pattern)
         self._regex = re.compile(self._expr_pattern)
 
@@ -103,41 +109,97 @@ class Data:
         """
         self._source = source
         self._str_attrs = str_attrs
-        self._str_object = str_objects
+        self._str_objects = str_objects
         self._separator = separator
+        self.prepare()
+
+    @property
+    def source(self):
+        return self._source
+
+    @property
+    def str_attrs(self):
+        return self._str_attrs
+
+    @property
+    def str_objects(self):
+        return self._str_objects
+
+    @property
+    def separator(self):
+        return self._separator
 
     def prepare(self):
         """
         Prepare information about data.
         Create attributes and objects
-        Set index of line where data start
-        Call this method if data file is not target in scaling.
+        Set index of line where data start.
+        Prepare data witch will be converted, get as much
+        as possible information from data.
+        Call this method if data file is not target in scaling and
+        it is old_file.
         """
-        self._data_start = 0
 
         if self._str_attrs:
-            self._attributes = self._str_attrs.split(self._separator)
+            self._attributes = []
+            splitted = self._str_attrs.split(self._separator)
+            for i, str_attr in enumerate(splitted):
+                attr_type = AttrType.NOT_SPECIFIED
+                attr_name = str_attr
+                if str_attr[-1] == ']':
+                    attr_type = Attribute.types[str_attr[-2]]
+                    attr_name = str_attr[:-3]
+                self._attributes.append(Attribute(i, attr_name, attr_type))
 
         if self._str_objects:
-            self._objects = self._str_objects.split(self._separator)
+            splitted = self._str_objects.split(self._separator)
+            self._objects = [Object(name) for name in splitted]
 
-    def write(self, old_values, output):
+    def get_info(self):
+        pass
+
+    def prepare_line(self, line):
+        return list(map(lambda s: s.strip(), line.split(self._separator)))
+
+    def write(self, prepered_line, target):
         """
         Will write data to output in new format
         based on old_values - list of string values
         """
+        line = self._separator.join(prepered_line)
+        line += '\n'
+        target.write(line)
+
+    def write_header(self, relation_name=''):
         pass
 
-    def write_data_scale(self, old_values, output, dict_old_attrs):
-        """
-        Will write scaled data to output in new format
-        based on old_values - list of string values
-        dict_old_attrs = Dictionary where key is name of
-        attribute and value is index of this attribute.
-        """
-        pass
 
-    def parse_new_attrs(self, str_attrs):
+class DataArff(Data):
+    pass
+
+
+class DataCsv(Data):
+    def write_header(self, target, relation_name=''):
+        attrs_name = []
+        for attr in self._attributes:
+            attrs_name.append(attr.name)
+        line = self._separator.join(attrs_name)
+        line += '\n'
+        target.write(line)
+
+
+class DataBivalent(Data):
+    def parse_old_attrs_for_scale(self, str_attrs):
+        """
+        Take into _attributes dictionary,
+        where key are strings and values are indexes
+        of attributes (this slot is rwritten).
+        Call this method to use data object as pattern in scaling.
+        """
+        values = str_attrs.split(',')
+        self._attributes_temp = {val: i for i, val in enumerate(values)}
+
+    def parse_new_attrs_for_scale(self, str_attrs):
         """
         Parse and create list of scale attributes,
         take it into _attributes (this slot is rewritten).
@@ -148,10 +210,9 @@ class Data:
                         's': AttrScaleString}
         attr_pattern = re.compile(
             "(\w+)=(\w+)" +
-            "((?:\((?:[0-9]+(?:>=|<=|>|<))?x(?:>=|<=|>|<)[0-9]+\)n)" +
-            "|(?:\(\w+\)e)|(?:\(.+\)s))?")
+            "((?:\[(?:[0-9]+(?:>=|<=|>|<))?x(?:>=|<=|>|<)[0-9]+\]n)" +
+            "|(?:\[\w+\]e)|(?:\[.+\]s))?")
         values = attr_pattern.findall(str_attrs)
-        print(values)
         self._attributes = []
         for i, attr in enumerate(values):
             new_name = attr[0]
@@ -170,47 +231,74 @@ class Data:
                                   expr_pattern)
             self._attributes.append(new_attr)
 
-    def parse_old_attrs(self, str_attrs):
+    def write_data_scale(self, old_values, output, dict_old_attrs):
         """
-        Take into _attributes dictionary,
-        where key are strings and values are indexes
-        of attributes (this slot is rwritten).
-        Call this method to use data object as pattern in scaling.
+        Will write scaled data to output in new format
+        based on old_values - list of string values
+        dict_old_attrs = Dictionary where key is name of
+        attribute and value is index of this attribute.
         """
-        values = str_attrs.split(self._separator)
-        self._attributes = {val: i for i, val in enumerate(values)}
-
-    def prepare_line(self, line):
-        return list(map(lambda s: s.strip(), line.split(self._separator)))
+        pass
 
 
-class DataArff(Data):
-    pass
+class DataCxt(DataBivalent):
 
+    def write_header(self, target, relation_name=''):
+        target.write('B\n\n')
+        target.write(str(len(self._objects))+'\n')
+        target.write(str(len(self._attributes))+'\n\n')
+        for obj in self._objects:
+            target.write(obj.name + '\n')
+        for attr in self._attributes:
+            target.write(attr.name + '\n')
 
-class DataCsv(Data):
-    pass
-
-
-class DataCxt(Data):
-    pass
-
-
-class DataDat(Data):
-    def prepare_line(self, line):
-        splited = super().prepare_line(line)
-        result = [0] * self._attrs_count  # add this slot to object!
-        for val in splited:
-            result[val] = 1
-        return result
-
-    def write_data_scale(self, values, target_file, old_attrs):
+    def write_data_scale(self, values, target_file):
         result = []
         for i, attr in enumerate(self._attributes):
-            scaled = attr.scale(old_attrs, values)
+            scaled = attr.scale(self._attributes_temp, values)
+            if scaled:
+                result.append('X')
+            else:
+                result.append('.')
+        str_result = ''.join(result)
+        str_result += "\n"
+        target_file.write(str_result)
+
+
+class DataDat(DataBivalent):
+    def __init__(self, source,
+                 str_attrs=None, str_objects=None,
+                 separator=' '):
+        super().__init__(source, str_attrs, str_objects, separator)
+
+    def get_info(self):
+        max_val = -1
+        line_count = 0
+        with open(self._source, 'r') as f:
+            for i, line in enumerate(f):
+                line_count += 1
+                splitted = super().prepare_line(line)
+                for val in splitted:
+                    int_val = int(val)
+                    if int_val > max_val:
+                        max_val = int_val
+        self._attrs_count = max_val
+        self._objects_count = line_count
+
+    def prepare_line(self, line):
+        splitted = super().prepare_line(line)
+        result = ['0'] * (self._attrs_count + 1)
+        for val in splitted:
+            result[int(val)] = str(1)
+        return result
+
+    def write_data_scale(self, values, target_file):
+        result = []
+        for i, attr in enumerate(self._attributes):
+            scaled = attr.scale(self._attributes_temp, values)
             if scaled:
                 result.append(str(i))
-        str_result = " ".join(result)
+        str_result = self._separator.join(result)
         str_result += "\n"
         target_file.write(str_result)
 
@@ -220,6 +308,7 @@ class Convertor:
                  old_str_attrs=None, old_str_objects=None,
                  new_str_attrs=None, new_str_objects=None):
 
+        self._scaling = False
         # suffixes of input files
         old_suff = os.path.splitext(old_data_file)[1]
         new_suff = os.path.splitext(new_data_file)[1]
@@ -230,17 +319,16 @@ class Convertor:
         self._new_data = Convertor.extensions[new_suff](new_data_file,
                                                         new_str_attrs,
                                                         new_str_objects)
-        # is it ok?
-        self._old_data.prepare()
-        self._new_data.prepare()
+        # get information from source data
+        self._old_data.get_info()
 
         # check if should scale
         if (old_suff == '.csv' or
             old_suff == '.arff') and (new_suff == '.dat' or
                                       new_suff == '.cxt'):
             self._scaling = True
-            self._old_data.parse_old_attrs(old_str_attrs)
-            self._new_data.parse_new_attrs(new_str_attrs)
+            self._new_data.parse_old_attrs_for_scale(old_str_attrs)
+            self._new_data.parse_new_attrs_for_scale(new_str_attrs)
 
     """class variables"""
     extensions = {'.csv': DataCsv,
@@ -249,14 +337,17 @@ class Convertor:
                   '.cxt': DataCxt}
 
     def convert(self):
-        target_file = open(self._new_data._source, "w")
-        with open(self._old_data._source) as f:
+        target_file = open(self._new_data.source, 'w')
+        # TODO přidat jako parametr old file, aby mohla metoda write_header
+        # jeho využít atributů a aobjektů pokud bude chtít
+        self._new_data.write_header(target_file)
+
+        with open(self._old_data.source, 'r') as f:
             for i, line in enumerate(f):
-                prepared_line = self._new_data.prepare_line(line)
+                prepared_line = self._old_data.prepare_line(line)
                 if self._scaling:
                     self._new_data.write_data_scale(prepared_line,
-                                                    target_file,
-                                                    self._old_data._attributes)
+                                                    target_file)
                 else:
                     self._new_data.write(prepared_line,
                                          target_file)
@@ -274,10 +365,15 @@ class Convertor:
 # Tests
 
 old_attrs = "age,note,sex"
-new_attrs = "AGE=age(x<50)n, NOTE=note(aaa)s, MAN=sex(man)e, WOMAN=sex(woman)e"
-convertor = Convertor("old.csv", "new.dat",
-                      old_str_attrs=old_attrs, new_str_attrs=new_attrs)
+new_attrs = "AGE=age[x<50]n, NOTE=note[aaa]s, MAN=sex[man]e, WOMAN=sex[woman]e"
+convertor = Convertor("old.csv", "new.cxt",
+                      old_str_attrs=old_attrs,
+                      new_str_attrs=new_attrs,
+                      new_str_objects='Jan,Petr,Lucie,Jana,Aneta')
 convertor.convert()
+
+# c2 = Convertor("new.dat", "new.csv", new_str_attrs="AGE,NOTE,MAN,WOMAN")
+# c2.convert()
 
 
 """
