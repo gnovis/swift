@@ -4,89 +4,8 @@
 import re
 import os
 
-
-class AttrType:
-    NUMERIC = 0
-    NOMINAL = 1
-    STRING = 2
-    NOT_SPECIFIED = 3
-
-
-class Attribute:
-    def __init__(self, index, name, attr_type):
-        self._name = name
-        self._index = index
-        self._attr_type = attr_type
-
-    types = {'n': AttrType.NUMERIC,
-             'e': AttrType.NOMINAL,
-             's': AttrType.STRING}
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def index(self):
-        return self._index
-
-    @property
-    def attr_type(self):
-        return self._attr_type
-
-
-class AttrScale(Attribute):
-    def __init__(self, index, name, attr_type,
-                 attr_pattern=None, expr_pattern=None):
-        super().__init__(index, name, attr_type)
-
-        # name of atrribute, it is pattern to scaling
-        self._attr_pattern = attr_pattern
-        # expression to scaling
-        self._expr_pattern = expr_pattern
-
-    def scale(self, attrs, values):
-        """
-        Scale value according pattern.
-        attrs - dict with names(keys) and indexes(values)
-        values - values of current procces row
-        """
-        val_index = attrs[self._attr_pattern]
-        return values[val_index]
-
-
-class AttrScaleNumeric(AttrScale):
-    def __init__(self, index, name, attr_pattern, expr_pattern):
-        super().__init__(index, name, AttrType.NUMERIC,
-                         attr_pattern, expr_pattern)
-
-    def scale(self, attrs, values):
-        x = int(super().scale(attrs, values))  # NOQA
-        return eval(self._expr_pattern)
-
-
-class AttrScaleEnum(AttrScale):
-    def __init__(self, index, name, attr_pattern, expr_pattern):
-        super().__init__(index, name, AttrType.NOMINAL,
-                         attr_pattern, expr_pattern)
-
-    def scale(self, attrs, values):
-        old_val = super().scale(attrs, values)
-        return old_val == self._expr_pattern
-
-
-class AttrScaleString(AttrScale):
-    def __init__(self, index, name, attr_pattern, expr_pattern):
-        super().__init__(index, name, AttrType.STRING,
-                         attr_pattern, expr_pattern)
-        self._regex = re.compile(self._expr_pattern)
-
-    def scale(self, attrs, values):
-        old_val = super().scale(attrs, values)
-        if self._regex.search(old_val):
-            return True
-        else:
-            return False
+from attributes import (Attribute, AttrType, AttrScale, AttrScaleNumeric,
+                        AttrScaleEnum, AttrScaleString)
 
 
 class Object:
@@ -369,7 +288,7 @@ class Convertor:
 
 old_attrs = "a,b,c,d,e"
 new_attrs = "A=a[x<=1]n, B=b[x>=2]n, C=c[1<=x<=3]n, D=d[x>2]n, E=e[x>1]n"
-convertor = Convertor("test.csv", "new.dat",
+convertor = Convertor("../test.csv", "../new.dat",
                       old_str_attrs=old_attrs,
                       new_str_attrs=new_attrs,
                       new_str_objects='Jan,Petr,Lucie,Jana,Aneta',
