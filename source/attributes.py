@@ -1,3 +1,7 @@
+"""Attributes classes for application swift"""
+
+import re
+
 
 class AttrType:
     NUMERIC = 0
