@@ -268,8 +268,8 @@ class DataCxt(DataBivalent):
 class DataDat(DataBivalent):
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
-                 separator=' '):
-        super().__init__(source, str_attrs, str_objects, separator)
+                 separator=','):
+        super().__init__(source, str_attrs, str_objects, ' ')
 
     def get_info(self):
         max_val = -1
@@ -306,7 +306,8 @@ class DataDat(DataBivalent):
 class Convertor:
     def __init__(self, old_data_file, new_data_file,
                  old_str_attrs=None, old_str_objects=None,
-                 new_str_attrs=None, new_str_objects=None):
+                 new_str_attrs=None, new_str_objects=None,
+                 old_data_sep=',', new_data_sep=','):
 
         self._scaling = False
         # suffixes of input files
@@ -315,10 +316,12 @@ class Convertor:
 
         self._old_data = Convertor.extensions[old_suff](old_data_file,
                                                         old_str_attrs,
-                                                        old_str_objects)
+                                                        old_str_objects,
+                                                        old_data_sep)
         self._new_data = Convertor.extensions[new_suff](new_data_file,
                                                         new_str_attrs,
-                                                        new_str_objects)
+                                                        new_str_objects,
+                                                        new_data_sep)
         # get information from source data
         self._old_data.get_info()
 
@@ -364,19 +367,28 @@ class Convertor:
 
 # Tests
 
-old_attrs = "age,note,sex"
-new_attrs = "AGE=age[x<50]n, NOTE=note[aaa]s, MAN=sex[man]e, WOMAN=sex[woman]e"
-convertor = Convertor("old.csv", "new.cxt",
+old_attrs = "a,b,c,d,e"
+new_attrs = "A=a[x<=1]n, B=b[x>=2]n, C=c[1<=x<=3]n, D=d[x>2]n, E=e[x>1]n"
+convertor = Convertor("test.csv", "new.dat",
                       old_str_attrs=old_attrs,
                       new_str_attrs=new_attrs,
-                      new_str_objects='Jan,Petr,Lucie,Jana,Aneta')
+                      new_str_objects='Jan,Petr,Lucie,Jana,Aneta',
+                      old_data_sep=';')
 convertor.convert()
 
+"""
+old_attrs = "age,note,sex"
+new_attrs = "AGE=age[x<50]n, NOTE=note[aaa]s, MAN=sex[man]e, WOMAN=sex[woman]e"
+convertor = Convertor("old.csv", "new.dat",
+                      old_str_attrs=old_attrs,
+                      new_str_attrs=new_attrs,
+                      new_str_objects='Jan,Petr,Lucie,Jana,Aneta',
+                      old_data_sep=';')
+convertor.convert()
 # c2 = Convertor("new.dat", "new.csv", new_str_attrs="AGE,NOTE,MAN,WOMAN")
 # c2.convert()
 
 
-"""
 with open('test.csv') as f:
     for i, line in enumerate(f):
         print(i, ": ", list(map(lambda s: s.strip(), line.split(';'))))
