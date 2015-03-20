@@ -55,8 +55,8 @@ class AttrScaleNumeric(AttrScale):
                          attr_pattern, expr_pattern)
 
     def scale(self, attrs, values):
-        x = super().scale(attrs, values)  # NOQA
-        return eval(self._expr_pattern)  # int cast, because want 0 or 1
+        x = int(super().scale(attrs, values))  # NOQA
+        return eval(self._expr_pattern)
 
 
 class AttrScaleEnum(AttrScale):
@@ -94,7 +94,9 @@ class Object:
 
 class Data:
     """Base class of all data"""
-    def __init__(self, source, str_attrs=None, str_objects=None):
+    def __init__(self, source,
+                 str_attrs=None, str_objects=None,
+                 separator=','):
         """
         str_ before param name means that it is
         string representation and must be parsed
@@ -102,9 +104,7 @@ class Data:
         self._source = source
         self._str_attrs = str_attrs
         self._str_object = str_objects
-
-    """class variables"""
-    _separator = ","
+        self._separator = separator
 
     def prepare(self):
         """
@@ -116,10 +116,10 @@ class Data:
         self._data_start = 0
 
         if self._str_attrs:
-            self._attributes = self._str_attrs.split(Data._separator)
+            self._attributes = self._str_attrs.split(self._separator)
 
         if self._str_objects:
-            self._objects = self._str_objects.split(Data._separator)
+            self._objects = self._str_objects.split(self._separator)
 
     def write(self, old_values, output):
         """
@@ -128,13 +128,14 @@ class Data:
         """
         pass
 
-
-class DataScale(Data):
-    """
-    Base class for data in CSV and ARFF format
-    Data whitch can be scaled. Class provide some
-    functionality to prepare args to attributes scale.
-    """
+    def write_data_scale(self, old_values, output, dict_old_attrs):
+        """
+        Will write scaled data to output in new format
+        based on old_values - list of string values
+        dict_old_attrs = Dictionary where key is name of
+        attribute and value is index of this attribute.
+        """
+        pass
 
     def parse_new_attrs(self, str_attrs):
         """
@@ -176,32 +177,42 @@ class DataScale(Data):
         of attributes (this slot is rwritten).
         Call this method to use data object as pattern in scaling.
         """
-        values = str_attrs.split(Data._separator)
+        values = str_attrs.split(self._separator)
         self._attributes = {val: i for i, val in enumerate(values)}
 
+    def prepare_line(self, line):
+        return list(map(lambda s: s.strip(), line.split(self._separator)))
 
-class DataArff(DataScale):
+
+class DataArff(Data):
     pass
 
 
-class DataCsv(DataScale):
+class DataCsv(Data):
     pass
 
 
-class DataBivalent(Data):
-    """
-    Base class for data in CXT and DAT format
-    Values must be bivalent (true/1 or false/0)
-    """
+class DataCxt(Data):
     pass
 
 
-class DataCxt(DataBivalent):
-    pass
+class DataDat(Data):
+    def prepare_line(self, line):
+        splited = super().prepare_line(line)
+        result = [0] * self._attrs_count  # add this slot to object!
+        for val in splited:
+            result[val] = 1
+        return result
 
-
-class DataDat(DataBivalent):
-    pass
+    def write_data_scale(self, values, target_file, old_attrs):
+        result = []
+        for i, attr in enumerate(self._attributes):
+            scaled = attr.scale(old_attrs, values)
+            if scaled:
+                result.append(str(i))
+        str_result = " ".join(result)
+        str_result += "\n"
+        target_file.write(str_result)
 
 
 class Convertor:
@@ -219,6 +230,10 @@ class Convertor:
         self._new_data = Convertor.extensions[new_suff](new_data_file,
                                                         new_str_attrs,
                                                         new_str_objects)
+        # is it ok?
+        self._old_data.prepare()
+        self._new_data.prepare()
+
         # check if should scale
         if (old_suff == '.csv' or
             old_suff == '.arff') and (new_suff == '.dat' or
@@ -234,7 +249,19 @@ class Convertor:
                   '.cxt': DataCxt}
 
     def convert(self):
-        pass
+        target_file = open(self._new_data._source, "w")
+        with open(self._old_data._source) as f:
+            for i, line in enumerate(f):
+                prepared_line = self._new_data.prepare_line(line)
+                if self._scaling:
+                    self._new_data.write_data_scale(prepared_line,
+                                                    target_file,
+                                                    self._old_data._attributes)
+                else:
+                    self._new_data.write(prepared_line,
+                                         target_file)
+        target_file.close()
+
 
 # Notes
 #
@@ -245,10 +272,18 @@ class Convertor:
 
 
 # Tests
+
+old_attrs = "age,note,sex"
+new_attrs = "AGE=age(x<50)n, NOTE=note(aaa)s, MAN=sex(man)e, WOMAN=sex(woman)e"
+convertor = Convertor("old.csv", "new.dat",
+                      old_str_attrs=old_attrs, new_str_attrs=new_attrs)
+convertor.convert()
+
+
+"""
 with open('test.csv') as f:
     for i, line in enumerate(f):
         print(i, ": ", list(map(lambda s: s.strip(), line.split(';'))))
-"""
 attrs_old = {val: i for i, val in enumerate(['age', 'note', 'sex'])}
 values = [50, '00000ah21jky', "woman"]
 
