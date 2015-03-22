@@ -26,10 +26,13 @@ class Data:
         str_ before param name means that it is
         string representation and must be parsed
         """
+        self._objects = []
+        self._attributes = []
         self._source = source
         self._str_attrs = str_attrs
         self._str_objects = str_objects
         self._separator = separator
+        self._index_data_start = 0
         self.prepare()
 
     @property
@@ -48,6 +51,10 @@ class Data:
     def separator(self):
         return self._separator
 
+    @property
+    def index_data_start(self):
+        return self._index_data_start
+
     def prepare(self):
         """
         Prepare information about data.
@@ -60,7 +67,6 @@ class Data:
         """
 
         if self._str_attrs:
-            self._attributes = []
             splitted = self._str_attrs.split(self._separator)
             for i, str_attr in enumerate(splitted):
                 attr_type = AttrType.NOT_SPECIFIED
@@ -162,6 +168,32 @@ class DataBivalent(Data):
 
 class DataCxt(DataBivalent):
 
+    sym_vals = {'X': 1, '.': 0}
+    vals_sym = {1: 'X', 0: '.'}
+
+    def get_info(self):
+        with open(self._source) as f:
+            next(f)  # skip B
+            next(f)  # skip blank line
+            rows = int(next(f).strip())
+            columns = int(next(f).strip())
+            next(f)  # skip blank line
+            index = 5
+            for i in range(rows):
+                self._objects.append(Object(next(f).strip()))
+                index += 1
+            for k in range(columns):
+                self._attributes.append(Attribute(k, next(f).strip()))
+                index += 1
+            self._index_data_start = index
+
+    def prepare_line(self, line):
+        splitted = list(line.strip())
+        result = []
+        for val in splitted:
+            result.append(str(DataCxt.sym_vals[val]))
+        return result
+
     def write_header(self, target, relation_name=''):
         target.write('B\n\n')
         target.write(str(len(self._objects))+'\n')
@@ -175,10 +207,7 @@ class DataCxt(DataBivalent):
         result = []
         for i, attr in enumerate(self._attributes):
             scaled = attr.scale(self._attributes_temp, values)
-            if scaled:
-                result.append('X')
-            else:
-                result.append('.')
+            result.append(DataCxt.vals_sym[int(scaled)])
         str_result = ''.join(result)
         str_result += "\n"
         target_file.write(str_result)
@@ -216,6 +245,15 @@ class DataDat(DataBivalent):
         for i, attr in enumerate(self._attributes):
             scaled = attr.scale(self._attributes_temp, values)
             if scaled:
+                result.append(str(i))
+        str_result = self._separator.join(result)
+        str_result += "\n"
+        target_file.write(str_result)
+
+    def write(self, values, target_file):
+        result = []
+        for i, val in enumerate(values):
+            if bool(int(val)):
                 result.append(str(i))
         str_result = self._separator.join(result)
         str_result += "\n"
@@ -265,6 +303,9 @@ class Convertor:
         self._new_data.write_header(target_file)
 
         with open(self._old_data.source, 'r') as f:
+            # skip header lines
+            for k in range(self._old_data.index_data_start):
+                next(f)
             for i, line in enumerate(f):
                 prepared_line = self._old_data.prepare_line(line)
                 if self._scaling:
@@ -278,31 +319,30 @@ class Convertor:
 
 # Notes
 #
-# Třída Convertor bude obsahovat sloty: in_data, out_data a metodu convert,
-# ta bude procházet data v in_data a na každý řádek zavolá metodu write
-# objektu out_data, tato metoda podle své instance zapíše
-# přeformátované/škálované hodnoty do výstupního souboru
+# Testovano:
+# csv -> dat
+# cxt -> dat
+# csv -> cxt ? jeste zkusit
+# dat -> csv ?
 
 
 # Tests
 
-old_attrs = "a,b,c,d,e"
-new_attrs = "A=a[x<=1]n, B=b[x>=2]n, C=c[1<=x<=3]n, D=d[x>2]n, E=e[x>1]n"
-convertor = Convertor("../test.csv", "../new.dat",
+
+old_attrs = "age,note,sex"
+new_attrs = "AGE=age[x<50]n, NOTE=note[aaa]s, MAN=sex[man]e, WOMAN=sex[woman]e"
+convertor = Convertor("../old.csv", "../new.dat",
                       old_str_attrs=old_attrs,
                       new_str_attrs=new_attrs,
                       new_str_objects='Jan,Petr,Lucie,Jana,Aneta',
                       old_data_sep=';')
 convertor.convert()
-
 """
-old_attrs = "age,note,sex"
-new_attrs = "AGE=age[x<50]n, NOTE=note[aaa]s, MAN=sex[man]e, WOMAN=sex[woman]e"
-convertor = Convertor("old.csv", "new.dat",
-                      old_str_attrs=old_attrs,
-                      new_str_attrs=new_attrs,
-                      new_str_objects='Jan,Petr,Lucie,Jana,Aneta',
-                      old_data_sep=';')
+old_attrs = "a,b,c,d,e"
+new_attrs = "A=a[x<=1]n, B=b[x>=2]n, C=c[1<=x<=3]n, D=d[x>2]n, E=e[x>1]n"
+convertor = Convertor("../new.cxt", "../new2.dat")
+convertor.convert()
+
 convertor.convert()
 # c2 = Convertor("new.dat", "new.csv", new_str_attrs="AGE,NOTE,MAN,WOMAN")
 # c2.convert()

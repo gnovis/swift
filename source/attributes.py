@@ -11,7 +11,7 @@ class AttrType:
 
 
 class Attribute:
-    def __init__(self, index, name, attr_type):
+    def __init__(self, index, name, attr_type=AttrType.NOT_SPECIFIED):
         self._name = name
         self._index = index
         self._attr_type = attr_type
