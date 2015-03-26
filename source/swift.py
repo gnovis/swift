@@ -86,14 +86,20 @@ class Data:
     def prepare_line(self, line):
         return list(map(lambda s: s.strip(), line.split(self._separator)))
 
-    def write(self, prepered_line, target):
+    def write_line_to_file(self, line, target_file, separator):
+        """
+        Aux function for write_line, only add \n to line and
+        write complitely prepared line to file"""
+        line = separator.join(line)
+        line += '\n'
+        target_file.write(line)
+
+    def write_line(self, prepered_line, target):
         """
         Will write data to output in new format
         based on old_values - list of string values
         """
-        line = self._separator.join(prepered_line)
-        line += '\n'
-        target.write(line)
+        self.write_line_to_file(prepered_line, target, self._separator)
 
     def write_header(self, relation_name=''):
         pass
@@ -108,9 +114,7 @@ class DataCsv(Data):
         attrs_name = []
         for attr in self._attributes:
             attrs_name.append(attr.name)
-        line = self._separator.join(attrs_name)
-        line += '\n'
-        target.write(line)
+        self.write_line_to_file(attrs_name, target, self._separator)
 
 
 class DataBivalent(Data):
@@ -167,7 +171,6 @@ class DataBivalent(Data):
 
 
 class DataCxt(DataBivalent):
-
     sym_vals = {'X': 1, '.': 0}
     vals_sym = {1: 'X', 0: '.'}
 
@@ -208,9 +211,13 @@ class DataCxt(DataBivalent):
         for i, attr in enumerate(self._attributes):
             scaled = attr.scale(self._attributes_temp, values)
             result.append(DataCxt.vals_sym[int(scaled)])
-        str_result = ''.join(result)
-        str_result += "\n"
-        target_file.write(str_result)
+        self.write_line_to_file(result, target_file, '')
+
+    def write_line(self, prepared_line, target_file):
+        result = []
+        for val in prepared_line:
+            result.append(DataCxt.vals_sym[int(val)])
+        self.write_line_to_file(result, target_file, '')
 
 
 class DataDat(DataBivalent):
@@ -246,18 +253,14 @@ class DataDat(DataBivalent):
             scaled = attr.scale(self._attributes_temp, values)
             if scaled:
                 result.append(str(i))
-        str_result = self._separator.join(result)
-        str_result += "\n"
-        target_file.write(str_result)
+        self.write_line_to_file(result, target_file, self._separator)
 
-    def write(self, values, target_file):
+    def write_line(self, line, target_file):
         result = []
-        for i, val in enumerate(values):
+        for i, val in enumerate(line):
             if bool(int(val)):
                 result.append(str(i))
-        str_result = self._separator.join(result)
-        str_result += "\n"
-        target_file.write(str_result)
+        self.write_line_to_file(result, target_file, self._separator)
 
 
 class Convertor:
@@ -312,8 +315,8 @@ class Convertor:
                     self._new_data.write_data_scale(prepared_line,
                                                     target_file)
                 else:
-                    self._new_data.write(prepared_line,
-                                         target_file)
+                    self._new_data.write_line(prepared_line,
+                                              target_file)
         target_file.close()
 
 
@@ -321,61 +324,38 @@ class Convertor:
 #
 # Testovano:
 # csv -> dat
+# csv -> cxt
+# dat -> csv
+# dat -> cxt
 # cxt -> dat
-# csv -> cxt ? jeste zkusit
-# dat -> csv ?
+# cxt -> csv
 
 
 # Tests
 
 
-old_attrs = "age,note,sex"
+old_attrs = 'age,note,sex'
+
+# atributes for scaling
 new_attrs = "AGE=age[x<50]n, NOTE=note[aaa]s, MAN=sex[man]e, WOMAN=sex[woman]e"
-convertor = Convertor("../old.csv", "../new.dat",
-                      old_str_attrs=old_attrs,
-                      new_str_attrs=new_attrs,
-                      new_str_objects='Jan,Petr,Lucie,Jana,Aneta',
+
+# obejcts
+new_objects = 'Jan,Petr,Lucie,Jana,Aneta'
+
+convertor = Convertor("test.cxt", "test_from_cxt.csv",
+                      # old_str_attrs=old_attrs,
+                      new_str_attrs='AGE,NOTE,MAN,WOMAN',
+                      new_str_objects=new_objects,
                       old_data_sep=';')
 convertor.convert()
 """
-old_attrs = "a,b,c,d,e"
-new_attrs = "A=a[x<=1]n, B=b[x>=2]n, C=c[1<=x<=3]n, D=d[x>2]n, E=e[x>1]n"
-convertor = Convertor("../new.cxt", "../new2.dat")
-convertor.convert()
-
-convertor.convert()
-# c2 = Convertor("new.dat", "new.csv", new_str_attrs="AGE,NOTE,MAN,WOMAN")
-# c2.convert()
 
 
-with open('test.csv') as f:
-    for i, line in enumerate(f):
-        print(i, ": ", list(map(lambda s: s.strip(), line.split(';'))))
-attrs_old = {val: i for i, val in enumerate(['age', 'note', 'sex'])}
-values = [50, '00000ah21jky', "woman"]
-
-attr = AttrScaleNumeric(0, 'scale-age', 'age', '(x<70)')
-print(attr.scale(attrs_old, values))
-
-attr2 = AttrScaleEnum(2, 'scale-sex', 'sex', 'man')
-print(attr2.scale(attrs_old, values))
-
-attr3 = AttrScaleString(1, 'scale-note', 'note', 'ah[123]j')
-print(attr3.scale(attrs_old, values))
-
-#create dict from list
-#{val : i for i, val in enumerate(l)}
-
+# Regular expression
 pattern = re.compile("(\w+)=(\w+)" +
                      "((?:\((?:[0-9]+(?:>=|<=|>|<))?x(?:>=|<=|>|<)[0-9]+\)i)|" +  # NOQA
                      "(?:\(.*\)r))?")
 
 attrs = pattern.findall("a=b, novy1=puvodni1(10<=x<=100)i, novy2=puvodni2(x<=50)i, novy3=puvodni3(man)r")
 
-for at in attrs:
-    print at
-
-m = "(a[ho?j]ky)r"
-new = m[1:-2]
-print new
 """
