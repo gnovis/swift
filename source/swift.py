@@ -180,8 +180,8 @@ class DataBivalent(Data):
                 expr_pattern = formula[1:-2]
 
             new_attr = attr_class(i, new_name,
-                                  attr_pattern,
-                                  expr_pattern)
+                                  attr_pattern=attr_pattern,
+                                  expr_pattern=expr_pattern)
             self._attributes.append(new_attr)
 
     def write_data_scale(self, old_values, output, dict_old_attrs):
@@ -356,7 +356,7 @@ class Convertor:
 old_str_attrs = 'age,note,sex'
 
 # atributes for scaling
-new_str_attrs = "AGE=age[x<50]n, NOTE=note[aaa]s, MAN=sex[man]e, WOMAN=sex[woman]e"  # NOQA
+new_str_attrs = "AGE=age[x<50]n, NOTE=note[aaa]s, NUMBER=num, MAN=sex[man]e, WOMAN=sex[woman]e"  # NOQA
 
 # obejcts
 new_str_objects = 'Jan,Petr,Lucie,Jana,Aneta'

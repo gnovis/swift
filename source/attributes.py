@@ -34,9 +34,9 @@ class Attribute:
 
 
 class AttrScale(Attribute):
-    def __init__(self, index, name, attr_type,
+    def __init__(self, index, name, attr_type=AttrType.NOT_SPECIFIED,
                  attr_pattern=None, expr_pattern=None):
-        super().__init__(index, name, attr_type)
+        super().__init__(index, name)
 
         # name of atrribute, it is pattern to scaling
         self._attr_pattern = attr_pattern
