@@ -19,6 +19,11 @@ class Object:
 
 class Data:
     """Base class of all data"""
+
+    attr_classes = {'n': AttrScaleNumeric,
+                    'e': AttrScaleEnum,
+                    's': AttrScaleString}
+
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
                  separator=','):
@@ -71,10 +76,13 @@ class Data:
                 self._attributes.append(Attribute(i, attr_name, attr_type))
 
         if self._str_objects:
-            splitted = self._str_objects.split(self._separator)
+            splitted = Data.ss_str(self._str_objects, self.separator)
             self._objects = [Object(name) for name in splitted]
 
     def get_info(self):
+        """
+        Set attributes, objects and index_data_start.
+        """
         pass
 
     def prepare_line(self, line):
@@ -107,22 +115,64 @@ class Data:
 
 
 class DataArff(Data):
-    pass
+
+    part_sym = '@'
+    IDENTIFIER = 0
+    NAME = 1
+    VALUE = 2
+
+    def __init__(self, source,
+                 str_attrs=None, str_objects=None,
+                 separator=',', relation_name=''):
+        super().__init__(source, str_attrs, str_objects, separator)
+        self._relation_name = relation_name
+
+    def relation_name(self):
+        return self._relation_name
+
+    def get_info(self):
+        with open(self.source) as f:
+            attr_index = 0
+            attrs_names = []
+            for i, line in enumerate(f):
+                curr_line = line.strip()
+                if curr_line.startswith(DataArff.part_sym):
+                    values = curr_line.split()
+                    identifier = values[DataArff.IDENTIFIER]
+
+                    # @relation
+                    if identifier == '@ralation':
+                        self._relation_name = values[DataArff.NAME]
+
+                    # @attribute
+                    elif identifier == '@attribute':
+                        attr_type = values[DataArff.VALUE]
+                        if attr_type == 'numeric' or attr_type == 'string':
+                            t = Attribute.types[attr_type[0]]
+                        else:
+                            t = Attribute.types['e']
+                        self._attributes.append(
+                            Attribute(
+                                attr_index,
+                                values[DataArff.NAME], t))
+                        attr_index = attr_index + 1
+                        attrs_names.append(values[DataArff.NAME])
+
+                    # @data
+                    elif identifier == '@data':
+                        self._index_data_start = i + 1
+                        break
+                else:
+                    continue
+                self._str_attrs = self.separator.join(attrs_names)
 
 
 class DataCsv(Data):
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
                  separator=',', attrs_first_line=False):
-        if attrs_first_line:
-            str_attrs = self.get_first_line_attrs(source)
         self._attrs_first_line = attrs_first_line
         super().__init__(source, str_attrs, str_objects, separator)
-
-    def get_first_line_attrs(self, source):
-        """Set str_attrs to first line from data file"""
-        with open(source, 'r') as f:
-            return next(f)
 
     def write_header(self, target, old_data=None, relation_name=''):
         attrs_to_write = []
@@ -139,6 +189,13 @@ class DataCsv(Data):
     def get_info(self):
         if self._attrs_first_line:
             self._index_data_start = 1
+            self._str_attrs = self.get_first_line(self.source)
+            self.prepare()
+
+    def get_first_line(self, source):
+        """Set str_attrs to first line from data file"""
+        with open(source, 'r') as f:
+            return next(f)
 
 
 class DataBivalent(Data):
@@ -158,9 +215,7 @@ class DataBivalent(Data):
         take it into _attributes (this slot is rewritten).
         Call this method to use data as target in scaling.
         """
-        attr_classes = {'n': AttrScaleNumeric,
-                        'e': AttrScaleEnum,
-                        's': AttrScaleString}
+
         attr_pattern = re.compile(
             "(\w+)=(\w+)" +
             "((?:\[(?:[0-9]+(?:>=|<=|>|<))?x(?:>=|<=|>|<)[0-9]+\]n)" +
@@ -176,7 +231,7 @@ class DataBivalent(Data):
                 attr_class = AttrScale
                 expr_pattern = ''
             else:
-                attr_class = attr_classes[formula[-1]]
+                attr_class = Data.attr_classes[formula[-1]]
                 expr_pattern = formula[1:-2]
 
             new_attr = attr_class(i, new_name,
@@ -280,17 +335,26 @@ class DataDat(DataBivalent):
             scaled = attr.scale(self._attributes_temp, values)
             if scaled:
                 result.append(str(i))
-        self.write_line_to_file(result, target_file, self._separator)
+        if result:
+            self.write_line_to_file(result, target_file, self._separator)
 
     def write_line(self, line, target_file):
         result = []
         for i, val in enumerate(line):
             if bool(int(val)):
                 result.append(str(i))
-        self.write_line_to_file(result, target_file, self._separator)
+        if result:
+            self.write_line_to_file(result, target_file, self._separator)
 
 
 class Convertor:
+
+    """class variables"""
+    extensions = {'.csv': DataCsv,
+                  '.arff': DataArff,
+                  '.dat': DataDat,
+                  '.cxt': DataCxt}
+
     def __init__(self, old, new):
 
         # suffixes of input files
@@ -312,12 +376,6 @@ class Convertor:
             self._new_data.parse_old_attrs_for_scale(self._old_data.str_attrs,
                                                      self._old_data.separator)
             self._new_data.parse_new_attrs_for_scale()
-
-    """class variables"""
-    extensions = {'.csv': DataCsv,
-                  '.arff': DataArff,
-                  '.dat': DataDat,
-                  '.cxt': DataCxt}
 
     def convert(self):
         """Call this method to convert data"""
@@ -349,6 +407,9 @@ class Convertor:
 # dat -> cxt
 # cxt -> dat
 # cxt -> csv
+# arff -> csv
+# arff -> dat
+# arff -> cxt
 
 
 # Tests
@@ -357,16 +418,16 @@ old_str_attrs = 'age,note,sex'
 
 # atributes for scaling
 new_str_attrs = "AGE=age[x<50]n, NOTE=note[aaa]s, NUMBER=num, MAN=sex[man]e, WOMAN=sex[woman]e"  # NOQA
+new_str_attrs_2 = "SUNNY=outlook[sunny]e, TEMP=temperature[x>80]n, HUM=humidity[70<=x<=80]n"  # NOQA
 
 # obejcts
-new_str_objects = 'Jan,Petr,Lucie,Jana,Aneta'
+new_str_objects = "Jan,Petr,Lucie,Jana,Aneta"
+new_str_objects_2 = "0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13"
 
-old = dict(source="test.csv",
-           separator=";",
-           attrs_first_line=True)
-new = dict(source="csv.cxt",
-           str_objects=new_str_objects,
-           str_attrs=new_str_attrs)
+old = dict(source="test.arff")
+new = dict(source="arff.cxt",
+           str_attrs=new_str_attrs_2,
+           str_objects=new_str_objects_2)
 
 convertor = Convertor(old, new)
 convertor.convert()
