@@ -20,13 +20,29 @@ class Object:
 class Data:
     """Base class of all data"""
 
+    """Class data"""
     attr_classes = {'n': AttrScaleNumeric,
                     'e': AttrScaleEnum,
                     's': AttrScaleString}
 
+    """Class functions"""
+    def ss_str(string, separator):
+        """
+        Strip and split string by separator.
+        Return list of values.
+        """
+        return list(map(lambda s: s.strip(), string.split(separator)))
+
+    def get_not_empty_line(f, i_ref):
+        while True:
+            line = next(f)
+            i_ref[0] = i_ref[0] + 1
+            if line.strip():
+                return line
+
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
-                 separator=','):
+                 separator=',', relation_name=''):
         """
         str_ before param name means that it is
         string representation and must be parsed
@@ -37,6 +53,7 @@ class Data:
         self._str_attrs = str_attrs
         self._str_objects = str_objects
         self._separator = separator
+        self._relation_name = relation_name
         self._index_data_start = 0
         self.prepare()
 
@@ -63,6 +80,10 @@ class Data:
     @property
     def attributes(self):
         return list(self._attributes)
+
+    @property
+    def relation_name(self):
+        return self._relation_name
 
     def prepare(self):
         if self._str_attrs:
@@ -106,29 +127,14 @@ class Data:
     def write_header(self, target, old_data=None, relation_name=''):
         pass
 
-    def ss_str(string, separator):
-        """
-        Strip and split string by separator.
-        Return list of values.
-        """
-        return list(map(lambda s: s.strip(), string.split(separator)))
-
 
 class DataArff(Data):
+    """Attribute-Relation File Format"""
 
     part_sym = '@'
     IDENTIFIER = 0
     NAME = 1
     VALUE = 2
-
-    def __init__(self, source,
-                 str_attrs=None, str_objects=None,
-                 separator=',', relation_name=''):
-        super().__init__(source, str_attrs, str_objects, separator)
-        self._relation_name = relation_name
-
-    def relation_name(self):
-        return self._relation_name
 
     def get_info(self):
         with open(self.source) as f:
@@ -168,6 +174,7 @@ class DataArff(Data):
 
 
 class DataCsv(Data):
+    """Column seperated value format"""
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
                  separator=',', attrs_first_line=False):
@@ -250,24 +257,28 @@ class DataBivalent(Data):
 
 
 class DataCxt(DataBivalent):
+    """Burmeister data format"""
     sym_vals = {'X': 1, '.': 0}
     vals_sym = {1: 'X', 0: '.'}
 
     def get_info(self):
         with open(self._source) as f:
             next(f)  # skip B
-            next(f)  # skip blank line
-            rows = int(next(f).strip())
-            columns = int(next(f).strip())
-            next(f)  # skip blank line
-            index = 5
+            self._relation_name = next(f)
+            index = [2]
+
+            rows = int(Data.get_not_empty_line(f, index).strip())
+            columns = int(Data.get_not_empty_line(f, index).strip())
+
             for i in range(rows):
-                self._objects.append(Object(next(f).strip()))
-                index += 1
+                obj_name = Data.get_not_empty_line(f, index).strip()
+                self._objects.append(Object(obj_name))
+
             for k in range(columns):
-                self._attributes.append(Attribute(k, next(f).strip()))
-                index += 1
-            self._index_data_start = index
+                attr_name = Data.get_not_empty_line(f, index).strip()
+                self._attributes.append(Attribute(k, attr_name))
+
+            self._index_data_start = index[0]
 
     def prepare_line(self, line):
         splitted = list(line.strip())
@@ -303,6 +314,7 @@ class DataCxt(DataBivalent):
 
 
 class DataDat(DataBivalent):
+    """Data format for FCALGS"""
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
                  separator=' '):
@@ -424,10 +436,8 @@ new_str_attrs_2 = "SUNNY=outlook[sunny]e, TEMP=temperature[x>80]n, HUM=humidity[
 new_str_objects = "Jan,Petr,Lucie,Jana,Aneta"
 new_str_objects_2 = "0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13"
 
-old = dict(source="test.arff")
-new = dict(source="arff.cxt",
-           str_attrs=new_str_attrs_2,
-           str_objects=new_str_objects_2)
+old = dict(source="arff.cxt")
+new = dict(source="cxt.csv")
 
 convertor = Convertor(old, new)
 convertor.convert()
