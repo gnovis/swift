@@ -25,21 +25,6 @@ class Data:
                     'e': AttrScaleEnum,
                     's': AttrScaleString}
 
-    """Class functions"""
-    def ss_str(string, separator):
-        """
-        Strip and split string by separator.
-        Return list of values.
-        """
-        return list(map(lambda s: s.strip(), string.split(separator)))
-
-    def get_not_empty_line(f, i_ref):
-        while True:
-            line = next(f)
-            i_ref[0] = i_ref[0] + 1
-            if line.strip():
-                return line
-
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
                  separator=',', relation_name=''):
@@ -87,7 +72,7 @@ class Data:
 
     def prepare(self):
         if self._str_attrs:
-            splitted = Data.ss_str(self._str_attrs, self.separator)
+            splitted = self.ss_str(self._str_attrs, self.separator)
             for i, str_attr in enumerate(splitted):
                 attr_type = AttrType.NOT_SPECIFIED
                 attr_name = str_attr
@@ -97,7 +82,7 @@ class Data:
                 self._attributes.append(Attribute(i, attr_name, attr_type))
 
         if self._str_objects:
-            splitted = Data.ss_str(self._str_objects, self.separator)
+            splitted = self.ss_str(self._str_objects, self.separator)
             self._objects = [Object(name) for name in splitted]
 
     def get_info(self):
@@ -107,7 +92,7 @@ class Data:
         pass
 
     def prepare_line(self, line):
-        return Data.ss_str(line, self.separator)
+        return self.ss_str(line, self.separator)
 
     def write_line_to_file(self, line, target_file, separator):
         """
@@ -124,8 +109,22 @@ class Data:
         """
         self.write_line_to_file(prepered_line, target, self._separator)
 
-    def write_header(self, target, old_data=None, relation_name=''):
+    def write_header(self, target, old_data=None):
         pass
+
+    def ss_str(self, string, separator):
+        """
+        Strip and split string by separator.
+        Return list of values.
+        """
+        return list(map(lambda s: s.strip(), string.split(separator)))
+
+    def get_not_empty_line(self, f, i_ref):
+        while True:
+            line = next(f)
+            i_ref[0] = i_ref[0] + 1
+            if line.strip():
+                return line
 
 
 class DataArff(Data):
@@ -147,7 +146,7 @@ class DataArff(Data):
                     identifier = values[DataArff.IDENTIFIER]
 
                     # @relation
-                    if identifier == '@ralation':
+                    if identifier == '@relation':
                         self._relation_name = values[DataArff.NAME]
 
                     # @attribute
@@ -170,7 +169,7 @@ class DataArff(Data):
                         break
                 else:
                     continue
-                self._str_attrs = self.separator.join(attrs_names)
+            self._str_attrs = self.separator.join(attrs_names)
 
 
 class DataCsv(Data):
@@ -181,7 +180,7 @@ class DataCsv(Data):
         self._attrs_first_line = attrs_first_line
         super().__init__(source, str_attrs, str_objects, separator)
 
-    def write_header(self, target, old_data=None, relation_name=''):
+    def write_header(self, target, old_data=None):
         attrs_to_write = []
         if self._attributes:
             attrs_to_write = self._attributes
@@ -206,6 +205,7 @@ class DataCsv(Data):
 
 
 class DataBivalent(Data):
+    """Data represented only by bivalnet values e.g 1/0"""
     def parse_old_attrs_for_scale(self, old_str_attrs, separator):
         """
         Take into _attributes dictionary,
@@ -213,7 +213,7 @@ class DataBivalent(Data):
         of attributes (this slot is rwritten).
         Call this method to use data object as pattern in scaling.
         """
-        values = Data.ss_str(old_str_attrs, separator)
+        values = self.ss_str(old_str_attrs, separator)
         self._attributes_temp = {val: i for i, val in enumerate(values)}
 
     def parse_new_attrs_for_scale(self):
@@ -267,15 +267,15 @@ class DataCxt(DataBivalent):
             self._relation_name = next(f)
             index = [2]
 
-            rows = int(Data.get_not_empty_line(f, index).strip())
-            columns = int(Data.get_not_empty_line(f, index).strip())
+            rows = int(self.get_not_empty_line(f, index).strip())
+            columns = int(self.get_not_empty_line(f, index).strip())
 
             for i in range(rows):
-                obj_name = Data.get_not_empty_line(f, index).strip()
+                obj_name = self.get_not_empty_line(f, index).strip()
                 self._objects.append(Object(obj_name))
 
             for k in range(columns):
-                attr_name = Data.get_not_empty_line(f, index).strip()
+                attr_name = self.get_not_empty_line(f, index).strip()
                 self._attributes.append(Attribute(k, attr_name))
 
             self._index_data_start = index[0]
@@ -287,13 +287,16 @@ class DataCxt(DataBivalent):
             result.append(str(DataCxt.sym_vals[val]))
         return result
 
-    def write_header(self, target, old_data=None, relation_name=''):
+    def write_header(self, target, old_data=None):
         if not self._attributes:
             self._attributes = old_data.attributes
 
-        target.write('B\n\n')
+        target.write('B\n')
+        if old_data:
+            self._relation_name = old_data.relation_name
+        target.write(self.relation_name + '\n')
         target.write(str(len(self._objects))+'\n')
-        target.write(str(len(self._attributes))+'\n\n')
+        target.write(str(len(self._attributes))+'\n')
         for obj in self._objects:
             target.write(obj.name + '\n')
         for attr in self._attributes:
@@ -436,8 +439,9 @@ new_str_attrs_2 = "SUNNY=outlook[sunny]e, TEMP=temperature[x>80]n, HUM=humidity[
 new_str_objects = "Jan,Petr,Lucie,Jana,Aneta"
 new_str_objects_2 = "0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13"
 
-old = dict(source="arff.cxt")
-new = dict(source="cxt.csv")
+old = dict(source="test.arff")
+new = dict(source="arff.cxt", str_attrs=new_str_attrs_2,
+           str_objects=new_str_objects_2)
 
 convertor = Convertor(old, new)
 convertor.convert()
