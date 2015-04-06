@@ -9,6 +9,11 @@ class AttrType:
     STRING = 2
     NOT_SPECIFIED = 3
 
+    STR_REPR = {NUMERIC: "Numeric",
+                NOMINAL: "Nominal",
+                STRING: "String",
+                NOT_SPECIFIED: "Not specified"}
+
 
 class Attribute:
     def __init__(self, index, name, attr_type=AttrType.NOT_SPECIFIED):
@@ -32,11 +37,19 @@ class Attribute:
     def attr_type(self):
         return self._attr_type
 
+    def print_self(self):
+        print("\nAttribute\nname: {}\nindex: {}\ntype: {}".format(
+            self.name,
+            self.index, AttrType.STR_REPR[self.attr_type]))
+
+    def update(self, value):
+        pass
+
 
 class AttrScale(Attribute):
     def __init__(self, index, name, attr_type=AttrType.NOT_SPECIFIED,
                  attr_pattern=None, expr_pattern=None):
-        super().__init__(index, name)
+        super().__init__(index, name, attr_type)
 
         # name of atrribute, it is pattern to scaling
         self._attr_pattern = attr_pattern
@@ -54,27 +67,64 @@ class AttrScale(Attribute):
 
 
 class AttrScaleNumeric(AttrScale):
-    def __init__(self, index, name, attr_pattern, expr_pattern):
+    def __init__(self, index, name, attr_pattern=None, expr_pattern=None):
         super().__init__(index, name, AttrType.NUMERIC,
                          attr_pattern, expr_pattern)
+        self._max_value = None
+        self._min_value = None
+
+    @property
+    def max_value(self):
+        return self._max_value
+
+    @property
+    def min_value(self):
+        return self._min_value
 
     def scale(self, attrs, values):
         x = int(super().scale(attrs, values))  # NOQA
         return eval(self._expr_pattern)
 
+    def update(self, str_value):
+        value = int(str_value)
+        if not self._max_value:
+            self._max_value = value
+            return
+        if not self._min_value:
+            self._min_value = value
+            return
+        if value > self.max_value:
+            self._max_value = value
+        if value < self._min_value:
+            self._min_value = value
+
+    def print_self(self):
+        super().print_self()
+        print("max value: {}\nmin value:{}".format(
+              self.max_value, self.min_value))
+
 
 class AttrScaleEnum(AttrScale):
-    def __init__(self, index, name, attr_pattern, expr_pattern):
+    def __init__(self, index, name, attr_pattern=None, expr_pattern=None):
         super().__init__(index, name, AttrType.NOMINAL,
                          attr_pattern, expr_pattern)
+        self._values = []
 
     def scale(self, attrs, values):
         old_val = super().scale(attrs, values)
         return old_val == self._expr_pattern
 
+    def update(self, value):
+        if value not in self._values:
+            self._values.append(value)
+
+    def print_self(self):
+        super().print_self()
+        print(', '.join(self._values))
+
 
 class AttrScaleString(AttrScale):
-    def __init__(self, index, name, attr_pattern, expr_pattern):
+    def __init__(self, index, name, attr_pattern=None, expr_pattern=None):
         super().__init__(index, name, AttrType.STRING,
                          attr_pattern, expr_pattern)
         self._regex = re.compile(self._expr_pattern)

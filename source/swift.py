@@ -4,7 +4,7 @@
 import re
 import os
 
-from attributes import (Attribute, AttrType, AttrScale, AttrScaleNumeric,
+from attributes import (Attribute, AttrScale, AttrScaleNumeric,
                         AttrScaleEnum, AttrScaleString)
 
 
@@ -40,6 +40,9 @@ class Data:
         self._separator = separator
         self._relation_name = relation_name
         self._index_data_start = 0
+        self._obj_count = 0
+        self._attr_count = 0
+
         self.prepare()
 
     @property
@@ -70,26 +73,47 @@ class Data:
     def relation_name(self):
         return self._relation_name
 
+    @property
+    def obj_count(self):
+        """Does not depends on objects property"""
+        return self._obj_count
+
+    @property
+    def attr_count(self):
+        """Does not depends on attributes property"""
+        return self._attr_count
+
     def prepare(self):
         if self._str_attrs:
             splitted = self.ss_str(self._str_attrs, self.separator)
             for i, str_attr in enumerate(splitted):
-                attr_type = AttrType.NOT_SPECIFIED
+                attr_class = Attribute
                 attr_name = str_attr
                 if str_attr[-1] == ']':
-                    attr_type = Attribute.types[str_attr[-2]]
+                    attr_class = Data.attr_classes[str_attr[-2]]
                     attr_name = str_attr[:-3]
-                self._attributes.append(Attribute(i, attr_name, attr_type))
+                self._attributes.append(attr_class(i, attr_name))
 
         if self._str_objects:
             splitted = self.ss_str(self._str_objects, self.separator)
             self._objects = [Object(name) for name in splitted]
 
-    def get_info(self):
+    def get_header_info(self):
         """
         Set attributes, objects and index_data_start.
         """
         pass
+
+    def get_data_info(self):
+        """Get much as possible information about data"""
+        self._attr_count = len(self._attributes)
+        with open(self.source, 'r') as f:
+            Data.skip_lines(self.index_data_start, f)
+            for line in f:
+                self._obj_count += 1
+                str_values = self.ss_str(line, self.separator)
+                for i, attr in enumerate(self._attributes):
+                    attr.update(str_values[i])
 
     def prepare_line(self, line):
         return self.ss_str(line, self.separator)
@@ -126,6 +150,18 @@ class Data:
             if line.strip():
                 return line
 
+    def print_info(self):
+        print("Relation name: {}".format(self.relation_name))
+        print("Objects count: {}".format(self.obj_count))
+        print("Attributes count: {}".format(self.attr_count))
+        print("="*20)
+        for attr in self._attributes:
+            attr.print_self()
+
+    def skip_lines(line_i, f):
+        for i in range(line_i):
+            next(f)
+
 
 class DataArff(Data):
     """Attribute-Relation File Format"""
@@ -135,7 +171,7 @@ class DataArff(Data):
     NAME = 1
     VALUE = 2
 
-    def get_info(self):
+    def get_header_info(self):
         with open(self.source) as f:
             attr_index = 0
             attrs_names = []
@@ -153,13 +189,12 @@ class DataArff(Data):
                     elif identifier == '@attribute':
                         attr_type = values[DataArff.VALUE]
                         if attr_type == 'numeric' or attr_type == 'string':
-                            t = Attribute.types[attr_type[0]]
+                            cls = Data.attr_classes[attr_type[0]]
                         else:
-                            t = Attribute.types['e']
+                            cls = Data.attr_classes['e']
                         self._attributes.append(
-                            Attribute(
-                                attr_index,
-                                values[DataArff.NAME], t))
+                            cls(attr_index,
+                                values[DataArff.NAME]))
                         attr_index = attr_index + 1
                         attrs_names.append(values[DataArff.NAME])
 
@@ -192,7 +227,7 @@ class DataCsv(Data):
             attrs_name.append(attr.name)
         self.write_line_to_file(attrs_name, target, self._separator)
 
-    def get_info(self):
+    def get_header_info(self):
         if self._attrs_first_line:
             self._index_data_start = 1
             self._str_attrs = self.get_first_line(self.source)
@@ -261,10 +296,10 @@ class DataCxt(DataBivalent):
     sym_vals = {'X': 1, '.': 0}
     vals_sym = {1: 'X', 0: '.'}
 
-    def get_info(self):
-        with open(self._source) as f:
+    def get_header_info(self):
+        with open(self.source) as f:
             next(f)  # skip B
-            self._relation_name = next(f)
+            self._relation_name = next(f).strip()
             index = [2]
 
             rows = int(self.get_not_empty_line(f, index).strip())
@@ -279,6 +314,13 @@ class DataCxt(DataBivalent):
                 self._attributes.append(Attribute(k, attr_name))
 
             self._index_data_start = index[0]
+
+    def get_data_info(self):
+        with open(self.source) as f:
+            Data.skip_lines(self.index_data_start, f)
+            self._attr_count = len(self._attributes)
+            for line in f:
+                self._obj_count += 1
 
     def prepare_line(self, line):
         splitted = list(line.strip())
@@ -323,7 +365,7 @@ class DataDat(DataBivalent):
                  separator=' '):
         super().__init__(source, str_attrs, str_objects, separator)
 
-    def get_info(self):
+    def get_data_info(self):
         max_val = -1
         line_count = 0
         with open(self._source, 'r') as f:
@@ -334,12 +376,12 @@ class DataDat(DataBivalent):
                     int_val = int(val)
                     if int_val > max_val:
                         max_val = int_val
-        self._attrs_count = max_val
-        self._objects_count = line_count
+        self._attr_count = max_val
+        self._obj_count = line_count
 
     def prepare_line(self, line):
         splitted = super().prepare_line(line)
-        result = ['0'] * (self._attrs_count + 1)
+        result = ['0'] * (self._attr_count + 1)
         for val in splitted:
             result[int(val)] = str(1)
         return result
@@ -363,6 +405,7 @@ class DataDat(DataBivalent):
 
 
 class Convertor:
+    """Manage data conversion"""
 
     """class variables"""
     extensions = {'.csv': DataCsv,
@@ -380,7 +423,9 @@ class Convertor:
         self._new_data = Convertor.extensions[new_suff](**new)
 
         # get information from source data
-        self._old_data.get_info()
+        self._old_data.get_header_info()
+        self._old_data.get_data_info()
+        self._old_data.print_info()
 
         # check if should scale
         self._scaling = False
@@ -400,8 +445,7 @@ class Convertor:
         self._new_data.write_header(target_file, old_data=self._old_data)
         with open(self._old_data.source, 'r') as f:
             # skip header lines
-            for k in range(self._old_data.index_data_start):
-                next(f)
+            Data.skip_lines(self._old_data.index_data_start, f)
             for i, line in enumerate(f):
                 prepared_line = self._old_data.prepare_line(line)
                 if self._scaling:
@@ -439,9 +483,8 @@ new_str_attrs_2 = "SUNNY=outlook[sunny]e, TEMP=temperature[x>80]n, HUM=humidity[
 new_str_objects = "Jan,Petr,Lucie,Jana,Aneta"
 new_str_objects_2 = "0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13"
 
-old = dict(source="test.arff")
-new = dict(source="arff.cxt", str_attrs=new_str_attrs_2,
-           str_objects=new_str_objects_2)
+old = dict(source="test.cxt")
+new = dict(source="cxt.csv")
 
 convertor = Convertor(old, new)
 convertor.convert()
