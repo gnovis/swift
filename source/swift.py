@@ -24,6 +24,8 @@ class Data:
     attr_classes = {'n': AttrScaleNumeric,
                     'e': AttrScaleEnum,
                     's': AttrScaleString}
+    LEFT_BRACKET = '['
+    RIGHT_BRACKET = ']'
 
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
@@ -84,17 +86,17 @@ class Data:
         return self._attr_count
 
     def prepare(self):
-        if self._str_attrs:
+        if self.str_attrs:
             splitted = self.ss_str(self._str_attrs, self.separator)
             for i, str_attr in enumerate(splitted):
                 attr_class = Attribute
                 attr_name = str_attr
-                if str_attr[-1] == ']':
+                if str_attr[-1] == Data.LEFT_BRACKET:
                     attr_class = Data.attr_classes[str_attr[-2]]
                     attr_name = str_attr[:-3]
                 self._attributes.append(attr_class(i, attr_name))
 
-        if self._str_objects:
+        if self.str_objects:
             splitted = self.ss_str(self._str_objects, self.separator)
             self._objects = [Object(name) for name in splitted]
 
@@ -241,6 +243,9 @@ class DataCsv(Data):
 
 class DataBivalent(Data):
     """Data represented only by bivalnet values e.g 1/0"""
+
+    bi_vals = {'pos': '1', 'neg': '0'}
+
     def parse_old_attrs_for_scale(self, old_str_attrs, separator):
         """
         Take into _attributes dictionary,
@@ -311,7 +316,10 @@ class DataCxt(DataBivalent):
 
             for k in range(columns):
                 attr_name = self.get_not_empty_line(f, index).strip()
-                self._attributes.append(Attribute(k, attr_name))
+                new = AttrScaleEnum(k, attr_name)
+                new.update(DataBivalent.bi_vals['pos'])
+                new.update(DataBivalent.bi_vals['neg'])
+                self._attributes.append(new)
 
             self._index_data_start = index[0]
 
