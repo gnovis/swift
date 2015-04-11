@@ -9,10 +9,10 @@ class AttrType:
     STRING = 2
     NOT_SPECIFIED = 3
 
-    STR_REPR = {NUMERIC: "Numeric",
-                NOMINAL: "Nominal",
-                STRING: "String",
-                NOT_SPECIFIED: "Not specified"}
+    STR_REPR = {NUMERIC: "numeric",
+                NOMINAL: "nominal",
+                STRING: "string",
+                NOT_SPECIFIED: "not specified"}
 
 
 class Attribute:
@@ -44,6 +44,9 @@ class Attribute:
 
     def update(self, value):
         pass
+
+    def arff_repr(self):
+        return AttrType.STR_REPR[self.attr_type]
 
 
 class AttrScale(Attribute):
@@ -117,17 +120,22 @@ class AttrScaleEnum(AttrScale):
     def update(self, value):
         if value not in self._values:
             self._values.append(value)
+        return self
 
     def print_self(self):
         super().print_self()
         print(', '.join(self._values))
+
+    def arff_repr(self):
+        return '{ ' + ', '.join(self._values) + ' }'
 
 
 class AttrScaleString(AttrScale):
     def __init__(self, index, name, attr_pattern=None, expr_pattern=None):
         super().__init__(index, name, AttrType.STRING,
                          attr_pattern, expr_pattern)
-        self._regex = re.compile(self._expr_pattern)
+        if self._expr_pattern:
+            self._regex = re.compile(self._expr_pattern)
 
     def scale(self, attrs, values):
         old_val = super().scale(attrs, values)

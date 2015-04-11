@@ -91,7 +91,7 @@ class Data:
             for i, str_attr in enumerate(splitted):
                 attr_class = Attribute
                 attr_name = str_attr
-                if str_attr[-1] == Data.LEFT_BRACKET:
+                if str_attr[-1] == Data.RIGHT_BRACKET:
                     attr_class = Data.attr_classes[str_attr[-2]]
                     attr_name = str_attr[:-3]
                 self._attributes.append(attr_class(i, attr_name))
@@ -168,10 +168,33 @@ class Data:
 class DataArff(Data):
     """Attribute-Relation File Format"""
 
-    part_sym = '@'
+    PART_SYM = '@'
     IDENTIFIER = 0
     NAME = 1
     VALUE = 2
+
+    NUMERIC = "numeric"
+    STRING = "string"
+
+    ATTRIBUTE = "@attribute"
+    RELATION = "@relation"
+    DATA = "@data"
+
+    def write_header(self, target, old_data=None):
+        if not self.relation_name and old_data:
+            self._relation_name = old_data.relation_name
+
+        # write relation name
+        target.write(self.RELATION + ' ' + self.relation_name + '\n\n')
+
+        # write attributes
+        for attr in old_data.attributes:
+            line = (self.ATTRIBUTE + ' ' + str(attr.name) + ' '
+                    + attr.arff_repr() + '\n')
+            target.write(line)
+
+        # write data symbol
+        target.write('\n' + self.DATA + '\n')
 
     def get_header_info(self):
         with open(self.source) as f:
@@ -179,29 +202,30 @@ class DataArff(Data):
             attrs_names = []
             for i, line in enumerate(f):
                 curr_line = line.strip()
-                if curr_line.startswith(DataArff.part_sym):
+                if curr_line.startswith(self.PART_SYM):
                     values = curr_line.split()
-                    identifier = values[DataArff.IDENTIFIER]
+                    identifier = values[self.IDENTIFIER]
 
                     # @relation
-                    if identifier == '@relation':
-                        self._relation_name = values[DataArff.NAME]
+                    if identifier == self.RELATION:
+                        self._relation_name = values[self.NAME]
 
                     # @attribute
-                    elif identifier == '@attribute':
-                        attr_type = values[DataArff.VALUE]
-                        if attr_type == 'numeric' or attr_type == 'string':
+                    elif identifier == self.ATTRIBUTE:
+                        attr_type = values[self.VALUE]
+                        if (attr_type == self.NUMERIC
+                                or attr_type == self.STRING):
                             cls = Data.attr_classes[attr_type[0]]
                         else:
                             cls = Data.attr_classes['e']
                         self._attributes.append(
                             cls(attr_index,
-                                values[DataArff.NAME]))
-                        attr_index = attr_index + 1
-                        attrs_names.append(values[DataArff.NAME])
+                                values[self.NAME]))
+                        attr_index += 1
+                        attrs_names.append(values[self.NAME])
 
                     # @data
-                    elif identifier == '@data':
+                    elif identifier == self.DATA:
                         self._index_data_start = i + 1
                         break
                 else:
@@ -213,9 +237,10 @@ class DataCsv(Data):
     """Column seperated value format"""
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
-                 separator=',', attrs_first_line=False):
+                 separator=',', relation_name='', attrs_first_line=False):
         self._attrs_first_line = attrs_first_line
-        super().__init__(source, str_attrs, str_objects, separator)
+        super().__init__(source, str_attrs, str_objects,
+                         separator, relation_name)
 
     def write_header(self, target, old_data=None):
         attrs_to_write = []
@@ -342,7 +367,7 @@ class DataCxt(DataBivalent):
             self._attributes = old_data.attributes
 
         target.write('B\n')
-        if old_data:
+        if not self.relation_name and old_data:
             self._relation_name = old_data.relation_name
         target.write(self.relation_name + '\n')
         target.write(str(len(self._objects))+'\n')
@@ -370,8 +395,9 @@ class DataDat(DataBivalent):
     """Data format for FCALGS"""
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
-                 separator=' '):
-        super().__init__(source, str_attrs, str_objects, separator)
+                 separator=' ', relation_name=''):
+        super().__init__(source, str_attrs, str_objects,
+                         separator, relation_name)
 
     def get_data_info(self):
         max_val = -1
@@ -386,6 +412,9 @@ class DataDat(DataBivalent):
                         max_val = int_val
         self._attr_count = max_val
         self._obj_count = line_count
+        self._attributes = [(AttrScaleEnum(i, str(i)).update(
+                            self.bi_vals['pos'])).update(self.bi_vals['neg'])
+                            for i in range(self._attr_count)]
 
     def prepare_line(self, line):
         splitted = super().prepare_line(line)
@@ -477,6 +506,9 @@ class Convertor:
 # arff -> csv
 # arff -> dat
 # arff -> cxt
+# csv -> arff
+# cxt -> arff
+# dat -> arff
 
 
 # Tests
@@ -491,8 +523,8 @@ new_str_attrs_2 = "SUNNY=outlook[sunny]e, TEMP=temperature[x>80]n, HUM=humidity[
 new_str_objects = "Jan,Petr,Lucie,Jana,Aneta"
 new_str_objects_2 = "0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13"
 
-old = dict(source="test.cxt")
-new = dict(source="cxt.csv")
+old = dict(source="test.dat")
+new = dict(source="dat.arff")
 
 convertor = Convertor(old, new)
 convertor.convert()
