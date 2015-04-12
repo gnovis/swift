@@ -1,0 +1,13 @@
+#!/bin/bash
+
+new_str_attrs="SUNNY=outlook[sunny]e, TEMP=temperature[x>80]n, HUM=humidity[70<=x<=80]n"  
+new_str_objects="0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13"
+
+# -> cxt
+../../swift.py -s test.arff -t arff.cxt -ta "$new_str_attrs" -to "$new_str_objects"
+
+# -> csv
+../../swift.py -s test.arff -t arff.csv
+
+# -> dat
+../../swift.py -s test.arff -t arff.dat -ta "$new_str_attrs"

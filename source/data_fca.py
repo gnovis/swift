@@ -1,8 +1,8 @@
 import re
 
-from attributes_fca import (Attribute, AttrScale, AttrScaleNumeric,
+from source.attributes_fca import (Attribute, AttrScale, AttrScaleNumeric,
                             AttrScaleEnum, AttrScaleString)
-from object_fca import Object
+from source.object_fca import Object
 
 
 class Data:

@@ -2,7 +2,7 @@
 """Main file of swift - FCA data converter"""
 
 import argparse
-# from convertor_fca import Convertor
+from source.convertor_fca import Convertor
 
 SOURCE_ARGS = {"source": "source",
                "source_separator": "separator",
@@ -32,35 +32,18 @@ old_file_args = {}
 new_file_args = {}
 
 for key, val in vars(args).items():
-    if key in SOURCE_ARGS:
-        new_key = SOURCE_ARGS[key]
-        old_file_args[new_key] = val
-    elif key in TARGET_ARGS:
-        new_key = TARGET_ARGS[key]
-        new_file_args[new_key] = val
+    if val:
+        if key in SOURCE_ARGS:
+            new_key = SOURCE_ARGS[key]
+            old_file_args[new_key] = val
+        elif key in TARGET_ARGS:
+            new_key = TARGET_ARGS[key]
+            new_file_args[new_key] = val
 
-print(old_file_args)
-print(new_file_args)
+convertor = Convertor(old_file_args, new_file_args)
+convertor.convert()
 
-# Notes
-#
-# Testovano:
-# csv -> dat
-# csv -> cxt
-# dat -> csv
-# dat -> cxt
-# cxt -> dat
-# cxt -> csv
-# arff -> csv
-# arff -> dat
-# arff -> cxt
-# csv -> arff
-# cxt -> arff
-# dat -> arff
-
-
-# Tests
-
+"""
 old_str_attrs = 'age,note,sex'
 
 # atributes for scaling
@@ -74,11 +57,7 @@ new_str_objects_2 = "0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13"
 old = dict(source="test.dat")
 new = dict(source="dat.arff")
 
-# convertor = Convertor(old, new)
-# convertor.convert()
 
-
-"""
 # Regular expression
 pattern = re.compile("(\w+)=(\w+)" +
                      "((?:\((?:[0-9]+(?:>=|<=|>|<))?x(?:>=|<=|>|<)[0-9]+\)i)|" +  # NOQA
