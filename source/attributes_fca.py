@@ -1,4 +1,4 @@
-"""Attributes classes for application swift"""
+"""Attributes classes for swift"""
 
 import re
 
