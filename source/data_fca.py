@@ -176,7 +176,12 @@ class DataArff(Data):
         target.write(self.RELATION + ' ' + self.relation_name + '\n\n')
 
         # write attributes
-        for attr in old_data.attributes:
+        if self._attributes:  # attributes are passed as parameter
+            attrs_to_write = self._attributes
+        else:
+            attrs_to_write = old_data.attributes  # attributes are readed from source(old) file
+
+        for attr in attrs_to_write:
             line = (self.ATTRIBUTE + ' ' + str(attr.name) + ' '
                     + attr.arff_repr(self.separator) + '\n')
             target.write(line)
@@ -401,6 +406,7 @@ class DataDat(DataBivalent):
                         max_val = int_val
         self._attr_count = max_val
         self._obj_count = line_count
+        # TODO add support if attributes are passed as parameter
         self._attributes = [(AttrScaleEnum(i, str(i)).update(
                             self.bi_vals['pos'])).update(self.bi_vals['neg'])
                             for i in range(self._attr_count)]

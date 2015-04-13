@@ -1,0 +1,16 @@
+#!/bin/bash
+
+format=CXT
+source_file=test.cxt
+
+# -> csv
+../../swift.py -s $source_file -t cxt.csv
+echo $format "-> CSV"
+
+# -> arff
+../../swift.py -s $source_file -t cxt.arff 
+echo $format "-> ARFF"
+
+# -> dat
+../../swift.py -s $source_file -t cxt.dat 
+echo $format "-> DAT"
