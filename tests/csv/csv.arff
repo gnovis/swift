@@ -1,4 +1,14 @@
-note,outlook,temperature,humidity,windy,play,order
+@relation 
+
+@attribute note string
+@attribute outlook { sunny,overcast,rainy }
+@attribute temperature numeric
+@attribute humidity numeric
+@attribute windy { FALSE,TRUE }
+@attribute play { no,yes }
+@attribute order { 1,0 }
+
+@data
 hello,sunny,85,85,FALSE,no,1
 hellllllo,sunny,80,90,TRUE,no,0
 hi,overcast,83,86,FALSE,yes,1

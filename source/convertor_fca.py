@@ -11,7 +11,7 @@ class Convertor:
                   '.dat': DataDat,
                   '.cxt': DataCxt}
 
-    def __init__(self, old, new):
+    def __init__(self, old, new, print_info=False):
 
         # suffixes of input files
         old_suff = os.path.splitext(old['source'])[1]
@@ -23,7 +23,8 @@ class Convertor:
         # get information from source data
         self._old_data.get_header_info()
         self._old_data.get_data_info()
-        self._old_data.print_info()
+        if print_info:
+            self._old_data.print_info()
 
         # check if should scale
         self._scaling = False

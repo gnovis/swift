@@ -1,7 +1,7 @@
 import re
 
 from source.attributes_fca import (Attribute, AttrScale, AttrScaleNumeric,
-                            AttrScaleEnum, AttrScaleString)
+                                   AttrScaleEnum, AttrScaleString)
 from source.object_fca import Object
 
 
@@ -245,8 +245,9 @@ class DataCsv(Data):
     def get_header_info(self):
         if self._attrs_first_line:
             self._index_data_start = 1
-            self._str_attrs = self.get_first_line(self.source)
-            self.prepare()
+            if not self._str_attrs:
+                self._str_attrs = self.get_first_line(self.source)
+                self.prepare()
 
     def get_first_line(self, source):
         """Set str_attrs to first line from data file"""
@@ -415,7 +416,7 @@ class DataDat(DataBivalent):
         result = []
         for i, attr in enumerate(self._attributes):
             scaled = attr.scale(self._attributes_temp, values)
-            if scaled:
+            if bool(int(scaled)):  # scaled value can be '0'/'1' or True/False
                 result.append(str(i))
         if result:
             self.write_line_to_file(result, target_file, self._separator)
