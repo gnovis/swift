@@ -1,11 +1,12 @@
 #!/bin/bash
 
 format=ARFF
-
 new_str_attrs="WINDY=windy[TRUE]e, SUNNY=outlook[sunny]e, ORDER=order, TEMP=temperature[x>80]n, HUM=humidity[70<=x<=80]n, NOTE=note[hell|[0-9]]s"  
 new_str_objects="0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13"
-
 source_file=test.arff
+
+echo $format
+echo "====="
 
 # -> cxt
 ../../swift.py -s $source_file -t arff.cxt -ta "$new_str_attrs" -to "$new_str_objects"

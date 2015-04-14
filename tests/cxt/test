@@ -3,6 +3,9 @@
 format=CXT
 source_file=test.cxt
 
+echo $format
+echo "====="
+
 # -> csv
 ../../swift.py -s $source_file -t cxt.csv
 echo $format "-> CSV"

@@ -408,7 +408,8 @@ class DataDat(DataBivalent):
                         max_val = int_val
         self._attr_count = max_val
         self._obj_count = line_count
-        # TODO add support if attributes are passed as parameter
+        # These attributes are used only if attrs for new file
+        # are not specified
         self._attributes = [(AttrScaleEnum(i, str(i)).update(
                             self.bi_vals['pos'])).update(self.bi_vals['neg'])
                             for i in range(self._attr_count)]
