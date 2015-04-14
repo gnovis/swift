@@ -17,7 +17,7 @@ OTHER_ARGS = {"source_info": "print_info"}
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("-s", "--source", help="Name of source file.")
+parser.add_argument("-s", "--source", required=True, help="Name of source file.")
 parser.add_argument("-ss", "--source_separator",
                     help="Separator whitch is used in source file. Default is ','.")
 parser.add_argument("-sa", "--source_attributes", help="Source file (old) attributes.")
@@ -26,7 +26,7 @@ parser.add_argument("-fl", "--first_line",
                     action='store_true',
                     help="Read attribute names from first line in source file in csv format.")
 
-parser.add_argument("-t", "--target", help="Name of target file.")
+parser.add_argument("-t", "--target", required=True, help="Name of target file.")
 parser.add_argument("-ts", "--target_separator",
                     help="Separator whitch will be used in target file. Default is ','.")
 parser.add_argument("-ta", "--target_attributes", help="Target file (new) attributes.")
