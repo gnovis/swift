@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# run test script for all formats
+for folder in ./*; do
+	if [ -d "$folder" ]; then
+		 cd $folder
+         ./test
+         cd ../
+	fi;
+done
