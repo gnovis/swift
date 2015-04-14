@@ -183,7 +183,9 @@ class DataArff(Data):
 
         for attr in attrs_to_write:
             line = (self.ATTRIBUTE + ' ' + str(attr.name) + ' '
-                    + attr.arff_repr(self.separator) + '\n')
+                    + attr.arff_repr(self.separator,
+                                     DataBivalent.bi_vals['neg'],
+                                     DataBivalent.bi_vals['pos']) + '\n')
             target.write(line)
 
         # write data symbol

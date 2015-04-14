@@ -45,8 +45,8 @@ class Attribute:
     def update(self, value):
         pass
 
-    def arff_repr(self, sep):
-        return AttrType.STR_REPR[self.attr_type]
+    def arff_repr(self, sep, bi_val1='0', bi_val2='1'):
+        return '{ ' + bi_val1 + sep + bi_val2 + ' }'
 
 
 class AttrScale(Attribute):
@@ -106,6 +106,9 @@ class AttrScaleNumeric(AttrScale):
         print("max value: {}\nmin value:{}".format(
               self.max_value, self.min_value))
 
+    def arff_repr(self, sep):
+        return AttrType.STR_REPR[self.attr_type]
+
 
 class AttrScaleEnum(AttrScale):
     def __init__(self, index, name, attr_pattern=None, expr_pattern=None):
@@ -143,3 +146,6 @@ class AttrScaleString(AttrScale):
             return True
         else:
             return False
+
+    def arff_repr(self, sep):
+        return AttrType.STR_REPR[self.attr_type]

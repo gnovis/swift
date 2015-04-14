@@ -1,12 +1,12 @@
 @relation 
 
-@attribute note not specified
-@attribute outlook not specified
-@attribute temperature not specified
-@attribute humidity not specified
-@attribute windy not specified
-@attribute play not specified
-@attribute order not specified
+@attribute note { 0,1 }
+@attribute outlook { 0,1 }
+@attribute temperature { 0,1 }
+@attribute humidity { 0,1 }
+@attribute windy { 0,1 }
+@attribute play { 0,1 }
+@attribute order { 0,1 }
 
 @data
 0,1,1,1,0,1
