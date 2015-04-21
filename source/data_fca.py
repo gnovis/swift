@@ -128,10 +128,11 @@ class Data:
 
     def ss_str(self, string, separator):
         """
-        Strip and split string by separator.
+        Strip and split string by separator. Ignore escaped separators.
         Return list of values.
         """
-        return list(map(lambda s: s.strip(), string.split(separator)))
+        return list(map(lambda x: x.strip(),
+                    re.split(r'(?<!\\)' + separator, string)))
 
     def get_not_empty_line(self, f, i_ref):
         while True:
