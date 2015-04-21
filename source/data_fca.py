@@ -199,7 +199,7 @@ class DataArff(Data):
             for i, line in enumerate(f):
                 curr_line = line.strip()
                 if curr_line.startswith(self.PART_SYM):
-                    values = curr_line.split()
+                    values = self.ss_str(curr_line, ' ')
                     identifier = values[self.IDENTIFIER]
 
                     # @relation
