@@ -57,7 +57,7 @@ def run_swift():
     convertor.convert()
 
 # Uncomment following line to run swift application
-# run_swift()
+run_swift()
 
 # TESTING
 """

@@ -89,17 +89,20 @@ class AttrScaleNumeric(AttrScale):
         return eval(self._expr_pattern)
 
     def update(self, str_value):
-        value = int(str_value)
-        if not self._max_value:
-            self._max_value = value
-            return
-        if not self._min_value:
-            self._min_value = value
-            return
-        if value > self.max_value:
-            self._max_value = value
-        if value < self._min_value:
-            self._min_value = value
+        try:
+            value = float(str_value)
+            if not self._max_value:
+                self._max_value = value
+                return
+            if not self._min_value:
+                self._min_value = value
+                return
+            if value > self.max_value:
+                self._max_value = value
+            if value < self._min_value:
+                self._min_value = value
+        except ValueError:
+            pass
 
     def print_self(self):
         super().print_self()

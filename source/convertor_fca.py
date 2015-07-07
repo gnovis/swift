@@ -1,5 +1,5 @@
 import os
-from source.data_fca import (Data, DataCsv, DataArff, DataDat, DataCxt)
+from source.data_fca import (Data, DataCsv, DataArff, DataDat, DataCxt, DataData)
 
 
 class Convertor:
@@ -9,7 +9,8 @@ class Convertor:
     extensions = {'.csv': DataCsv,
                   '.arff': DataArff,
                   '.dat': DataDat,
-                  '.cxt': DataCxt}
+                  '.cxt': DataCxt,
+                  '.data': DataData}
 
     def __init__(self, old, new, print_info=False):
 
