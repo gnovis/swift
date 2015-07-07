@@ -1,0 +1,5 @@
+dur,wage1,wage2,wage3,cola,hours,pension,stby_pay,shift_diff,educ_allw,holidays,vacation,lngtrm_disabil,dntl_ins,bereavement,empl_hplan,class
+2,5.0,4.0,None,none,37,None,None,5,no,11,below_average,yes,full,yes,full,good
+3,2.0,2.5,None,None,35,none,None,None,None,10,average,None,None,yes,full,bad
+3,4.5,4.5,5.0,none,40,None,None,None,no,11,average,None,half,None,None,good
+3,3.0,2.0,2.5,tc,40,none,None,5,no,10,below_average,yes,half,yes,full,bad
