@@ -17,6 +17,7 @@ class Convertor:
         old_suff = os.path.splitext(old['source'])[1]
         new_suff = os.path.splitext(new['source'])[1]
 
+        # create data file object according suffix
         self._old_data = Convertor.extensions[old_suff](**old)
         self._new_data = Convertor.extensions[new_suff](**new)
 

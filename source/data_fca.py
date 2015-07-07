@@ -1,4 +1,5 @@
 import re
+import os
 
 from source.attributes_fca import (Attribute, AttrScale, AttrScaleNumeric,
                                    AttrScaleEnum, AttrScaleString)
@@ -258,9 +259,55 @@ class DataCsv(Data):
                 self.prepare()
 
     def get_first_line(self, source):
-        """Set str_attrs to first line from data file"""
+        """Return first line from data file"""
         with open(source, 'r') as f:
             return next(f)
+
+
+class DataData(Data):
+    """C4.5 data file format"""
+
+    COMMENT_SYM = "\|"
+    ATTR_SEP = ":"
+    LINE_SEP = "."
+    IGNORE = "ignore"
+    CONTINUOUS = "continuous"
+
+    def get_header_info(self):
+        with open(self.get_name_file, 'r') as names:
+            i = 0
+            for j, line in enumerate(names):
+                # ignore comments
+                line = self.devide_two_part((line, self.COMMENT_SYM))[0]
+                # on one line can be more entries seperated by "."
+                entries = self.ss_str(line, self.LINE_SEP)
+                for k, entry in enumerate(entries):
+                    # on a first line are names of classes, seperated by commas
+                    # others formats doesn't have classes => class is enum attribute!
+                    if j == 0 and k == 0:
+                        continue
+                    else:
+                        devided = self.devide_two_part(entry, self.ATTR_SEP)[0]
+                        attr_name = devided[0]
+                        attr_type = devided[1]
+                        if attr_type == self.IGNORE:
+                            continue
+                        else:
+                            if attr_type == self.CONTINUOUS:
+                                self._attributes.append(AttrScaleNumeric(i, attr_name))
+                            else:
+                                self._attributes.append(AttrScaleEnum(i, attr_name))
+                            i += 1
+
+            # append class as last attribute
+            self._attribute.append(AttrScaleEnum(i, "class"))
+
+    def devide_two_part(self, line, separator):
+        return re.split(r'(?<!\\)' + separator, line, 1)
+
+    """return file name with suffix .name"""
+    def get_name_file(self):
+        return ".".join([os.path.splitext(self._source)[0], "names"])
 
 
 class DataBivalent(Data):
@@ -270,9 +317,9 @@ class DataBivalent(Data):
 
     def parse_old_attrs_for_scale(self, old_str_attrs, separator):
         """
-        Take into _attributes dictionary,
+        Take dictionary into _attributes,
         where key are strings and values are indexes
-        of attributes (this slot is rwritten).
+        of attributes (this slot is rewritten).
         Call this method to use data object as pattern in scaling.
         """
         values = self.ss_str(old_str_attrs, separator)

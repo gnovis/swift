@@ -1,0 +1,4 @@
+#!/bin/bash
+
+#generate ctags for current project
+ctags -R --languages=python --exclude=.git
