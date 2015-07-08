@@ -126,7 +126,7 @@ class Data:
         """
         self.write_line_to_file(prepered_line, target, self._separator)
 
-    def write_header(self, target, old_data=None):
+    def write_header(self, target, old_data):
         """This method should be rewritten in child class"""
         # write attributes
         if self._attributes:  # attributes are passed as parameter
@@ -184,7 +184,7 @@ class DataArff(Data):
     RELATION = "@relation"
     DATA = "@data"
 
-    def write_header(self, target, old_data=None):
+    def write_header(self, target, old_data):
         if not self.relation_name and old_data:
             self._relation_name = old_data.relation_name
 
@@ -248,7 +248,7 @@ class DataCsv(Data):
         super().__init__(source, str_attrs, str_objects,
                          separator, relation_name)
 
-    def write_header(self, target, old_data=None):
+    def write_header(self, target, old_data):
         attrs_to_write = super().write_header(target, old_data)
         attrs_name = []
         for attr in attrs_to_write:
@@ -274,9 +274,11 @@ class DataData(Data):
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
                  separator=',', relation_name='', classes=""):
-        self._classes = classes
         super().__init__(source, str_attrs, str_objects,
                          separator, relation_name)
+        self._classes = list(reversed(self.ss_str(classes, self._separator)))
+        if self.NONE_VALUE in self._classes:
+            self._classes.remove(self.NONE_VALUE)
 
     COMMENT_SYM = "\|"
     ATTR_SEP = ":"
@@ -285,12 +287,17 @@ class DataData(Data):
     CONTINUOUS = "continuous"
     CLASS = "class"
 
-    def write_header(self, target, old_data=None):
+    def write_line(self, prepared_line, target):
+        if self._classes:
+            prepared_line.append(self._classes.pop())
+        super().write_line(prepared_line, target)
+
+    def write_header(self, target, old_data):
         attrs_to_write = super().write_header(target, old_data)
-        names_file = self._get_name_file(target)
+        names_file = self._get_name_file(target.name)
 
         with open(names_file, 'w') as f:
-            f.write(self._classes + ".\n")
+            f.write(self._get_class_occur() + ".\n")
             for attr in attrs_to_write:
                 line = (str(attr.name) + ': '
                         + attr.data_repr(self.separator,
@@ -298,11 +305,11 @@ class DataData(Data):
                                          DataBivalent.bi_vals['pos']) + '.\n')
                 f.write(line)
 
-    """
-    This method must set _attributes(obejcts) and
-    _str_attrs(coma seperated) names of attributes (this is used for scaling)
-    """
     def get_header_info(self):
+        """
+        This method must set _attributes(obejcts) and
+        _str_attrs(coma seperated) names of attributes (this is used for scaling)
+        """
         with open(self._get_name_file(self._source), 'r') as names:
             i = 0
             attr_names = []
@@ -333,6 +340,13 @@ class DataData(Data):
             self._attributes.append(AttrScaleEnum(i, self.CLASS))
             # set str_attrs slot
             self._str_attrs = self.separator.join(attr_names)
+
+    def _get_class_occur(self):
+        occur = []
+        for c in self._classes:
+            if c not in occur:
+                occur.append(c)
+        return self.separator.join(occur)
 
     def _devide_two_part(self, line, separator):
         return self.ss_str(line, separator, 1)
@@ -438,19 +452,18 @@ class DataCxt(DataBivalent):
             result.append(str(DataCxt.sym_vals[val]))
         return result
 
-    def write_header(self, target, old_data=None):
-        if not self._attributes:
-            self._attributes = old_data.attributes
+    def write_header(self, target, old_data):
+        attrs_to_write = super().write_header(target, old_data)
 
         target.write('B\n')
         if not self.relation_name and old_data:
             self._relation_name = old_data.relation_name
         target.write(self.relation_name + '\n')
         target.write(str(len(self._objects))+'\n')
-        target.write(str(len(self._attributes))+'\n')
+        target.write(str(len(attrs_to_write))+'\n')
         for obj in self._objects:
             target.write(obj.name + '\n')
-        for attr in self._attributes:
+        for attr in attrs_to_write:
             target.write(attr.name + '\n')
 
     def write_data_scale(self, values, target_file):

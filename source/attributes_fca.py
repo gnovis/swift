@@ -115,7 +115,7 @@ class AttrScaleNumeric(AttrScale):
     def arff_repr(self, sep, bi_val1='0', bi_val2='1'):
         return AttrType.STR_REPR[self.attr_type]
 
-    def data_repr(self):
+    def data_repr(self, sep, bi_val1='0', bi_val2='1'):
         return "continuous"
 
 

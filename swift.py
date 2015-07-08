@@ -14,7 +14,8 @@ def run_swift():
                    "target_separator": "separator",
                    "target_attributes": "str_attrs",
                    "target_objects": "str_objects",
-                   "relation_name": "relation_name"}
+                   "relation_name": "relation_name",
+                   "classes": "classes"}
     OTHER_ARGS = {"source_info": "print_info"}
 
     parser = argparse.ArgumentParser()
@@ -34,6 +35,7 @@ def run_swift():
     parser.add_argument("-ta", "--target_attributes", help="Target file (new) attributes.")
     parser.add_argument("-to", "--target_objects", help="Target file (new) objects.")
     parser.add_argument("-rn", "--relation_name", help="New name of relation.")
+    parser.add_argument("-cls", "--classes", help="Classes seperated by commas - for C4.5 convert.")
 
     args = parser.parse_args()
 
