@@ -134,13 +134,14 @@ class Data:
         Strip and split string by separator. Ignore escaped separators.
         Return list of values.
         """
-        return list(map(lambda x: self.prepare_value(x),
+        return list(map(lambda x: self._prepare_value(x),
                     re.split(r'(?<!\\)' + separator, string, max_split)))
 
-    def prepare_value(self, val):
-        if val in self.empty_vals:
-            return "None"
-        return val.strip()
+    def _prepare_value(self, val):
+        stripped = val.strip()
+        if stripped in self.empty_vals:
+            return self.NONE_VALUE
+        return stripped
 
     def get_not_empty_line(self, f, i_ref):
         while True:
@@ -279,10 +280,16 @@ class DataData(Data):
     LINE_SEP = "\."
     IGNORE = "ignore"
     CONTINUOUS = "continuous"
+    CLASS = "class"
 
+    """
+    This method must set _attributes(obejcts) and
+    _str_attrs(coma seperated) names of attributes (this is used for scaling)
+    """
     def get_header_info(self):
         with open(self.get_name_file(), 'r') as names:
             i = 0
+            attr_names = []
             for j, line in enumerate(names):
                 # ignore comments
                 l = self.devide_two_part(line, self.COMMENT_SYM)[0]
@@ -297,6 +304,7 @@ class DataData(Data):
                         devided = self.devide_two_part(entry, self.ATTR_SEP)
                         attr_name = devided[0]
                         attr_type = devided[1]
+                        attr_names.append(attr_name)
                         if attr_type != self.IGNORE:
                             if attr_type == self.CONTINUOUS:
                                 self._attributes.append(AttrScaleNumeric(i, attr_name))
@@ -305,7 +313,10 @@ class DataData(Data):
                             i += 1
 
             # append class as last attribute
-            self._attributes.append(AttrScaleEnum(i, "class"))
+            attr_names.append(self.CLASS)
+            self._attributes.append(AttrScaleEnum(i, self.CLASS))
+            # set str_attrs slot
+            self._str_attrs = self.separator.join(attr_names)
 
     def devide_two_part(self, line, separator):
         return self.ss_str(line, separator, 1)
@@ -322,9 +333,9 @@ class DataBivalent(Data):
 
     def parse_old_attrs_for_scale(self, old_str_attrs, separator):
         """
-        Take dictionary into _attributes,
+        Take dictionary into _attributes_temp,
         where key are strings and values are indexes
-        of attributes (this slot is rewritten).
+        of attributes.
         Call this method to use data object as pattern in scaling.
         """
         values = self.ss_str(old_str_attrs, separator)

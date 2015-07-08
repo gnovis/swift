@@ -1,17 +1,7 @@
-good, bad.
-dur: continuous.
-wage1: continuous.
-wage2: continuous.
-wage3: continuous.
-cola: tc, none, tcf.
-hours: continuous.
-pension: empl_contr, ret_allw, none.
-stby_pay: continuous.
-shift_diff: continuous.
-educ_allw: yes, no.
-holidays: continuous.
-vacation: average, generous, below_average.
-lngtrm_disabil: yes, no.
-dntl_ins: half, none, full.
-bereavement: yes, no.
-empl_hplan: half, full, none.
+man, woman. |classes
+age: continuous. | human ege
+eye-color: blue, red, green, brown.
+height: continuous.
+weight: continuous.
+job: doctor, teacher, pilot, student.
+work: true, false.

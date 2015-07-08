@@ -61,7 +61,4 @@ run_swift()
 
 # TESTING
 """
-from source.data_fca import DataData
-data_f = DataData(source="oranges.data")
-print(data_f.get_name_file())
 """

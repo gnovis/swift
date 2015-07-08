@@ -31,7 +31,8 @@ class Convertor:
         # check if should scale
         self._scaling = False
         if (old_suff == '.csv' or
-            old_suff == '.arff') and (new_suff == '.dat' or
+            old_suff == '.arff' or
+            old_suff == '.data') and (new_suff == '.dat' or
                                       new_suff == '.cxt'):
             self._scaling = True
             self._new_data.parse_old_attrs_for_scale(self._old_data.str_attrs,
