@@ -127,7 +127,13 @@ class Data:
         self.write_line_to_file(prepered_line, target, self._separator)
 
     def write_header(self, target, old_data=None):
-        pass
+        """This method should be rewritten in child class"""
+        # write attributes
+        if self._attributes:  # attributes are passed as parameter
+            attrs_to_write = self._attributes
+        else:
+            attrs_to_write = old_data.attributes  # attributes are readed from source(old) file
+        return attrs_to_write
 
     def ss_str(self, string, separator, max_split=0):
         """
@@ -185,12 +191,7 @@ class DataArff(Data):
         # write relation name
         target.write(self.RELATION + ' ' + self.relation_name + '\n\n')
 
-        # write attributes
-        if self._attributes:  # attributes are passed as parameter
-            attrs_to_write = self._attributes
-        else:
-            attrs_to_write = old_data.attributes  # attributes are readed from source(old) file
-
+        attrs_to_write = super().write_header(target, old_data)
         for attr in attrs_to_write:
             line = (self.ATTRIBUTE + ' ' + str(attr.name) + ' '
                     + attr.arff_repr(self.separator,
@@ -248,12 +249,7 @@ class DataCsv(Data):
                          separator, relation_name)
 
     def write_header(self, target, old_data=None):
-        attrs_to_write = []
-        if self._attributes:
-            attrs_to_write = self._attributes
-        elif old_data and old_data.attributes:
-            attrs_to_write = old_data.attributes
-
+        attrs_to_write = super().write_header(target, old_data)
         attrs_name = []
         for attr in attrs_to_write:
             attrs_name.append(attr.name)
@@ -263,10 +259,10 @@ class DataCsv(Data):
         if self._attrs_first_line:
             self._index_data_start = 1
             if not self._str_attrs:
-                self._str_attrs = self.get_first_line(self.source)
+                self._str_attrs = self._get_first_line(self.source)
                 self.prepare()
 
-    def get_first_line(self, source):
+    def _get_first_line(self, source):
         """Return first line from data file"""
         with open(source, 'r') as f:
             return next(f)
@@ -275,6 +271,13 @@ class DataCsv(Data):
 class DataData(Data):
     """C4.5 data file format"""
 
+    def __init__(self, source,
+                 str_attrs=None, str_objects=None,
+                 separator=',', relation_name='', classes=""):
+        self._classes = classes
+        super().__init__(source, str_attrs, str_objects,
+                         separator, relation_name)
+
     COMMENT_SYM = "\|"
     ATTR_SEP = ":"
     LINE_SEP = "\."
@@ -282,17 +285,30 @@ class DataData(Data):
     CONTINUOUS = "continuous"
     CLASS = "class"
 
+    def write_header(self, target, old_data=None):
+        attrs_to_write = super().write_header(target, old_data)
+        names_file = self._get_name_file(target)
+
+        with open(names_file, 'w') as f:
+            f.write(self._classes + ".\n")
+            for attr in attrs_to_write:
+                line = (str(attr.name) + ': '
+                        + attr.data_repr(self.separator,
+                                         DataBivalent.bi_vals['neg'],
+                                         DataBivalent.bi_vals['pos']) + '.\n')
+                f.write(line)
+
     """
     This method must set _attributes(obejcts) and
     _str_attrs(coma seperated) names of attributes (this is used for scaling)
     """
     def get_header_info(self):
-        with open(self.get_name_file(), 'r') as names:
+        with open(self._get_name_file(self._source), 'r') as names:
             i = 0
             attr_names = []
             for j, line in enumerate(names):
                 # ignore comments
-                l = self.devide_two_part(line, self.COMMENT_SYM)[0]
+                l = self._devide_two_part(line, self.COMMENT_SYM)[0]
                 # on one line can be more entries seperated by "."
                 entries = self.ss_str(l, self.LINE_SEP)
                 for k, entry in enumerate(entries):
@@ -301,7 +317,7 @@ class DataData(Data):
                     if (j == 0 and k == 0) or entry is self.NONE_VALUE:
                         continue
                     else:
-                        devided = self.devide_two_part(entry, self.ATTR_SEP)
+                        devided = self._devide_two_part(entry, self.ATTR_SEP)
                         attr_name = devided[0]
                         attr_type = devided[1]
                         attr_names.append(attr_name)
@@ -318,12 +334,12 @@ class DataData(Data):
             # set str_attrs slot
             self._str_attrs = self.separator.join(attr_names)
 
-    def devide_two_part(self, line, separator):
+    def _devide_two_part(self, line, separator):
         return self.ss_str(line, separator, 1)
 
     """return file name with suffix .names"""
-    def get_name_file(self):
-        return ".".join([os.path.splitext(self._source)[0], "names"])
+    def _get_name_file(self, source):
+        return ".".join([os.path.splitext(source)[0], "names"])
 
 
 class DataBivalent(Data):
