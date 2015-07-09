@@ -78,6 +78,7 @@ class AttrScaleNumeric(AttrScale):
                          attr_pattern, expr_pattern)
         self._max_value = None
         self._min_value = None
+        # TODO pridat validaci na prazdny vyraz(expr_pattern) - pokud nedojde ke schode
 
     @property
     def max_value(self):
@@ -89,7 +90,8 @@ class AttrScaleNumeric(AttrScale):
 
     def scale(self, attrs, values):
         x = int(super().scale(attrs, values))  # NOQA
-        return eval(self._expr_pattern)
+        replaced = re.sub(r"[^<>=0-9]+", "x", self._expr_pattern)
+        return eval(replaced)
 
     def update(self, str_value):
         try:

@@ -1,4 +1,7 @@
 #!/bin/bash
 
+# count all lines of code in project
+find . -name '*.py' | xargs wc -l
+
 #generate ctags for current project
 ctags -R --languages=python --exclude=.git

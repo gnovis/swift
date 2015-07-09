@@ -380,7 +380,7 @@ class DataBivalent(Data):
 
         attr_pattern = re.compile(
             "(\w+)=(\w+)" +
-            "((?:\[(?:[0-9]+(?:>=|<=|>|<))?x(?:>=|<=|>|<)[0-9]+\]n)" +
+            "((?:\[(?:[0-9]+(?:>=|<=|>|<))?[^<>=0-9]+(?:(?:>=|<=|>|<)[0-9]+)?\]n)" +
             "|(?:\[\w+\]e)|(?:\[.+\]s))?")
         values = attr_pattern.findall(self.str_attrs)
         self._attributes = []
@@ -470,7 +470,7 @@ class DataCxt(DataBivalent):
         result = []
         for i, attr in enumerate(self._attributes):
             scaled = attr.scale(self._attributes_temp, values)
-            result.append(DataCxt.vals_sym[int(scaled)])
+            result.append(DataCxt.vals_sym[int(scaled)])  # scaled val is converted to 0/1
         self.write_line_to_file(result, target_file, '')
 
     def write_line(self, prepared_line, target_file):
@@ -518,7 +518,7 @@ class DataDat(DataBivalent):
         result = []
         for i, attr in enumerate(self._attributes):
             scaled = attr.scale(self._attributes_temp, values)
-            if bool(int(scaled)):  # scaled value can be '0'/'1' or True/False
+            if bool(int(scaled)):  # scaled value can be from Reals or True/False
                 result.append(str(i))
         if result:
             self.write_line_to_file(result, target_file, self._separator)
