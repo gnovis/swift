@@ -12,7 +12,8 @@ class Data:
     """Class data"""
     attr_classes = {'n': AttrScaleNumeric,
                     'e': AttrScaleEnum,
-                    's': AttrScaleString}
+                    's': AttrScaleString,
+                    'i': AttrScale}
     LEFT_BRACKET = '['
     RIGHT_BRACKET = ']'
     NONE_VALUE = "None"  # TODO pridat jako volitelny parametr
@@ -378,23 +379,22 @@ class DataBivalent(Data):
         Call this method to use data as target in scaling.
         """
 
-        attr_pattern = re.compile(
-            "(\w+)=(\w+)" +
-            "((?:\[(?:[0-9]+(?:>=|<=|>|<))?[^<>=0-9]+(?:(?:>=|<=|>|<)[0-9]+)?\]n)" +
-            "|(?:\[\w+\]e)|(?:\[.+\]s))?")
-        values = attr_pattern.findall(self.str_attrs)
+        values = self.ss_str(self.str_attrs, ",")
         self._attributes = []
         for i, attr in enumerate(values):
-            new_name = attr[0]
-            attr_pattern = attr[1]
-            formula = attr[2]
+            devided = self.ss_str(attr, "=", 1)
+            new_name = devided[0]
+            rest = devided[1]
 
-            if formula == '':
+            bracket_i = rest.find(self.LEFT_BRACKET)
+            if bracket_i == -1:
                 attr_class = AttrScale
                 expr_pattern = ''
+                attr_pattern = rest
             else:
-                attr_class = Data.attr_classes[formula[-1]]
-                expr_pattern = formula[1:-2]
+                attr_class = Data.attr_classes[rest[-1]]
+                expr_pattern = rest[bracket_i+1:-2]
+                attr_pattern = rest[:bracket_i]
 
             new_attr = attr_class(i, new_name,
                                   attr_pattern=attr_pattern,
