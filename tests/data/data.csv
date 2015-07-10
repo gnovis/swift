@@ -1,5 +1,5 @@
-age,eye-color,height,weight,job,work,class
-21,green,170,88,pilot,true,man
-44,blue,160,60,doctor,true,woman
-56,blue,180,75,teacher,false,man
-18,red,210,99,student,None,man
+age,eye-color,height,weight,job,vegan,work,class
+21,green,170,88,pilot,false,true,man
+44,blue,160,60,doctor,None,true,woman
+56,blue,180,75,teacher,false,false,man
+18,red,210,99,student,false,None,man

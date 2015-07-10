@@ -328,8 +328,8 @@ class DataData(Data):
                         devided = self._devide_two_part(entry, self.ATTR_SEP)
                         attr_name = devided[0]
                         attr_type = devided[1]
-                        attr_names.append(attr_name)
                         if attr_type != self.IGNORE:
+                            attr_names.append(attr_name)
                             if attr_type == self.CONTINUOUS:
                                 self._attributes.append(AttrScaleNumeric(i, attr_name))
                             else:
