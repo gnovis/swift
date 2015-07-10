@@ -12,8 +12,7 @@ class Data:
     """Class data"""
     attr_classes = {'n': AttrScaleNumeric,
                     'e': AttrScaleEnum,
-                    's': AttrScaleString,
-                    'i': AttrScale}
+                    's': AttrScaleString}
     LEFT_BRACKET = '['
     RIGHT_BRACKET = ']'
     NONE_VALUE = "None"  # TODO pridat jako volitelny parametr
@@ -210,8 +209,8 @@ class DataArff(Data):
             for i, line in enumerate(f):
                 curr_line = line.strip()
                 if curr_line.startswith(self.PART_SYM):
-                    values = self.ss_str(curr_line, ' ')
-                    identifier = values[self.IDENTIFIER]
+                    values = curr_line.split()
+                    identifier = values[self.IDENTIFIER].lower()  # is case insensitive
 
                     # @relation
                     if identifier == self.RELATION:
@@ -219,7 +218,7 @@ class DataArff(Data):
 
                     # @attribute
                     elif identifier == self.ATTRIBUTE:
-                        attr_type = values[self.VALUE]
+                        attr_type = values[self.VALUE].lower()  # is case insensitive
                         if (attr_type == self.NUMERIC
                                 or attr_type == self.STRING):
                             cls = Data.attr_classes[attr_type[0]]
@@ -235,8 +234,6 @@ class DataArff(Data):
                     elif identifier == self.DATA:
                         self._index_data_start = i + 1
                         break
-                else:
-                    continue
             self._str_attrs = self.separator.join(attrs_names)
 
 

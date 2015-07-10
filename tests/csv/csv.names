@@ -1,5 +1,5 @@
 Sunday,Monday,Wednesday,Suterday,Theusday,Friday.
-note: 0,1.
+note: discrete n.
 outlook: sunny,overcast,rainy.
 temperature: continuous.
 humidity: continuous.

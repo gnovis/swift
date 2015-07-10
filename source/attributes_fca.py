@@ -78,7 +78,6 @@ class AttrScaleNumeric(AttrScale):
                          attr_pattern, expr_pattern)
         self._max_value = None
         self._min_value = None
-        # TODO pridat validaci na prazdny vyraz(expr_pattern) - pokud nedojde ke schode
 
     @property
     def max_value(self):
@@ -89,7 +88,12 @@ class AttrScaleNumeric(AttrScale):
         return self._min_value
 
     def scale(self, attrs, values):
-        x = int(super().scale(attrs, values))  # NOQA
+        try:
+            x = int(super().scale(attrs, values))  # NOQA
+        except ValueError:
+            # if value is not integer(is string or undefined e.g None, "" or ?) =>
+            # result of scaling is false
+            return False
         replaced = re.sub(r"[^<>=0-9]+", "x", self._expr_pattern)
         return eval(replaced)
 
@@ -163,3 +167,6 @@ class AttrScaleString(AttrScale):
 
     def arff_repr(self, sep, bi_val1='0', bi_val2='1'):
         return AttrType.STR_REPR[self.attr_type]
+
+    def data_repr(self, sep, bi_val1='0', bi_val2='1'):
+        return "discrete n"

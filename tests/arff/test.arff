@@ -1,21 +1,21 @@
 % The weather data
 @relation weather
 
-@attribute note string
-@attribute outlook { sunny, overcast, rainy }
-@attribute temperature numeric
-@attribute humidity numeric
+@attribute note         STRING
+@attribute outlook      { sunny, overcast, rainy }
+@attribute temperature NUMERIC
+@ATTRIBUTE humidity numeric
 @attribute windy { TRUE, FALSE }
 @attribute play { yes, no }
 @attribute order { 1, 0 }
 
 @data
 hello,     sunny,    85, 85, FALSE, no,  1
-hellllllo, sunny,    80, 90, TRUE,  no,  0
+hellllllo, sunny,    80, ?, TRUE,  no,  0
 hi,        overcast, 83, 86, FALSE, yes, 1
 hello hi,  rainy,    70, 96, FALSE, yes, 0
 hi hello,  rainy,    68, 80, FALSE, yes, 1
-hi10ii,    rainy,    65, 70, TRUE,  no,  0
+hi10ii,    ?,        65, 70, TRUE,  no,  0
 goood,     overcast, 64, 65, TRUE,  yes, 1
 evening,   sunny,    72, 95, FALSE, no,  0
 helllllo,  sunny,    69, 70, FALSE, yes, 1

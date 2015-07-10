@@ -1,6 +1,6 @@
 Sunday,Monday,Wednesday,Suterday,Theusday,Friday.
-note: 0,1.
-outlook: sunny,overcast,rainy.
+note: discrete n.
+outlook: sunny,overcast,rainy,None.
 temperature: continuous.
 humidity: continuous.
 windy: FALSE,TRUE.

@@ -1,9 +1,9 @@
 hello,sunny,85,85,FALSE,no,1,Monday
-hellllllo,sunny,80,90,TRUE,no,0,Friday
+hellllllo,sunny,80,None,TRUE,no,0,Friday
 hi,overcast,83,86,FALSE,yes,1,Friday
 hello hi,rainy,70,96,FALSE,yes,0,Sunday
 hi hello,rainy,68,80,FALSE,yes,1,Theusday
-hi10ii,rainy,65,70,TRUE,no,0,Theusday
+hi10ii,None,65,70,TRUE,no,0,Theusday
 goood,overcast,64,65,TRUE,yes,1,Wednesday
 evening,sunny,72,95,FALSE,no,0,Theusday
 helllllo,sunny,69,70,FALSE,yes,1,Monday
