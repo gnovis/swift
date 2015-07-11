@@ -32,16 +32,23 @@ class MyWindow(QWidget):
 
         btn1 = QPushButton("Next", self)
         btn1.clicked.connect(self.buttonClicked)
+        btn2 = QPushButton("Open", self)
+        btn2.clicked.connect(self.buttonClicked2)
 
         layout = QVBoxLayout(self)
         layout.addWidget(table_view)
         layout.addWidget(btn1)
+        layout.addWidget(btn2)
         self.setLayout(layout)
 
     def buttonClicked(self):
         new = ('NEW', 1000, 1000, 10000)
         self.table.model().mylist.append(new)
         self.table.model().layoutChanged.emit()
+
+    def buttonClicked2(self):
+        filename = QFileDialog.getOpenFileName(self)
+        print(filename)
 
     def test(self, sel, desel):
         print(sel)
