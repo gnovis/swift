@@ -1,11 +1,4 @@
 #!/usr/bin/python
-''' ps_QAbstractTableModel_solvents.py
-use PySide's QTableView and QAbstractTableModel for tabular data
-sort columns by clicking on the header title
-here applied to solvents commonly used in Chemistry
-PySide is the official LGPL-licensed version of PyQT
-tested with PySide112 and Python27/Python33 by vegaseat  15feb2013
-'''
 import operator
 from PyQt4.QtCore import *  # NOQA
 from PyQt4.QtGui import *  # NOQA
@@ -15,15 +8,20 @@ class MyWindow(QWidget):
     def __init__(self, data_list, header, *args):
         QWidget.__init__(self, *args)
         # setGeometry(x_pos, y_pos, width, height)
-        self.setGeometry(300, 200, 570, 450)
+        # self.setGeometry(300, 200, 570, 450)
+        self.showMaximized()
         self.setWindowTitle("Click on column title to sort")
 
         table_model = MyTableModel(self, data_list, header)
         table_view = QTableView()
         table_view.setModel(table_model)
-
         self.tabledata = data_list
         self.table = table_view
+
+        self.table.selectionModel().selectionChanged.connect(self.test)
+
+        self.table.verticalScrollBar().valueChanged.connect(self.test_top)
+
         # set font
         font = QFont("Courier New", 14)
         table_view.setFont(font)
@@ -44,6 +42,16 @@ class MyWindow(QWidget):
         new = ('NEW', 1000, 1000, 10000)
         self.table.model().mylist.append(new)
         self.table.model().layoutChanged.emit()
+
+    def test(self, sel, desel):
+        print(sel)
+
+    def test_top(self, value):
+        if self.table.verticalScrollBar().maximum() == value:
+            for i in range(100):
+                new = ('NEW' + str(i), 1000, 1000, 10000)
+                self.table.model().mylist.append(new)
+            self.table.model().layoutChanged.emit()
 
 
 class MyTableModel(QAbstractTableModel):
