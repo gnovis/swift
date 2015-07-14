@@ -5,7 +5,7 @@ GUI application for Swift FCA
 """
 
 import sys
-from PyQt4 import QtGui, QtCore
+from PyQt4 import QtGui, QtCore, Qt
 
 
 class GuiSwift(QtGui.QWidget):
@@ -28,9 +28,11 @@ class GuiSwift(QtGui.QWidget):
         self.set_line_prop(self.line_source, line_validator)
         self.set_line_prop(self.line_target, line_validator)
 
-        table_view_source = QtGui.QTableView()
-        table_view_target = QtGui.QTableView()
+        # Tables
+        self.table_view_source = QtGui.QTableView()
+        self.table_view_target = QtGui.QTableView()
 
+        # Buttons
         btn_source = QtGui.QPushButton("Select")
         btn_target = QtGui.QPushButton("Select")
         self.file_filter = "FCA files (*.arff *.cxt *.data *.dat *.csv);;All(*)"
@@ -53,8 +55,8 @@ class GuiSwift(QtGui.QWidget):
         grid.addWidget(label_target, 0, 1)
         grid.addLayout(hbox_source, 1, 0)
         grid.addLayout(hbox_target, 1, 1)
-        grid.addWidget(table_view_source, 2, 0)
-        grid.addWidget(table_view_target, 2, 1)
+        grid.addWidget(self.table_view_source, 2, 0)
+        grid.addWidget(self.table_view_target, 2, 1)
 
         self.setLayout(grid)
 
@@ -90,6 +92,31 @@ class GuiSwift(QtGui.QWidget):
     def select_target(self):
         file_name = QtGui.QFileDialog.getSaveFileName(self, "Select target file", filter=self.file_filter)
         self.line_target.setText(file_name)
+
+
+class SwiftTableModel(QtCore.QAbstractTableModel):
+    def __init__(self, parent, *args):
+        QtCore.QAbstractTableModel.__init__(self, parent, *args)
+        self.mylist = []
+        self.header = []
+
+    def rowCount(self, parent):
+        return len(self.mylist)
+
+    def columnCount(self, parent):
+        return len(self.mylist[0])
+
+    def data(self, index, role):
+        if not index.isValid():
+            return None
+        elif role != Qt.DisplayRole:
+            return None
+        return self.mylist[index.row()][index.column()]
+
+    def headerData(self, col, orientation, role):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            return self.header[col]
+        return None
 
 
 def main():
