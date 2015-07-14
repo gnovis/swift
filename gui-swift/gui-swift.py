@@ -5,7 +5,7 @@ GUI application for Swift FCA
 """
 
 import sys
-from PyQt4 import QtGui
+from PyQt4 import QtGui, QtCore
 
 
 class GuiSwift(QtGui.QWidget):
@@ -23,14 +23,17 @@ class GuiSwift(QtGui.QWidget):
 
         self.line_source = QtGui.QLineEdit()
         self.line_target = QtGui.QLineEdit()
-        self.set_line_prop(self.line_source)
-        self.set_line_prop(self.line_target)
+        regexp = QtCore.QRegExp('^.+\.(arff|data|dat|cxt|csv)$')
+        line_validator = QtGui.QRegExpValidator(regexp)
+        self.set_line_prop(self.line_source, line_validator)
+        self.set_line_prop(self.line_target, line_validator)
 
         table_view_source = QtGui.QTableView()
         table_view_target = QtGui.QTableView()
 
         btn_source = QtGui.QPushButton("Select")
         btn_target = QtGui.QPushButton("Select")
+        self.file_filter = "FCA files (*.arff *.cxt *.data *.dat *.csv);;All(*)"
         btn_source.clicked.connect(self.select_source)
         btn_target.clicked.connect(self.select_target)
 
@@ -59,15 +62,33 @@ class GuiSwift(QtGui.QWidget):
         self.setWindowTitle('Swift - FCA convertor')
         self.show()
 
-    def set_line_prop(self, line):
+    def set_line_prop(self, line, validator):
         line.setMinimumWidth(200)
+        self.set_line_bg(line, '#ffffff')
+        line.setValidator(validator)
+        line.textChanged.connect(self.check_state)
+
+    def set_line_bg(self, line, color):
+        line.setStyleSheet('QLineEdit { background-color: %s }' % color)
+
+    def check_state(self, *args, **kwargs):
+        sender = self.sender()
+        validator = sender.validator()
+        state = validator.validate(sender.text(), 0)[0]
+        if state == QtGui.QValidator.Acceptable:
+            color = '#c4df9b'  # green
+        else:
+            color = '#f6989d'  # red
+        if sender.text() == "":
+            color = '#ffffff'  # white
+        self.set_line_bg(sender, color)
 
     def select_source(self):
-        file_name = QtGui.QFileDialog.getOpenFileName(self)
+        file_name = QtGui.QFileDialog.getOpenFileName(self, "Select source file", filter=self.file_filter)
         self.line_source.setText(file_name)
 
     def select_target(self):
-        file_name = QtGui.QFileDialog.getSaveFileName(self, caption="Select target file")
+        file_name = QtGui.QFileDialog.getSaveFileName(self, "Select target file", filter=self.file_filter)
         self.line_target.setText(file_name)
 
 
