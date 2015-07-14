@@ -1,9 +1,9 @@
 import re
 import os
 
-from source.attributes_fca import (Attribute, AttrScale, AttrScaleNumeric,
-                                   AttrScaleEnum, AttrScaleString)
-from source.object_fca import Object
+from source_swift.attributes_fca import (Attribute, AttrScale, AttrScaleNumeric,
+                                         AttrScaleEnum, AttrScaleString)
+from source_swift.object_fca import Object
 
 
 class Data:

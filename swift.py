@@ -2,7 +2,7 @@
 """Main file of swift - FCA data converter"""
 
 import argparse
-from source.convertor_fca import Convertor
+from source_swift.convertor_fca import Convertor
 
 
 def run_swift():

@@ -1,5 +1,5 @@
 import os
-from source.data_fca import (Data, DataCsv, DataArff, DataDat, DataCxt, DataData)
+from source_swift.data_fca import (Data, DataCsv, DataArff, DataDat, DataCxt, DataData)
 
 
 class Convertor:
