@@ -9,7 +9,7 @@ def run_swift():
     SOURCE_ARGS = {"source": "source",
                    "source_separator": "separator",
                    "source_attributes": "str_attrs",
-                   "first_line": "attrs_first_line"}
+                   "no_first_line": "no_attrs_first_line"}
     TARGET_ARGS = {"target": "source",
                    "target_separator": "separator",
                    "target_attributes": "str_attrs",
@@ -25,9 +25,9 @@ def run_swift():
                         help="Separator whitch is used in source file. Default is ','.")
     parser.add_argument("-sa", "--source_attributes", help="Source file (old) attributes.")
     parser.add_argument("-si", "--source_info", action='store_true', help="Print information about source file data.")
-    parser.add_argument("-fl", "--first_line",
+    parser.add_argument("-nfl", "--no_first_line",
                         action='store_true',
-                        help="Read attribute names from first line in source file in csv format.")
+                        help="Attributes aren't specified on first line in csv data file.")
 
     parser.add_argument("-t", "--target", required=True, help="Name of target file.")
     parser.add_argument("-ts", "--target_separator",

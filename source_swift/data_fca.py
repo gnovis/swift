@@ -79,6 +79,7 @@ class Data:
     def prepare(self):
         if self.str_attrs:
             splitted = self.ss_str(self._str_attrs, self.separator)
+            attrs_names = []
             for i, str_attr in enumerate(splitted):
                 attr_class = Attribute
                 attr_name = str_attr
@@ -86,6 +87,8 @@ class Data:
                     attr_class = Data.attr_classes[str_attr[-2]]
                     attr_name = str_attr[:-3]
                 self._attributes.append(attr_class(i, attr_name))
+                attrs_names.append(attr_name)
+            self._str_attrs = self.separator.join(attrs_names)
 
         if self.str_objects:
             splitted = self.ss_str(self._str_objects, self.separator)
@@ -213,7 +216,7 @@ class DataArff(Data):
                     identifier = values[self.IDENTIFIER].lower()  # is case insensitive
 
                     # @relation
-                    if identifier == self.RELATION:
+                    if identifier == self.RELATION and len(values) > 1:
                         self._relation_name = values[self.NAME]
 
                     # @attribute
@@ -241,8 +244,8 @@ class DataCsv(Data):
     """Column seperated value format"""
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
-                 separator=',', relation_name='', attrs_first_line=False):
-        self._attrs_first_line = attrs_first_line
+                 separator=',', relation_name='', no_attrs_first_line=False):
+        self._no_attrs_first_line = no_attrs_first_line
         super().__init__(source, str_attrs, str_objects,
                          separator, relation_name)
 
@@ -254,7 +257,7 @@ class DataCsv(Data):
         self.write_line_to_file(attrs_name, target, self._separator)
 
     def get_header_info(self):
-        if self._attrs_first_line:
+        if not self._no_attrs_first_line:
             self._index_data_start = 1
             if not self._str_attrs:
                 self._str_attrs = self._get_first_line(self.source)
@@ -496,7 +499,7 @@ class DataDat(DataBivalent):
                     int_val = int(val)
                     if int_val > max_val:
                         max_val = int_val
-        self._attr_count = max_val
+        self._attr_count = max_val + 1
         self._obj_count = line_count
         # These attributes are used only if attrs for new file
         # are not specified
@@ -506,7 +509,7 @@ class DataDat(DataBivalent):
 
     def prepare_line(self, line):
         splitted = super().prepare_line(line)
-        result = ['0'] * (self._attr_count + 1)
+        result = ['0'] * (self._attr_count)
         for val in splitted:
             result[int(val)] = str(1)
         return result

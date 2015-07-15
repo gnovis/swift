@@ -48,7 +48,6 @@ class GuiSwift(QtGui.QWidget):
         # Buttons
         btn_s_select = QtGui.QPushButton("Select")
         btn_t_select = QtGui.QPushButton("Select")
-        self.btn_browse = QtGui.QPushButton("Browse Data")
         self.btn_s_params = QtGui.QPushButton("Change Params")
         self.btn_t_params = QtGui.QPushButton("Change Params")
         self.btn_convert = QtGui.QPushButton("Convert")
@@ -56,7 +55,6 @@ class GuiSwift(QtGui.QWidget):
 
         btn_s_select.clicked.connect(self.select_source)
         btn_t_select.clicked.connect(self.select_target)
-        self.btn_browse.clicked.connect(self.browse_first_data)
 
         # Layout
         hbox_source = QtGui.QHBoxLayout()
@@ -73,7 +71,6 @@ class GuiSwift(QtGui.QWidget):
         hbox_target.addWidget(self.line_target)
         hbox_target.addWidget(btn_t_select)
         hbox_s_btn_set.addWidget(self.btn_convert)
-        hbox_s_btn_set.addWidget(self.btn_browse)
         hbox_s_btn_set.addWidget(self.btn_s_params)
         hbox_t_btn_set.addWidget(self.btn_t_params)
 
@@ -111,11 +108,13 @@ class GuiSwift(QtGui.QWidget):
         if state == QtGui.QValidator.Acceptable:
             color = '#c4df9b'  # green
             self.can_browse = True
+            self.browse_first_data()
         else:
             color = '#f6989d'  # red
             self.can_browse = False
         if sender.text() == "":
             color = '#ffffff'  # white
+            self.clear_table(self.table_view_source)
         self.set_line_bg(sender, color)
 
     def select_source(self):
@@ -130,6 +129,11 @@ class GuiSwift(QtGui.QWidget):
         data = self.browser_source.get_display_data(self.SCROLL_COUNT)
         self.table_view_source.model().table.extend(data)
         self.table_view_source.model().layoutChanged.emit()
+
+    def clear_table(self, table):
+        table.model().table = []
+        table.model().header = []
+        table.model().layoutChanged.emit()
 
     def browse_first_data(self):
         if self.can_browse:
@@ -146,7 +150,7 @@ class GuiSwift(QtGui.QWidget):
             self.browse_data()
 
     def browse_next_data(self, value):
-        if self.table_view_source.verticalScrollBar().maximum() == value:
+        if self.table_view_source.verticalScrollBar().maximum() == value and self.can_browse:
             self.browse_data()
 
     def closeEvent(self, event):

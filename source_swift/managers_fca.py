@@ -22,8 +22,9 @@ class ManagerFca:
 class Browser(ManagerFca):
     def __init__(self, file_path):
         self._data = self.get_data_class(file_path)(file_path)
-        self._data.get_header_info()
         self._opened_file = open(file_path, "r")
+        self._data.get_header_info()
+        self._data.get_data_info()  # must be called always because of .dat format
         Data.skip_lines(self._data.index_data_start, self._opened_file)
 
     def __del__(self):
