@@ -26,6 +26,9 @@ class Browser(ManagerFca):
         self._opened_file = open(file_path, "r")
         Data.skip_lines(self._data.index_data_start, self._opened_file)
 
+    def __del__(self):
+        self._opened_file.close()
+
     def get_header(self):
         return list(map(lambda x: x.name, self._data.attributes))
 
