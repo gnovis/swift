@@ -53,6 +53,7 @@ class GuiSwift(QtGui.QWidget):
         self.btn_convert = QtGui.QPushButton("Convert")
         self.file_filter = "FCA files (*.arff *.cxt *.data *.dat *.csv);;All(*)"
 
+        self.btn_s_params.clicked.connect(self.change_source_params)
         btn_s_select.clicked.connect(self.select_source)
         btn_t_select.clicked.connect(self.select_target)
 
@@ -63,8 +64,8 @@ class GuiSwift(QtGui.QWidget):
         hbox_t_btn_set = QtGui.QHBoxLayout()
         hbox_s_btn_set.addStretch(1)
         hbox_t_btn_set.addStretch(1)
-        hbox_s_btn_set.setDirection(1)
-        hbox_t_btn_set.setDirection(1)
+        hbox_s_btn_set.setDirection(QtGui.QBoxLayout.RightToLeft)
+        hbox_t_btn_set.setDirection(QtGui.QBoxLayout.RightToLeft)
 
         hbox_source.addWidget(self.line_source)
         hbox_source.addWidget(btn_s_select)
@@ -153,11 +154,18 @@ class GuiSwift(QtGui.QWidget):
         if self.table_view_source.verticalScrollBar().maximum() == value and self.can_browse:
             self.browse_data()
 
+    def change_source_params(self):
+        print(SourceParamsDialog.get_params())
+
     def closeEvent(self, event):
         if self.browser_source:
             self.browser_source.close_file()
         if self.browser_target:
             self.browser_target.close_file()
+
+    def keyPressEvent(self, e):
+        if e.key() == QtCore.Qt.Key_Escape:
+            self.close()
 
 
 class SwiftTableModel(QtCore.QAbstractTableModel):
@@ -185,6 +193,63 @@ class SwiftTableModel(QtCore.QAbstractTableModel):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
             return self.header[col]
         return None
+
+
+class ParamsDialog(QtGui.QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        # OK and Cancel buttons
+        buttons = QtGui.QDialogButtonBox(
+            QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel,
+            QtCore.Qt.Horizontal, self)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        self.layout = QtGui.QVBoxLayout(self)
+        self.layout.addStretch(0)
+        self.layout.setDirection(QtGui.QBoxLayout.BottomToTop)
+        self.layout.addWidget(buttons)
+
+    @staticmethod
+    def get_params(parent=None):
+        pass
+
+
+class SourceParamsDialog(ParamsDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.line_separator = FormLine("Separator")
+        self.line_str_attrs = FormLine("Attributes")
+        self.cb_nfl = QtGui.QCheckBox('Attributes on first line', self)
+        self.cb_nfl.toggle()
+        cb = QtGui.QVBoxLayout()
+        cb.addWidget(self.cb_nfl)
+        cb.setContentsMargins(6, 0, 0, 10)
+        self.layout.addLayout(cb)
+        self.layout.addWidget(self.line_str_attrs)
+        self.layout.addWidget(self.line_separator)
+        self.setWindowTitle('Parameters for source file')
+
+    @staticmethod
+    def get_params(parent=None):
+        dialog = SourceParamsDialog(parent)
+        result = dialog.exec_()
+        return (result == QtGui.QDialog.Accepted)
+
+
+class FormLine(QtGui.QWidget):
+    def __init__(self, label, parent=None):
+        super().__init__(parent)
+        self.label = QtGui.QLabel(label)
+        self.line = QtGui.QLineEdit()
+        self.line.setMinimumWidth(350)
+        self.line.setStyleSheet('QLineEdit { background-color: %s }' % '#ffffff')
+        self.layout = QtGui.QVBoxLayout(self)
+        self.layout.addWidget(self.label)
+        self.layout.addWidget(self.line)
+
+    def get_text(self):
+        return self.line.text()
 
 
 def main():

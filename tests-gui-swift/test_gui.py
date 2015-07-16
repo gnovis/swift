@@ -42,9 +42,8 @@ class MyWindow(QWidget):
         self.setLayout(layout)
 
     def buttonClicked(self):
-        new = ('NEW', 1000, 1000, 10000)
-        self.table.model().mylist.append(new)
-        self.table.model().layoutChanged.emit()
+        result = DateDialog.getDateTime()
+        print(result)
 
     def buttonClicked2(self):
         filename = QFileDialog.getOpenFileName(self)
@@ -93,6 +92,40 @@ class MyTableModel(QAbstractTableModel):
             self.mylist.reverse()
         self.emit(SIGNAL("layoutChanged()"))
 
+
+class DateDialog(QDialog):
+    def __init__(self, parent=None):
+        super(DateDialog, self).__init__(parent)
+
+        layout = QVBoxLayout(self)
+
+        # nice widget for editing the date
+        self.datetime = QDateTimeEdit(self)
+        self.datetime.setCalendarPopup(True)
+        self.datetime.setDateTime(QDateTime.currentDateTime())
+        self.line = QLineEdit(self)
+        layout.addWidget(self.line)
+        layout.addWidget(self.datetime)
+
+        # OK and Cancel buttons
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.Ok | QDialogButtonBox.Cancel,
+            Qt.Horizontal, self)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
+
+    # get current date and time from the dialog
+    def dateTime(self):
+        return self.datetime.dateTime()
+
+    # static method to create the dialog and return (date, time, accepted)
+    @staticmethod
+    def getDateTime(parent=None):
+        dialog = DateDialog(parent)
+        result = dialog.exec_()
+        date = dialog.dateTime()
+        return (date.date(), date.time(), dialog.line.text(), result == QDialog.Accepted)
 
 # the solvent data ...
 header = ['Solvent Name', ' BP (deg C)', ' MP (deg C)', ' Density (g/ml)']
