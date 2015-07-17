@@ -5,8 +5,10 @@ GUI application for Swift FCA
 """
 
 import sys
+import collections
 from PyQt4 import QtGui, QtCore
 from source_swift.managers_fca import Browser
+from source_swift.constants_fca import RunParams
 
 
 class GuiSwift(QtGui.QWidget):
@@ -16,20 +18,33 @@ class GuiSwift(QtGui.QWidget):
     def __init__(self):
         super(GuiSwift, self).__init__()
 
-        self.initUI()
-
-    def initUI(self):
+        self._source_params = {}
+        self._target_params = {}
 
         self.can_browse = False
         self.browser_source = None
         self.browser_target = None
+
+        self.initUI()
+
+    @property
+    def source_params(self):
+        return self._source_params.copy()
+
+    @property
+    def target_params(self):
+        return self._target_params.copy()
+
+    def initUI(self):
 
         # Widgets
         label_source = QtGui.QLabel('Source file')
         label_target = QtGui.QLabel('Target file')
 
         self.line_source = QtGui.QLineEdit()
+        self.line_source.setObjectName('line_source')
         self.line_target = QtGui.QLineEdit()
+        self.line_target.setObjectName('line_target')
         regexp = QtCore.QRegExp('^.+\.(arff|data|dat|cxt|csv)$')
         line_validator = QtGui.QRegExpValidator(regexp)
         self.set_line_prop(self.line_source, line_validator)
@@ -110,6 +125,10 @@ class GuiSwift(QtGui.QWidget):
             color = '#c4df9b'  # green
             self.can_browse = True
             self.browse_first_data()
+            if sender.objectName() == "line_source":
+                self.source_params[RunParams.SOURCE] = sender.text()
+            else:
+                self.target_params[RunParams.TARGET] = sender.text()
         else:
             color = '#f6989d'  # red
             self.can_browse = False
@@ -155,7 +174,10 @@ class GuiSwift(QtGui.QWidget):
             self.browse_data()
 
     def change_source_params(self):
-        print(SourceParamsDialog.get_params())
+        result = SourceParamsDialog.get_params(self)
+        confirmed = result[1]
+        if confirmed:
+            self._source_params.update(result[0])
 
     def closeEvent(self, event):
         if self.browser_source:
@@ -196,8 +218,10 @@ class SwiftTableModel(QtCore.QAbstractTableModel):
 
 
 class ParamsDialog(QtGui.QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent):
         super().__init__(parent)
+        self.widgets = collections.OrderedDict()
+        self.params = {}
 
         # OK and Cancel buttons
         buttons = QtGui.QDialogButtonBox(
@@ -211,30 +235,68 @@ class ParamsDialog(QtGui.QDialog):
         self.layout.addWidget(buttons)
 
     @staticmethod
-    def get_params(parent=None):
+    def get_params(parent):
         pass
+
+    def get_dict_data(self):
+        result = {}
+        for name, w in self.widgets.items():
+            if w.data():
+                result[name] = w.data()
+        return result
+
+    def fill_layout(self):
+        for name, w in self.widgets.items():
+            self.layout.addWidget(w)
+
+    def fill_widgets(self):
+        for name, value in self.params.items():
+            self.widgets[name].set_data(value)
+
+    def showEvent(self, event):
+        self.fill_widgets()
 
 
 class SourceParamsDialog(ParamsDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent):
         super().__init__(parent)
+        self.params = parent.source_params
+        # form lines
         self.line_separator = FormLine("Separator")
         self.line_str_attrs = FormLine("Attributes")
-        self.cb_nfl = QtGui.QCheckBox('Attributes on first line', self)
-        self.cb_nfl.toggle()
-        cb = QtGui.QVBoxLayout()
-        cb.addWidget(self.cb_nfl)
-        cb.setContentsMargins(6, 0, 0, 10)
-        self.layout.addLayout(cb)
-        self.layout.addWidget(self.line_str_attrs)
-        self.layout.addWidget(self.line_separator)
+        # check box
+        self.cb_nfl = FormCheckBox('Attributes on first line')
+
+        # layout
+        self.widgets[RunParams.NFL] = self.cb_nfl
+        self.widgets[RunParams.SOURCE_SEP] = self.line_separator
+        self.widgets[RunParams.SOURCE_ATTRS] = self.line_str_attrs
+        self.fill_layout()
         self.setWindowTitle('Parameters for source file')
 
     @staticmethod
-    def get_params(parent=None):
+    def get_params(parent):
         dialog = SourceParamsDialog(parent)
         result = dialog.exec_()
-        return (result == QtGui.QDialog.Accepted)
+        return (dialog.get_dict_data(), result == QtGui.QDialog.Accepted)
+
+
+class FormCheckBox(QtGui.QWidget):
+    def __init__(self, label, parent=None):
+        super().__init__(parent)
+        self.cb = QtGui.QCheckBox(label, self)
+        self.cb.toggle()
+        layout = QtGui.QVBoxLayout()
+        layout.addWidget(self.cb)
+        layout.setContentsMargins(6, 0, 0, 10)
+        self.setLayout(layout)
+
+    def data(self):
+        return not bool(self.cb.checkState())
+
+    def set_data(self, data):
+        if data:
+            self.cb.setChecked(QtCore.Qt.Unchecked)
 
 
 class FormLine(QtGui.QWidget):
@@ -244,12 +306,16 @@ class FormLine(QtGui.QWidget):
         self.line = QtGui.QLineEdit()
         self.line.setMinimumWidth(350)
         self.line.setStyleSheet('QLineEdit { background-color: %s }' % '#ffffff')
-        self.layout = QtGui.QVBoxLayout(self)
-        self.layout.addWidget(self.label)
-        self.layout.addWidget(self.line)
+        layout = QtGui.QVBoxLayout(self)
+        layout.addWidget(self.label)
+        layout.addWidget(self.line)
+        self.setLayout(layout)
 
-    def get_text(self):
+    def data(self):
         return self.line.text()
+
+    def set_data(self, data):
+        self.line.setText(data)
 
 
 def main():

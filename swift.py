@@ -3,20 +3,22 @@
 
 import argparse
 from source_swift.managers_fca import Convertor
+from source_swift.constants_fca import RunParams
 
 
 def run_swift():
-    SOURCE_ARGS = {"source": "source",
-                   "source_separator": "separator",
-                   "source_attributes": "str_attrs",
-                   "no_first_line": "no_attrs_first_line"}
-    TARGET_ARGS = {"target": "source",
-                   "target_separator": "separator",
-                   "target_attributes": "str_attrs",
-                   "target_objects": "str_objects",
-                   "relation_name": "relation_name",
-                   "classes": "classes"}
-    OTHER_ARGS = {"source_info": "print_info"}
+
+    SOURCE_ARGS = {"source": RunParams.SOURCE,
+                   "source_separator": RunParams.SOURCE_SEP,
+                   "source_attributes": RunParams.SOURCE_ATTRS,
+                   "no_first_line": RunParams.NFL}
+    TARGET_ARGS = {"target": RunParams.TARGET,
+                   "target_separator": RunParams.TARGET_SEP,
+                   "target_attributes": RunParams.TARGET_ATTRS,
+                   "target_objects": RunParams.TARGET_OBJECTS,
+                   "relation_name": RunParams.RELATION_NAME,
+                   "classes": RunParams.CLASSES}
+    OTHER_ARGS = {"source_info": RunParams.SOURCE_INFO}
 
     parser = argparse.ArgumentParser()
 
