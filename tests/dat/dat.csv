@@ -1,4 +1,4 @@
-note,outlook,temperature,humidity,windy,play,order
+note,outlook,temperature,humidity,windy,play
 0,1,1,1,0,1
 1,1,0,0,0,1
 0,0,1,1,0,0

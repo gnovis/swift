@@ -6,6 +6,7 @@ GUI application for Swift FCA
 
 import sys
 import collections
+import os.path
 from PyQt4 import QtGui, QtCore
 from source_swift.managers_fca import Browser
 from source_swift.constants_fca import RunParams
@@ -69,6 +70,7 @@ class GuiSwift(QtGui.QWidget):
         self.file_filter = "FCA files (*.arff *.cxt *.data *.dat *.csv);;All(*)"
 
         self.btn_s_params.clicked.connect(self.change_source_params)
+        self.btn_t_params.clicked.connect(self.change_target_params)
         btn_s_select.clicked.connect(self.select_source)
         btn_t_select.clicked.connect(self.select_target)
 
@@ -121,14 +123,14 @@ class GuiSwift(QtGui.QWidget):
         sender = self.sender()
         validator = sender.validator()
         state = validator.validate(sender.text(), 0)[0]
-        if state == QtGui.QValidator.Acceptable:
+        if state == QtGui.QValidator.Acceptable and os.path.isfile(sender.text()):
             color = '#c4df9b'  # green
             self.can_browse = True
             self.browse_first_data()
             if sender.objectName() == "line_source":
-                self.source_params[RunParams.SOURCE] = sender.text()
+                self._source_params[RunParams.SOURCE] = sender.text()
             else:
-                self.target_params[RunParams.TARGET] = sender.text()
+                self._target_params[RunParams.TARGET] = sender.text()
         else:
             color = '#f6989d'  # red
             self.can_browse = False
@@ -174,10 +176,16 @@ class GuiSwift(QtGui.QWidget):
             self.browse_data()
 
     def change_source_params(self):
-        result = SourceParamsDialog.get_params(self)
+        self.change_params(SourceParamsDialog, self._source_params)
+
+    def change_target_params(self):
+        self.change_params(TargetParamsDialog, self._target_params)
+
+    def change_params(self, cls, params):
+        result = cls.get_params(self)
         confirmed = result[1]
         if confirmed:
-            self._source_params.update(result[0])
+            params.update(result[0])
 
     def closeEvent(self, event):
         if self.browser_source:
@@ -234,14 +242,16 @@ class ParamsDialog(QtGui.QDialog):
         self.layout.setDirection(QtGui.QBoxLayout.BottomToTop)
         self.layout.addWidget(buttons)
 
-    @staticmethod
-    def get_params(parent):
-        pass
+    @classmethod
+    def get_params(cls, parent):
+        dialog = cls(parent)
+        result = dialog.exec_()
+        return (dialog.get_dict_data(), result == QtGui.QDialog.Accepted)
 
     def get_dict_data(self):
         result = {}
         for name, w in self.widgets.items():
-            if w.data():
+            if w.data() != "":
                 result[name] = w.data()
         return result
 
@@ -250,8 +260,9 @@ class ParamsDialog(QtGui.QDialog):
             self.layout.addWidget(w)
 
     def fill_widgets(self):
-        for name, value in self.params.items():
-            self.widgets[name].set_data(value)
+        for name, w in self.widgets.items():
+            if name in self.params:
+                w.set_data(self.params[name])
 
     def showEvent(self, event):
         self.fill_widgets()
@@ -269,16 +280,30 @@ class SourceParamsDialog(ParamsDialog):
 
         # layout
         self.widgets[RunParams.NFL] = self.cb_nfl
-        self.widgets[RunParams.SOURCE_SEP] = self.line_separator
         self.widgets[RunParams.SOURCE_ATTRS] = self.line_str_attrs
+        self.widgets[RunParams.SOURCE_SEP] = self.line_separator
         self.fill_layout()
         self.setWindowTitle('Parameters for source file')
 
-    @staticmethod
-    def get_params(parent):
-        dialog = SourceParamsDialog(parent)
-        result = dialog.exec_()
-        return (dialog.get_dict_data(), result == QtGui.QDialog.Accepted)
+
+class TargetParamsDialog(ParamsDialog):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.params = parent.target_params
+        # form lines
+        self.line_separator = FormLine("Separator")
+        self.line_str_attrs = FormLine("Attributes")
+        self.line_str_objects = FormLine("Objects")
+        self.line_rel_name = FormLine("Relation Name")
+        self.line_classes = FormLine("Classes")
+        # layout
+        self.widgets[RunParams.TARGET_ATTRS] = self.line_str_attrs
+        self.widgets[RunParams.TARGET_SEP] = self.line_separator
+        self.widgets[RunParams.TARGET_OBJECTS] = self.line_str_objects
+        self.widgets[RunParams.RELATION_NAME] = self.line_rel_name
+        self.widgets[RunParams.CLASSES] = self.line_classes
+        self.fill_layout()
+        self.setWindowTitle('Parameters for target file')
 
 
 class FormCheckBox(QtGui.QWidget):

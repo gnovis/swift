@@ -6,7 +6,6 @@
 @attribute humidity { 0,1 }
 @attribute windy { 0,1 }
 @attribute play { 0,1 }
-@attribute order { 0,1 }
 
 @data
 0,1,1,1,0,1
