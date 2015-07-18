@@ -74,7 +74,6 @@ class GuiSwift(QtGui.QWidget):
 
         self.btn_s_params.clicked.connect(self.change_source_params)
         self.btn_t_params.clicked.connect(self.change_target_params)
-        self.btn_s_params.setEnabled(False)
         self.btn_t_params.setEnabled(False)
         btn_s_select.clicked.connect(self.select_source)
         btn_t_select.clicked.connect(self.select_target)
@@ -131,18 +130,19 @@ class GuiSwift(QtGui.QWidget):
         if state == QtGui.QValidator.Acceptable and os.path.isfile(sender.text()):
             color = '#c4df9b'  # green
             self.can_browse = True
-            self.browse_first_data()
+            sep = None
+            if RunParams.SOURCE_SEP in self._source_params:
+                sep = self._source_params[RunParams.SOURCE_SEP]
             self._source_params.clear()
             self._source_params[RunParams.SOURCE] = sender.text()
-            self.btn_s_params.setEnabled(True)
+            self.browse_first_data(sep)
         else:
             color = '#f6989d'  # red
             self.can_browse = False
-            self.btn_s_params.setEnabled(False)
         if sender.text() == "":
             color = '#ffffff'  # white
+            self._source_params.clear()
             self.clear_table(self.table_view_source)
-            self.btn_s_params.setEnabled(False)
         self.set_line_bg(sender, color)
 
     def check_state_target(self, *args, **kwargs):
@@ -180,7 +180,7 @@ class GuiSwift(QtGui.QWidget):
         table.model().header.clear()
         table.model().layoutChanged.emit()
 
-    def browse_first_data(self):
+    def browse_first_data(self, separator):
         if self.can_browse:
             # clear old data
             self.table_view_source.model().table = []
@@ -189,7 +189,10 @@ class GuiSwift(QtGui.QWidget):
                 self.browser_source.close_file()
 
             # add new data
-            self.browser_source = Browser(self.line_source.text())
+            params = self.source_params
+            if separator:
+                params[RunParams.SOURCE_SEP] = separator
+            self.browser_source = Browser(**params)
             header = self.browser_source.get_header()
             self.table_view_source.model().header.extend(header)
             self.browse_data()
@@ -209,6 +212,7 @@ class GuiSwift(QtGui.QWidget):
         confirmed = result[1]
         if confirmed:
             params.update(result[0])
+            print(params)
 
     def closeEvent(self, event):
         if self.browser_source:
@@ -302,7 +306,8 @@ class SourceParamsDialog(ParamsDialog):
                         FileType.CSV: (RunParams.SOURCE_SEP, RunParams.NFL, RunParams.SOURCE_ATTRS),
                         FileType.CXT: (),
                         FileType.DAT: (RunParams.SOURCE_SEP),
-                        FileType.DATA: (RunParams.SOURCE_SEP)}
+                        FileType.DATA: (RunParams.SOURCE_SEP),
+                        None: (RunParams.SOURCE_SEP)}  # for adding separator before adding source
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -318,7 +323,9 @@ class SourceParamsDialog(ParamsDialog):
         self.widgets[RunParams.SOURCE_ATTRS] = self.line_str_attrs
         self.widgets[RunParams.SOURCE_SEP] = self.line_separator
 
-        suffix = os.path.splitext(self.params[RunParams.SOURCE])[1]
+        suffix = None
+        if RunParams.SOURCE in self.params:
+            suffix = os.path.splitext(self.params[RunParams.SOURCE])[1]
         self.fill_layout(suffix)
         self.setWindowTitle('Parameters for source file')
 

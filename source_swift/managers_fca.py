@@ -1,6 +1,6 @@
 import os
 from source_swift.data_fca import (Data, DataCsv, DataArff, DataDat, DataCxt, DataData)
-from source_swift.constants_fca import FileType
+from source_swift.constants_fca import (FileType, RunParams)
 
 
 class ManagerFca:
@@ -16,8 +16,10 @@ class ManagerFca:
 
 
 class Browser(ManagerFca):
-    def __init__(self, file_path):
-        self._data = self.get_data_class(file_path)(file_path)
+    def __init__(self, **kwargs):
+        file_path = kwargs[RunParams.SOURCE]
+        print(kwargs)
+        self._data = self.get_data_class(file_path)(**kwargs)
         self._opened_file = open(file_path, "r")
         self._data.get_header_info()
         self._data.get_data_info()  # must be called always because of .dat format
