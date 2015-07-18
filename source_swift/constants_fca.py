@@ -11,3 +11,11 @@ class RunParams:
     RELATION_NAME = 'relation_name'
     CLASSES = 'classes'
     SOURCE_INFO = 'print_info'
+
+
+class FileType:
+    CSV = ".csv"
+    ARFF = ".arff"
+    DAT = ".dat"
+    CXT = ".cxt"
+    DATA = ".data"

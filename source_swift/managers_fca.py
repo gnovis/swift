@@ -1,19 +1,15 @@
 import os
 from source_swift.data_fca import (Data, DataCsv, DataArff, DataDat, DataCxt, DataData)
+from source_swift.conctants_fca import FileType
 
 
 class ManagerFca:
-    CSV = ".csv"
-    ARFF = ".arff"
-    DAT = ".dat"
-    CXT = ".cxt"
-    DATA = ".data"
 
-    extensions = {CSV: DataCsv,
-                  ARFF: DataArff,
-                  DAT: DataDat,
-                  CXT: DataCxt,
-                  DATA: DataData}
+    extensions = {FileType.CSV: DataCsv,
+                  FileType.ARFF: DataArff,
+                  FileType.DAT: DataDat,
+                  FileType.CXT: DataCxt,
+                  FileType.DATA: DataData}
 
     def get_data_class(self, file_path):
         return self.extensions[os.path.splitext(file_path)[1]]
