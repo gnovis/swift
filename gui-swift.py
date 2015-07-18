@@ -9,8 +9,7 @@ import collections
 import os.path
 from PyQt4 import QtGui, QtCore
 from source_swift.managers_fca import Browser
-from source_swift.constants_fca import RunParams
-from source_swift.constants_fca import FileType
+from source_swift.constants_fca import (RunParams, FileType)
 
 
 class GuiSwift(QtGui.QWidget):
@@ -52,6 +51,9 @@ class GuiSwift(QtGui.QWidget):
         self.set_line_prop(self.line_source, line_validator)
         self.set_line_prop(self.line_target, line_validator)
 
+        self.line_source.textChanged.connect(self.check_state_source)
+        self.line_target.textChanged.connect(self.check_state_target)
+
         # Tables
         self.table_view_source = QtGui.QTableView()
         self.table_view_target = QtGui.QTableView()
@@ -72,6 +74,8 @@ class GuiSwift(QtGui.QWidget):
 
         self.btn_s_params.clicked.connect(self.change_source_params)
         self.btn_t_params.clicked.connect(self.change_target_params)
+        self.btn_s_params.setEnabled(False)
+        self.btn_t_params.setEnabled(False)
         btn_s_select.clicked.connect(self.select_source)
         btn_t_select.clicked.connect(self.select_target)
 
@@ -115,34 +119,47 @@ class GuiSwift(QtGui.QWidget):
         line.setMinimumWidth(200)
         self.set_line_bg(line, '#ffffff')
         line.setValidator(validator)
-        line.textChanged.connect(self.check_state)
 
     def set_line_bg(self, line, color):
         line.setStyleSheet('QLineEdit { background-color: %s }' % color)
 
-    def check_state(self, *args, **kwargs):
+    def check_state_source(self, *args, **kwargs):
         sender = self.sender()
         validator = sender.validator()
         state = validator.validate(sender.text(), 0)[0]
+
         if state == QtGui.QValidator.Acceptable and os.path.isfile(sender.text()):
             color = '#c4df9b'  # green
             self.can_browse = True
             self.browse_first_data()
-
-            def clear_params(p):
-                p.clear()
-            if sender.objectName() == "line_source":
-                clear_params(self._source_params)
-                self._source_params[RunParams.SOURCE] = sender.text()
-            else:
-                clear_params(self._target_params)
-                self._target_params[RunParams.TARGET] = sender.text()
+            self._source_params.clear()
+            self._source_params[RunParams.SOURCE] = sender.text()
+            self.btn_s_params.setEnabled(True)
         else:
             color = '#f6989d'  # red
             self.can_browse = False
+            self.btn_s_params.setEnabled(False)
         if sender.text() == "":
             color = '#ffffff'  # white
             self.clear_table(self.table_view_source)
+            self.btn_s_params.setEnabled(False)
+        self.set_line_bg(sender, color)
+
+    def check_state_target(self, *args, **kwargs):
+        sender = self.sender()
+        validator = sender.validator()
+        state = validator.validate(sender.text(), 0)[0]
+        if state == QtGui.QValidator.Acceptable:
+            color = '#c4df9b'  # green
+            self._target_params.clear()
+            self._target_params[RunParams.TARGET] = sender.text()
+            self.btn_t_params.setEnabled(True)
+        else:
+            color = '#f6989d'  # red
+            self.btn_t_params.setEnabled(False)
+        if sender.text() == "":
+            color = '#ffffff'  # white
+            self.btn_t_params.setEnabled(False)
         self.set_line_bg(sender, color)
 
     def select_source(self):
@@ -192,7 +209,6 @@ class GuiSwift(QtGui.QWidget):
         confirmed = result[1]
         if confirmed:
             params.update(result[0])
-            print(params)
 
     def closeEvent(self, event):
         if self.browser_source:
@@ -301,11 +317,20 @@ class SourceParamsDialog(ParamsDialog):
         self.widgets[RunParams.NFL] = self.cb_nfl
         self.widgets[RunParams.SOURCE_ATTRS] = self.line_str_attrs
         self.widgets[RunParams.SOURCE_SEP] = self.line_separator
-        self.fill_layout(os.path.splitext(self.params[RunParams.SOURCE])[1])
+
+        suffix = os.path.splitext(self.params[RunParams.SOURCE])[1]
+        self.fill_layout(suffix)
         self.setWindowTitle('Parameters for source file')
 
 
 class TargetParamsDialog(ParamsDialog):
+
+    format_poss_args = {FileType.ARFF: (RunParams.TARGET_ATTRS, RunParams.TARGET_SEP),
+                        FileType.CSV: (RunParams.TARGET_ATTRS, RunParams.TARGET_SEP),
+                        FileType.CXT: (RunParams.TARGET_ATTRS, RunParams.TARGET_OBJECTS),
+                        FileType.DAT: (RunParams.TARGET_ATTRS, RunParams.TARGET_SEP),
+                        FileType.DATA: (RunParams.TARGET_ATTRS, RunParams.CLASSES, RunParams.TARGET_SEP)}
+
     def __init__(self, parent):
         super().__init__(parent)
         self.params = parent.target_params
@@ -316,12 +341,13 @@ class TargetParamsDialog(ParamsDialog):
         self.line_rel_name = FormLine("Relation Name")
         self.line_classes = FormLine("Classes")
         # layout
-        self.widgets[RunParams.TARGET_ATTRS] = self.line_str_attrs
+        self.widgets[RunParams.CLASSES] = self.line_classes
         self.widgets[RunParams.TARGET_SEP] = self.line_separator
         self.widgets[RunParams.TARGET_OBJECTS] = self.line_str_objects
+        self.widgets[RunParams.TARGET_ATTRS] = self.line_str_attrs
         self.widgets[RunParams.RELATION_NAME] = self.line_rel_name
-        self.widgets[RunParams.CLASSES] = self.line_classes
-        self.fill_layout()
+        suffix = os.path.splitext(self.params[RunParams.TARGET])[1]
+        self.fill_layout(suffix)
         self.setWindowTitle('Parameters for target file')
 
 
