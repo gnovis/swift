@@ -1,6 +1,6 @@
 import os
 from source_swift.data_fca import (Data, DataCsv, DataArff, DataDat, DataCxt, DataData)
-from source_swift.conctants_fca import FileType
+from source_swift.constants_fca import FileType
 
 
 class ManagerFca:
