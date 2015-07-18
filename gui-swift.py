@@ -10,6 +10,7 @@ import os.path
 from PyQt4 import QtGui, QtCore
 from source_swift.managers_fca import Browser
 from source_swift.constants_fca import RunParams
+from source_swift.constants_fca import FileType
 
 
 class GuiSwift(QtGui.QWidget):
@@ -127,9 +128,14 @@ class GuiSwift(QtGui.QWidget):
             color = '#c4df9b'  # green
             self.can_browse = True
             self.browse_first_data()
+
+            def clear_params(p):
+                p.clear()
             if sender.objectName() == "line_source":
+                clear_params(self._source_params)
                 self._source_params[RunParams.SOURCE] = sender.text()
             else:
+                clear_params(self._target_params)
                 self._target_params[RunParams.TARGET] = sender.text()
         else:
             color = '#f6989d'  # red
@@ -153,8 +159,8 @@ class GuiSwift(QtGui.QWidget):
         self.table_view_source.model().layoutChanged.emit()
 
     def clear_table(self, table):
-        table.model().table = []
-        table.model().header = []
+        table.model().table.clear()
+        table.model().header.clear()
         table.model().layoutChanged.emit()
 
     def browse_first_data(self):
@@ -186,6 +192,7 @@ class GuiSwift(QtGui.QWidget):
         confirmed = result[1]
         if confirmed:
             params.update(result[0])
+            print(params)
 
     def closeEvent(self, event):
         if self.browser_source:
@@ -255,9 +262,14 @@ class ParamsDialog(QtGui.QDialog):
                 result[name] = w.data()
         return result
 
-    def fill_layout(self):
+    def fill_layout(self, suff):
+        poss_args = self.format_poss_args[suff]
+        filtered = collections.OrderedDict()
         for name, w in self.widgets.items():
-            self.layout.addWidget(w)
+            if name in poss_args:
+                self.layout.addWidget(w)
+                filtered[name] = w
+        self.widgets = filtered
 
     def fill_widgets(self):
         for name, w in self.widgets.items():
@@ -269,6 +281,13 @@ class ParamsDialog(QtGui.QDialog):
 
 
 class SourceParamsDialog(ParamsDialog):
+
+    format_poss_args = {FileType.ARFF: (RunParams.SOURCE_SEP),
+                        FileType.CSV: (RunParams.SOURCE_SEP, RunParams.NFL, RunParams.SOURCE_ATTRS),
+                        FileType.CXT: (),
+                        FileType.DAT: (RunParams.SOURCE_SEP),
+                        FileType.DATA: (RunParams.SOURCE_SEP)}
+
     def __init__(self, parent):
         super().__init__(parent)
         self.params = parent.source_params
@@ -282,7 +301,7 @@ class SourceParamsDialog(ParamsDialog):
         self.widgets[RunParams.NFL] = self.cb_nfl
         self.widgets[RunParams.SOURCE_ATTRS] = self.line_str_attrs
         self.widgets[RunParams.SOURCE_SEP] = self.line_separator
-        self.fill_layout()
+        self.fill_layout(os.path.splitext(self.params[RunParams.SOURCE])[1])
         self.setWindowTitle('Parameters for source file')
 
 
