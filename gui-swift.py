@@ -19,14 +19,23 @@ class GuiSwift(QtGui.QWidget):
     def __init__(self):
         super(GuiSwift, self).__init__()
 
+        self._source = None
+        self._target = None
         self._source_params = {}
         self._target_params = {}
 
-        self.can_browse = False
         self.browser_source = None
         self.browser_target = None
 
         self.initUI()
+
+    @property
+    def source(self):
+        return self._source
+
+    @property
+    def target(self):
+        return self._target
 
     @property
     def source_params(self):
@@ -67,16 +76,20 @@ class GuiSwift(QtGui.QWidget):
         # Buttons
         btn_s_select = QtGui.QPushButton("Select")
         btn_t_select = QtGui.QPushButton("Select")
-        self.btn_s_params = QtGui.QPushButton("Change Params")
-        self.btn_t_params = QtGui.QPushButton("Change Params")
+        self.btn_s_params = QtGui.QPushButton("Set Params")
+        self.btn_t_params = QtGui.QPushButton("Set Params")
         self.btn_convert = QtGui.QPushButton("Convert")
+        self.btn_browse = QtGui.QPushButton("Browse")
         self.file_filter = "FCA files (*.arff *.cxt *.data *.dat *.csv);;All(*)"
 
         self.btn_s_params.clicked.connect(self.change_source_params)
         self.btn_t_params.clicked.connect(self.change_target_params)
         self.btn_t_params.setEnabled(False)
+        self.btn_s_params.setEnabled(False)
+        self.btn_browse.setEnabled(False)
         btn_s_select.clicked.connect(self.select_source)
         btn_t_select.clicked.connect(self.select_target)
+        self.btn_browse.clicked.connect(self.browse_source)
 
         # Layout
         hbox_source = QtGui.QHBoxLayout()
@@ -93,6 +106,7 @@ class GuiSwift(QtGui.QWidget):
         hbox_target.addWidget(self.line_target)
         hbox_target.addWidget(btn_t_select)
         hbox_s_btn_set.addWidget(self.btn_convert)
+        hbox_s_btn_set.addWidget(self.btn_browse)
         hbox_s_btn_set.addWidget(self.btn_s_params)
         hbox_t_btn_set.addWidget(self.btn_t_params)
 
@@ -129,18 +143,18 @@ class GuiSwift(QtGui.QWidget):
 
         if state == QtGui.QValidator.Acceptable and os.path.isfile(sender.text()):
             color = '#c4df9b'  # green
-            self.can_browse = True
-            sep = None
-            if RunParams.SOURCE_SEP in self._source_params:
-                sep = self._source_params[RunParams.SOURCE_SEP]
             self._source_params.clear()
-            self._source_params[RunParams.SOURCE] = sender.text()
-            self.browse_first_data(sep)
+            self.btn_s_params.setEnabled(True)
+            self.btn_browse.setEnabled(True)
+            self._source = sender.text()
         else:
             color = '#f6989d'  # red
-            self.can_browse = False
+            self.btn_s_params.setEnabled(False)
+            self.btn_browse.setEnabled(False)
         if sender.text() == "":
             color = '#ffffff'  # white
+            self.btn_s_params.setEnabled(False)
+            self.btn_browse.setEnabled(False)
             self._source_params.clear()
             self.clear_table(self.table_view_source)
         self.set_line_bg(sender, color)
@@ -180,25 +194,24 @@ class GuiSwift(QtGui.QWidget):
         table.model().header.clear()
         table.model().layoutChanged.emit()
 
-    def browse_first_data(self, separator):
-        if self.can_browse:
-            # clear old data
-            self.table_view_source.model().table = []
-            self.table_view_source.model().header = []
-            if self.browser_source:
-                self.browser_source.close_file()
+    def browse_first_data(self):
+        # clear old data
+        self.clear_table(self.table_view_source)
+        if self.browser_source:
+            self.browser_source.close_file()
 
-            # add new data
-            params = self.source_params
-            if separator:
-                params[RunParams.SOURCE_SEP] = separator
-            self.browser_source = Browser(**params)
+        # add new data
+        try:
+            self.browser_source = Browser(source=self.source, **self._source_params)
             header = self.browser_source.get_header()
             self.table_view_source.model().header.extend(header)
             self.browse_data()
+        except:
+            self.clear_table(self.table_view_source)
+            print("Error in browsing file")
 
     def browse_next_data(self, value):
-        if self.table_view_source.verticalScrollBar().maximum() == value and self.can_browse:
+        if self.table_view_source.verticalScrollBar().maximum() == value:
             self.browse_data()
 
     def change_source_params(self):
@@ -211,8 +224,13 @@ class GuiSwift(QtGui.QWidget):
         result = cls.get_params(self)
         confirmed = result[1]
         if confirmed:
+            params.clear()
             params.update(result[0])
+            print(self._source_params)
             print(params)
+
+    def browse_source(self):
+        self.browse_first_data()
 
     def closeEvent(self, event):
         if self.browser_source:
@@ -278,7 +296,7 @@ class ParamsDialog(QtGui.QDialog):
     def get_dict_data(self):
         result = {}
         for name, w in self.widgets.items():
-            if w.data() != "":
+            if w.data() != w.default_val and w.data() != w.NONE_VAL:
                 result[name] = w.data()
         return result
 
@@ -302,18 +320,18 @@ class ParamsDialog(QtGui.QDialog):
 
 class SourceParamsDialog(ParamsDialog):
 
+    NO_PARAMS = 'no_params'
     format_poss_args = {FileType.ARFF: (RunParams.SOURCE_SEP),
                         FileType.CSV: (RunParams.SOURCE_SEP, RunParams.NFL, RunParams.SOURCE_ATTRS),
-                        FileType.CXT: (),
-                        FileType.DAT: (RunParams.SOURCE_SEP),
-                        FileType.DATA: (RunParams.SOURCE_SEP),
-                        None: (RunParams.SOURCE_SEP)}  # for adding separator before adding source
+                        FileType.CXT: (NO_PARAMS),
+                        FileType.DAT: (NO_PARAMS),
+                        FileType.DATA: (RunParams.SOURCE_SEP)}
 
     def __init__(self, parent):
         super().__init__(parent)
         self.params = parent.source_params
         # form lines
-        self.line_separator = FormLine("Separator")
+        self.line_separator = FormLine("Separator", default_val=',')
         self.line_str_attrs = FormLine("Attributes")
         # check box
         self.cb_nfl = FormCheckBox('Attributes on first line')
@@ -322,10 +340,9 @@ class SourceParamsDialog(ParamsDialog):
         self.widgets[RunParams.NFL] = self.cb_nfl
         self.widgets[RunParams.SOURCE_ATTRS] = self.line_str_attrs
         self.widgets[RunParams.SOURCE_SEP] = self.line_separator
+        self.widgets[self.NO_PARAMS] = FormLabel("No paramteres can be set.")
 
-        suffix = None
-        if RunParams.SOURCE in self.params:
-            suffix = os.path.splitext(self.params[RunParams.SOURCE])[1]
+        suffix = os.path.splitext(parent.source)[1]  # source file must be set!
         self.fill_layout(suffix)
         self.setWindowTitle('Parameters for source file')
 
@@ -342,7 +359,7 @@ class TargetParamsDialog(ParamsDialog):
         super().__init__(parent)
         self.params = parent.target_params
         # form lines
-        self.line_separator = FormLine("Separator")
+        self.line_separator = FormLine("Separator", default_val=',')
         self.line_str_attrs = FormLine("Attributes")
         self.line_str_objects = FormLine("Objects")
         self.line_rel_name = FormLine("Relation Name")
@@ -353,16 +370,35 @@ class TargetParamsDialog(ParamsDialog):
         self.widgets[RunParams.TARGET_OBJECTS] = self.line_str_objects
         self.widgets[RunParams.TARGET_ATTRS] = self.line_str_attrs
         self.widgets[RunParams.RELATION_NAME] = self.line_rel_name
-        suffix = os.path.splitext(self.params[RunParams.TARGET])[1]
+        suffix = os.path.splitext(self.target)[1]
         self.fill_layout(suffix)
         self.setWindowTitle('Parameters for target file')
 
 
-class FormCheckBox(QtGui.QWidget):
-    def __init__(self, label, parent=None):
+class FormWidget(QtGui.QWidget):
+    NONE_VAL = ''
+
+    def __init__(self, parent=None, default_val=NONE_VAL):
         super().__init__(parent)
+        self._default_val = default_val
+
+    @property
+    def default_val(self):
+        return self._default_val
+
+    def data(self):
+        return self.NONE_VAL
+
+    def set_data(self):
+        pass
+
+
+class FormCheckBox(FormWidget):
+    def __init__(self, label, parent=None, default_val=QtCore.Qt.Checked):
+        super().__init__(parent, default_val)
         self.cb = QtGui.QCheckBox(label, self)
         self.cb.toggle()
+        self.cb.setChecked(default_val)
         layout = QtGui.QVBoxLayout()
         layout.addWidget(self.cb)
         layout.setContentsMargins(6, 0, 0, 10)
@@ -376,11 +412,13 @@ class FormCheckBox(QtGui.QWidget):
             self.cb.setChecked(QtCore.Qt.Unchecked)
 
 
-class FormLine(QtGui.QWidget):
-    def __init__(self, label, parent=None):
-        super().__init__(parent)
+class FormLine(FormWidget):
+    def __init__(self, label, parent=None, default_val=FormWidget.NONE_VAL):
+        super().__init__(parent, default_val)
+
         self.label = QtGui.QLabel(label)
         self.line = QtGui.QLineEdit()
+        self.line.setText(default_val)
         self.line.setMinimumWidth(350)
         self.line.setStyleSheet('QLineEdit { background-color: %s }' % '#ffffff')
         layout = QtGui.QVBoxLayout(self)
@@ -393,6 +431,15 @@ class FormLine(QtGui.QWidget):
 
     def set_data(self, data):
         self.line.setText(data)
+
+
+class FormLabel(FormWidget):
+    def __init__(self, text, parent=None, default_val=FormWidget.NONE_VAL):
+        super().__init__(parent, default_val)
+        self.label = QtGui.QLabel(text, self)
+        layout = QtGui.QVBoxLayout()
+        layout.addWidget(self.label)
+        self.setLayout(layout)
 
 
 def main():

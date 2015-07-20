@@ -105,9 +105,11 @@ class Data:
         self._attr_count = len(self._attributes)
         with open(self.source, 'r') as f:
             Data.skip_lines(self.index_data_start, f)
-            for line in f:
+            for i, line in enumerate(f):
                 self._obj_count += 1
                 str_values = self.ss_str(line, self.separator)
+                if i == 0 and self._attr_count == 0:
+                    self._attr_count = len(str_values)
                 for i, attr in enumerate(self._attributes):
                     attr.update(str_values[i])
 
@@ -262,6 +264,12 @@ class DataCsv(Data):
             if not self._str_attrs:
                 self._str_attrs = self._get_first_line(self.source)
                 self.prepare()
+
+    def get_data_info(self):
+        super().get_data_info()
+        if not self._str_attrs:
+            self._str_attrs = self._separator.join([str(x) for x in range(self._attr_count)])
+            self.prepare()
 
     def _get_first_line(self, source):
         """Return first line from data file"""
@@ -484,9 +492,9 @@ class DataDat(DataBivalent):
     """Data format for FCALGS"""
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
-                 separator=' ', relation_name=''):
+                 separator=',', relation_name=''):
         super().__init__(source, str_attrs, str_objects,
-                         separator, relation_name)
+                         ' ', relation_name)
 
     def get_data_info(self):
         max_val = -1
