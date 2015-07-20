@@ -166,14 +166,15 @@ class GuiSwift(QtGui.QWidget):
         if state == QtGui.QValidator.Acceptable:
             color = '#c4df9b'  # green
             self._target_params.clear()
-            self._target_params[RunParams.TARGET] = sender.text()
             self.btn_t_params.setEnabled(True)
+            self._target = sender.text()
         else:
             color = '#f6989d'  # red
             self.btn_t_params.setEnabled(False)
         if sender.text() == "":
             color = '#ffffff'  # white
             self.btn_t_params.setEnabled(False)
+            self._target_params.clear()
         self.set_line_bg(sender, color)
 
     def select_source(self):
@@ -226,7 +227,6 @@ class GuiSwift(QtGui.QWidget):
         if confirmed:
             params.clear()
             params.update(result[0])
-            print(self._source_params)
             print(params)
 
     def browse_source(self):
@@ -370,7 +370,7 @@ class TargetParamsDialog(ParamsDialog):
         self.widgets[RunParams.TARGET_OBJECTS] = self.line_str_objects
         self.widgets[RunParams.TARGET_ATTRS] = self.line_str_attrs
         self.widgets[RunParams.RELATION_NAME] = self.line_rel_name
-        suffix = os.path.splitext(self.target)[1]
+        suffix = os.path.splitext(parent.target)[1]
         self.fill_layout(suffix)
         self.setWindowTitle('Parameters for target file')
 
