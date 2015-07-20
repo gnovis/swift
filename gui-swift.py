@@ -10,6 +10,7 @@ import os.path
 from PyQt4 import QtGui, QtCore
 from source_swift.managers_fca import Browser
 from source_swift.constants_fca import (RunParams, FileType)
+from source_swift.validator_fca import ParamValidator
 
 
 class GuiSwift(QtGui.QWidget):
@@ -90,6 +91,7 @@ class GuiSwift(QtGui.QWidget):
         btn_s_select.clicked.connect(self.select_source)
         btn_t_select.clicked.connect(self.select_target)
         self.btn_browse.clicked.connect(self.browse_source)
+        self.btn_convert.clicked.connect(self.convert)
 
         # Layout
         hbox_source = QtGui.QHBoxLayout()
@@ -153,6 +155,7 @@ class GuiSwift(QtGui.QWidget):
             self.btn_browse.setEnabled(False)
         if sender.text() == "":
             color = '#ffffff'  # white
+            self._source = None
             self.btn_s_params.setEnabled(False)
             self.btn_browse.setEnabled(False)
             self._source_params.clear()
@@ -173,6 +176,7 @@ class GuiSwift(QtGui.QWidget):
             self.btn_t_params.setEnabled(False)
         if sender.text() == "":
             color = '#ffffff'  # white
+            self._target = None
             self.btn_t_params.setEnabled(False)
             self._target_params.clear()
         self.set_line_bg(sender, color)
@@ -231,6 +235,12 @@ class GuiSwift(QtGui.QWidget):
 
     def browse_source(self):
         self.browse_first_data()
+
+    def convert(self):
+        validator = ParamValidator(self.source, self.target, self.source_params, self.target_params)
+        errors = validator.errors
+        if len(errors) > 0:
+            print(errors)
 
     def closeEvent(self, event):
         if self.browser_source:

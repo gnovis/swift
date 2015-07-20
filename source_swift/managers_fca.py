@@ -4,7 +4,6 @@ from source_swift.constants_fca import (FileType, RunParams)
 
 
 class ManagerFca:
-
     extensions = {FileType.CSV: DataCsv,
                   FileType.ARFF: DataArff,
                   FileType.DAT: DataDat,
