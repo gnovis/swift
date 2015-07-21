@@ -7,6 +7,7 @@ GUI application for Swift FCA
 import sys
 import collections
 import os.path
+import traceback
 from PyQt4 import QtGui, QtCore
 from source_swift.managers_fca import (Browser, Convertor)
 from source_swift.constants_fca import (RunParams, FileType)
@@ -180,6 +181,7 @@ class GuiSwift(QtGui.QWidget):
             self._target = None
             self.btn_t_params.setEnabled(False)
             self._target_params.clear()
+            self.clear_table(self.table_view_target)
         self.set_line_bg(sender, color)
 
     def select_source(self):
@@ -207,15 +209,22 @@ class GuiSwift(QtGui.QWidget):
             browser.close_file()
 
         # add new data
-        # try:
-        browser = Browser(source=source_file, **params)
-        header = browser.get_header()
-        table_view.model().header.extend(header)
-        self.browse_data(browser, table_view)
-        return browser
-        # except:
-        # self.clear_table(table_view)
-        # print("Error in browsing file")
+        try:
+            browser = Browser(source=source_file, **params)
+            header = browser.get_header()
+            table_view.model().header.extend(header)
+            self.browse_data(browser, table_view)
+            return browser
+        except:
+            self.clear_table(table_view)
+            tb = traceback.format_exc()
+            msgBox = QtGui.QMessageBox()
+            msgBox.setWindowTitle("Browsing error")
+            msgBox.setText("Wasn't possible to browse data, please check syntax in browsing file and separator used.")
+            msgBox.setStandardButtons(QtGui.QMessageBox.Close)
+            msgBox.setDetailedText(tb)
+            msgBox.setIcon(QtGui.QMessageBox.Critical)
+            msgBox.exec_()
 
     def browse_next_source(self, value):
         if self.table_view_source.verticalScrollBar().maximum() == value:
@@ -245,10 +254,20 @@ class GuiSwift(QtGui.QWidget):
 
     def convert(self):
         validator = ParamValidator(self.source, self.target, self.source_params, self.target_params)
-        errors = validator.errors
-        if len(errors) > 0:
-            print(errors)
-        else:
+        warnings = validator.warnings
+
+        procces = True
+        if len(warnings) > 0:
+            msgBox = QtGui.QMessageBox()
+            msgBox.setWindowTitle("Parameters warning")
+            msgBox.setText("Some of required parameters weren't specified, conversion may crash. Do you want to continue?")
+            msgBox.setInformativeText("Warnings: \n" + "\n".join(warnings))
+            msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
+            msgBox.setDefaultButton(QtGui.QMessageBox.No)
+            msgBox.setIcon(QtGui.QMessageBox.Warning)
+            if msgBox.exec_() == QtGui.QMessageBox.No:
+                procces = False
+        if procces:
             # preparing params
             s_p = self.source_params
             s_p[RunParams.SOURCE] = self.source
@@ -256,12 +275,22 @@ class GuiSwift(QtGui.QWidget):
             t_p[RunParams.TARGET] = self.target
 
             # conversion
-            convertor = Convertor(s_p, t_p)
-            convertor.convert()
-
-            # display data
-            self.browser_target = self.browse_first_data(self.table_view_target, self.browser_target,
-                                                         self.target, self.target_params)
+            try:
+                convertor = Convertor(s_p, t_p)
+                convertor.convert()
+            except:
+                tb = traceback.format_exc()
+                msgBox = QtGui.QMessageBox()
+                msgBox.setWindowTitle("Convert error")
+                msgBox.setText("Wasn't possible to convert data, please check syntax in source file and specified parameters.")
+                msgBox.setStandardButtons(QtGui.QMessageBox.Close)
+                msgBox.setDetailedText(tb)
+                msgBox.setIcon(QtGui.QMessageBox.Critical)
+                msgBox.exec_()
+            else:
+                # display data
+                self.browser_target = self.browse_first_data(self.table_view_target, self.browser_target,
+                                                             self.target, self.target_params)
 
     def closeEvent(self, event):
         if self.browser_source:
