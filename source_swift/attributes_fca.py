@@ -94,7 +94,7 @@ class AttrScaleNumeric(AttrScale):
             # if value is not integer(is string or undefined e.g None, "" or ?) =>
             # result of scaling is false
             return False
-        replaced = re.sub(r"[^<>=0-9]+", "x", self._expr_pattern)
+        replaced = re.sub(r"[^<>=0-9\s]+", "x", self._expr_pattern)
         return eval(replaced)
 
     def update(self, str_value):

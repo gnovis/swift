@@ -383,7 +383,7 @@ class TargetParamsDialog(ParamsDialog):
     format_poss_args = {FileType.ARFF: (RunParams.TARGET_ATTRS, RunParams.TARGET_SEP),
                         FileType.CSV: (RunParams.TARGET_ATTRS, RunParams.TARGET_SEP),
                         FileType.CXT: (RunParams.TARGET_ATTRS, RunParams.TARGET_OBJECTS),
-                        FileType.DAT: (RunParams.TARGET_ATTRS, RunParams.TARGET_SEP),
+                        FileType.DAT: (RunParams.TARGET_ATTRS),
                         FileType.DATA: (RunParams.TARGET_ATTRS, RunParams.CLASSES, RunParams.TARGET_SEP)}
 
     def __init__(self, parent):
