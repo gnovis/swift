@@ -8,7 +8,7 @@ import sys
 import collections
 import os.path
 from PyQt4 import QtGui, QtCore
-from source_swift.managers_fca import Browser
+from source_swift.managers_fca import (Browser, Convertor)
 from source_swift.constants_fca import (RunParams, FileType)
 from source_swift.validator_fca import ParamValidator
 
@@ -72,7 +72,8 @@ class GuiSwift(QtGui.QWidget):
         self.table_view_source.setModel(table_model_source)
         self.table_view_target.setModel(table_model_target)
 
-        self.table_view_source.verticalScrollBar().valueChanged.connect(self.browse_next_data)
+        self.table_view_source.verticalScrollBar().valueChanged.connect(self.browse_next_source)
+        self.table_view_target.verticalScrollBar().valueChanged.connect(self.browse_next_target)
 
         # Buttons
         btn_s_select = QtGui.QPushButton("Select")
@@ -189,35 +190,40 @@ class GuiSwift(QtGui.QWidget):
         file_name = QtGui.QFileDialog.getSaveFileName(self, "Select target file", filter=self.file_filter)
         self.line_target.setText(file_name)
 
-    def browse_data(self):
-        data = self.browser_source.get_display_data(self.SCROLL_COUNT)
-        self.table_view_source.model().table.extend(data)
-        self.table_view_source.model().layoutChanged.emit()
+    def browse_data(self, browser, table_view):
+        data = browser.get_display_data(self.SCROLL_COUNT)
+        table_view.model().table.extend(data)
+        table_view.model().layoutChanged.emit()
 
     def clear_table(self, table):
         table.model().table.clear()
         table.model().header.clear()
         table.model().layoutChanged.emit()
 
-    def browse_first_data(self):
+    def browse_first_data(self, table_view, browser, source_file, params):
         # clear old data
-        self.clear_table(self.table_view_source)
-        if self.browser_source:
-            self.browser_source.close_file()
+        self.clear_table(table_view)
+        if browser:
+            browser.close_file()
 
         # add new data
-        try:
-            self.browser_source = Browser(source=self.source, **self._source_params)
-            header = self.browser_source.get_header()
-            self.table_view_source.model().header.extend(header)
-            self.browse_data()
-        except:
-            self.clear_table(self.table_view_source)
-            print("Error in browsing file")
+        # try:
+        browser = Browser(source=source_file, **params)
+        header = browser.get_header()
+        table_view.model().header.extend(header)
+        self.browse_data(browser, table_view)
+        return browser
+        # except:
+        # self.clear_table(table_view)
+        # print("Error in browsing file")
 
-    def browse_next_data(self, value):
+    def browse_next_source(self, value):
         if self.table_view_source.verticalScrollBar().maximum() == value:
-            self.browse_data()
+            self.browse_data(self.browser_source, self.table_view_source)
+
+    def browse_next_target(self, value):
+        if self.table_view_target.verticalScrollBar().maximum() == value:
+            self.browse_data(self.browser_target, self.table_view_target)
 
     def change_source_params(self):
         self.change_params(SourceParamsDialog, self._source_params)
@@ -234,13 +240,28 @@ class GuiSwift(QtGui.QWidget):
             print(params)
 
     def browse_source(self):
-        self.browse_first_data()
+        self.browser_source = self.browse_first_data(self.table_view_source, self.browser_source,
+                                                     self.source, self.source_params)
 
     def convert(self):
         validator = ParamValidator(self.source, self.target, self.source_params, self.target_params)
         errors = validator.errors
         if len(errors) > 0:
             print(errors)
+        else:
+            # preparing params
+            s_p = self.source_params
+            s_p[RunParams.SOURCE] = self.source
+            t_p = self.target_params
+            t_p[RunParams.TARGET] = self.target
+
+            # conversion
+            convertor = Convertor(s_p, t_p)
+            convertor.convert()
+
+            # display data
+            self.browser_target = self.browse_first_data(self.table_view_target, self.browser_target,
+                                                         self.target, self.target_params)
 
     def closeEvent(self, event):
         if self.browser_source:
