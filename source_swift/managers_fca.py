@@ -1,5 +1,6 @@
 import os
 from PyQt4 import QtCore
+from PyQt4.QtCore import SIGNAL
 from source_swift.data_fca import (Data, DataCsv, DataArff, DataDat, DataCxt, DataData)
 from source_swift.constants_fca import (FileType, RunParams)
 
@@ -16,11 +17,13 @@ class ManagerFca(QtCore.QObject):
 
 
 class Browser(ManagerFca):
+
     def __init__(self, **kwargs):
         file_path = kwargs[RunParams.SOURCE]
-        print(kwargs)
         self._data = self.get_data_class(file_path)(**kwargs)
         self._opened_file = open(file_path, "r")
+
+    def read_info(self):
         self._data.get_header_info()
         self._data.get_data_info()  # must be called always because of .dat format
         Data.skip_lines(self._data.index_data_start, self._opened_file)
@@ -44,6 +47,18 @@ class Browser(ManagerFca):
 
     def close_file(self):
         self._opened_file.close()
+
+
+class BgWorker(QtCore.QThread):
+    file_readed = QtCore.pyqtSignal(Browser)
+
+    def __init__(self, browser, mw):
+        super(BgWorker, self).__init__(mw)
+        self.br = browser
+
+    def run(self):
+        self.br.read_info()  # must be called always because of .dat format
+        self.emit(SIGNAL('file_readed'), self.br)
 
 
 class Convertor(ManagerFca):

@@ -9,7 +9,8 @@ import collections
 import os.path
 import traceback
 from PyQt4 import QtGui, QtCore
-from source_swift.managers_fca import (Browser, Convertor)
+from PyQt4.QtCore import SIGNAL
+from source_swift.managers_fca import (Browser, Convertor, BgWorker)
 from source_swift.constants_fca import (RunParams, FileType)
 from source_swift.validator_fca import ParamValidator
 
@@ -77,15 +78,22 @@ class GuiSwift(QtGui.QWidget):
         self.table_view_target.verticalScrollBar().valueChanged.connect(self.browse_next_target)
 
         # Buttons
+
+        def set_btn_size(btn):
+            btn.setSizePolicy(QtGui.QSizePolicy.Fixed,
+                              QtGui.QSizePolicy.Fixed)
+
         btn_s_select = QtGui.QPushButton("Select")
         btn_t_select = QtGui.QPushButton("Select")
         self.btn_s_params = QtGui.QPushButton("Set Params")
         self.btn_t_params = QtGui.QPushButton("Set Params")
-        self.btn_t_params.setSizePolicy(QtGui.QSizePolicy.Fixed,
-                                        QtGui.QSizePolicy.Fixed)
         self.btn_convert = QtGui.QPushButton("Convert")
         self.btn_browse = QtGui.QPushButton("Browse")
         self.file_filter = "FCA files (*.arff *.cxt *.data *.dat *.csv);;All(*)"
+        set_btn_size(self.btn_t_params)
+        set_btn_size(self.btn_s_params)
+        set_btn_size(self.btn_convert)
+        set_btn_size(self.btn_browse)
 
         self.btn_s_params.clicked.connect(self.change_source_params)
         self.btn_t_params.clicked.connect(self.change_target_params)
@@ -101,24 +109,37 @@ class GuiSwift(QtGui.QWidget):
         self.p_bar = QtGui.QProgressBar(self)
         self.p_bar.hide()
 
+        def get_pbar_inf(layout=None):
+            pb = PBar(layout=layout, parent=self)
+            pb.setMaximum(0)
+            pb.setMinimum(0)
+            return pb
+
         # Layout
         hbox_source = QtGui.QHBoxLayout()
         hbox_target = QtGui.QHBoxLayout()
         hbox_s_btn_set = QtGui.QHBoxLayout()
         hbox_t_btn_set = QtGui.QHBoxLayout()
-        hbox_s_btn_set.addStretch(0)
         hbox_s_btn_set.setDirection(QtGui.QBoxLayout.RightToLeft)
         hbox_t_btn_set.setDirection(QtGui.QBoxLayout.RightToLeft)
+
+        self.source_pbar = get_pbar_inf(hbox_s_btn_set)
+        self.target_pbar = get_pbar_inf()
 
         hbox_source.addWidget(self.line_source)
         hbox_source.addWidget(btn_s_select)
         hbox_target.addWidget(self.line_target)
         hbox_target.addWidget(btn_t_select)
+        hbox_t_btn_set.addWidget(self.target_pbar)
+        hbox_s_btn_set.addWidget(self.source_pbar)
         hbox_t_btn_set.addWidget(self.p_bar)
-        hbox_s_btn_set.addWidget(self.btn_convert)
-        hbox_s_btn_set.addWidget(self.btn_browse)
-        hbox_s_btn_set.addWidget(self.btn_s_params)
+        hbox_s_btn_set.addWidget(self.btn_convert, alignment=QtCore.Qt.AlignLeft)
+        hbox_s_btn_set.addWidget(self.btn_browse, alignment=QtCore.Qt.AlignLeft)
+        hbox_s_btn_set.addWidget(self.btn_s_params, alignment=QtCore.Qt.AlignLeft)
         hbox_t_btn_set.addWidget(self.btn_t_params, alignment=QtCore.Qt.AlignLeft)
+
+        self.source_pbar.hide()
+        self.target_pbar.hide()
 
         grid = QtGui.QGridLayout()
         grid.setSpacing(10)
@@ -208,19 +229,26 @@ class GuiSwift(QtGui.QWidget):
         table.model().header.clear()
         table.model().layoutChanged.emit()
 
-    def browse_first_data(self, table_view, browser, source_file, params):
+    def browse_first_data(self, table_view, browser, source_file, params, pbar):
         # clear old data
         self.clear_table(table_view)
         if browser:
             browser.close_file()
 
         # add new data
-        try:
-            browser = Browser(source=source_file, **params)
+        def cont(browser):
+            print("IS HERE", browser)
             header = browser.get_header()
             table_view.model().header.extend(header)
             self.browse_data(browser, table_view)
-            return browser
+            pbar.hide()
+
+        try:
+            pbar.show()
+            browser = Browser(source=source_file, **params)
+            self.bg = BgWorker(browser, self)
+            self.bg.connect(self.bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
+            self.bg.start()
         except:
             self.clear_table(table_view)
             tb = traceback.format_exc()
@@ -256,7 +284,8 @@ class GuiSwift(QtGui.QWidget):
 
     def browse_source(self):
         self.browser_source = self.browse_first_data(self.table_view_source, self.browser_source,
-                                                     self.source, self.source_params)
+                                                     self.source, self.source_params, self.source_pbar)
+        print(self.browser_source)
 
     def convert(self):
         validator = ParamValidator(self.source, self.target, self.source_params, self.target_params)
@@ -288,9 +317,11 @@ class GuiSwift(QtGui.QWidget):
                 self.p_bar.show()
                 self.p_bar.setMinimum(1)
                 self.p_bar.setMaximum(maximum)
+                self.p_bar.setTextVisible(True)
+                self.p_bar.setFormat("Converting, please wait " + self.p_bar.format())
 
             def clear_pbar():
-                self.p_bar.setValue(self.p_bar.minimum())
+                self.p_bar.reset()
                 self.p_bar.hide()
 
             try:
@@ -310,7 +341,7 @@ class GuiSwift(QtGui.QWidget):
             else:
                 # display data
                 self.browser_target = self.browse_first_data(self.table_view_target, self.browser_target,
-                                                             self.target, self.target_params)
+                                                             self.target, self.target_params, self.target_pbar)
             finally:
                 clear_pbar()
 
@@ -522,6 +553,23 @@ class FormLabel(FormWidget):
         layout = QtGui.QVBoxLayout()
         layout.addWidget(self.label)
         self.setLayout(layout)
+
+
+class PBar(QtGui.QProgressBar):
+
+    def __init__(self, layout=None, parent=None):
+        super().__init__(parent)
+        self.layout = layout
+
+    def hide(self):
+        super().hide()
+        if self.layout:
+            self.layout.insertStretch(0, 1)
+
+    def show(self):
+        super().show()
+        if self.layout:
+            self.layout.takeAt(0)
 
 
 def main():
