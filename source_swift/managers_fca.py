@@ -1,9 +1,10 @@
 import os
+from PyQt4 import QtCore
 from source_swift.data_fca import (Data, DataCsv, DataArff, DataDat, DataCxt, DataData)
 from source_swift.constants_fca import (FileType, RunParams)
 
 
-class ManagerFca:
+class ManagerFca(QtCore.QObject):
     extensions = {FileType.CSV: DataCsv,
                   FileType.ARFF: DataArff,
                   FileType.DAT: DataDat,
@@ -48,8 +49,10 @@ class Browser(ManagerFca):
 class Convertor(ManagerFca):
     """Manage data conversion"""
 
-    def __init__(self, old, new, print_info=False):
+    next_line = QtCore.pyqtSignal()
 
+    def __init__(self, old, new, print_info=False):
+        super().__init__()
         # suffixes of input files
         source_cls = self.get_data_class(old['source'])
         target_cls = self.get_data_class(new['source'])
@@ -64,6 +67,8 @@ class Convertor(ManagerFca):
         if print_info:
             self._old_data.print_info()
 
+        self._source_line_count = self._old_data.obj_count
+
         # check if should scale
         self._scaling = False
         if (source_cls == DataCsv or
@@ -74,6 +79,10 @@ class Convertor(ManagerFca):
             self._new_data.parse_old_attrs_for_scale(self._old_data.str_attrs,
                                                      self._old_data.separator)
             self._new_data.parse_new_attrs_for_scale()
+
+    @property
+    def source_line_count(self):
+        return self._source_line_count
 
     def convert(self):
         """Call this method to convert data"""
@@ -92,4 +101,5 @@ class Convertor(ManagerFca):
                 else:
                     self._new_data.write_line(prepared_line,
                                               target_file)
+                self.next_line.emit()
         target_file.close()

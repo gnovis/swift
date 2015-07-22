@@ -81,6 +81,8 @@ class GuiSwift(QtGui.QWidget):
         btn_t_select = QtGui.QPushButton("Select")
         self.btn_s_params = QtGui.QPushButton("Set Params")
         self.btn_t_params = QtGui.QPushButton("Set Params")
+        self.btn_t_params.setSizePolicy(QtGui.QSizePolicy.Fixed,
+                                        QtGui.QSizePolicy.Fixed)
         self.btn_convert = QtGui.QPushButton("Convert")
         self.btn_browse = QtGui.QPushButton("Browse")
         self.file_filter = "FCA files (*.arff *.cxt *.data *.dat *.csv);;All(*)"
@@ -95,13 +97,16 @@ class GuiSwift(QtGui.QWidget):
         self.btn_browse.clicked.connect(self.browse_source)
         self.btn_convert.clicked.connect(self.convert)
 
+        # Progress Bar
+        self.p_bar = QtGui.QProgressBar(self)
+        self.p_bar.hide()
+
         # Layout
         hbox_source = QtGui.QHBoxLayout()
         hbox_target = QtGui.QHBoxLayout()
         hbox_s_btn_set = QtGui.QHBoxLayout()
         hbox_t_btn_set = QtGui.QHBoxLayout()
-        hbox_s_btn_set.addStretch(1)
-        hbox_t_btn_set.addStretch(1)
+        hbox_s_btn_set.addStretch(0)
         hbox_s_btn_set.setDirection(QtGui.QBoxLayout.RightToLeft)
         hbox_t_btn_set.setDirection(QtGui.QBoxLayout.RightToLeft)
 
@@ -109,10 +114,11 @@ class GuiSwift(QtGui.QWidget):
         hbox_source.addWidget(btn_s_select)
         hbox_target.addWidget(self.line_target)
         hbox_target.addWidget(btn_t_select)
+        hbox_t_btn_set.addWidget(self.p_bar)
         hbox_s_btn_set.addWidget(self.btn_convert)
         hbox_s_btn_set.addWidget(self.btn_browse)
         hbox_s_btn_set.addWidget(self.btn_s_params)
-        hbox_t_btn_set.addWidget(self.btn_t_params)
+        hbox_t_btn_set.addWidget(self.btn_t_params, alignment=QtCore.Qt.AlignLeft)
 
         grid = QtGui.QGridLayout()
         grid.setSpacing(10)
@@ -260,7 +266,7 @@ class GuiSwift(QtGui.QWidget):
         if len(warnings) > 0:
             msgBox = QtGui.QMessageBox()
             msgBox.setWindowTitle("Parameters warning")
-            msgBox.setText("Some of required parameters weren't specified, conversion may crash. Do you want to continue?")
+            msgBox.setText("Some of required parameters weren't specified correctly, conversion may crash. Do you want to continue?")
             msgBox.setInformativeText("Warnings: \n" + "\n".join(warnings))
             msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
             msgBox.setDefaultButton(QtGui.QMessageBox.No)
@@ -275,8 +281,22 @@ class GuiSwift(QtGui.QWidget):
             t_p[RunParams.TARGET] = self.target
 
             # conversion
+            def update_pbar():
+                self.p_bar.setValue(self.p_bar.value() + 1)
+
+            def setup_pbar(maximum):
+                self.p_bar.show()
+                self.p_bar.setMinimum(1)
+                self.p_bar.setMaximum(maximum)
+
+            def clear_pbar():
+                self.p_bar.setValue(self.p_bar.minimum())
+                self.p_bar.hide()
+
             try:
                 convertor = Convertor(s_p, t_p)
+                setup_pbar(convertor.source_line_count)
+                convertor.next_line.connect(update_pbar)
                 convertor.convert()
             except:
                 tb = traceback.format_exc()
@@ -291,6 +311,8 @@ class GuiSwift(QtGui.QWidget):
                 # display data
                 self.browser_target = self.browse_first_data(self.table_view_target, self.browser_target,
                                                              self.target, self.target_params)
+            finally:
+                clear_pbar()
 
     def closeEvent(self, event):
         if self.browser_source:
