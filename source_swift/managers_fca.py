@@ -1,6 +1,5 @@
 import os
 from PyQt4 import QtCore
-from PyQt4.QtCore import SIGNAL
 from source_swift.data_fca import (Data, DataCsv, DataArff, DataDat, DataCxt, DataData)
 from source_swift.constants_fca import (FileType, RunParams)
 

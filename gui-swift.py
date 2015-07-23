@@ -349,7 +349,7 @@ class GuiSwift(QtGui.QWidget):
                 bg = BgWorker(bg_func, self)
                 bg.connect(bg, SIGNAL('file_converted'), display_data, QtCore.Qt.QueuedConnection)
                 bg.start()
-            try:
+            try:  # TODO now is try0except block is not ok, fix it
                 convertor = Convertor(s_p, t_p)
                 self.target_pbar.show()
 
