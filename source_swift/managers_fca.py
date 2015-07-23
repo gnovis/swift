@@ -111,10 +111,9 @@ class Convertor(ManagerFca):
 
 
 class BgWorker(QtCore.QThread):
-    def __init__(self, manager, mw):
+    def __init__(self, function, mw):
         super(BgWorker, self).__init__(mw)
-        self.manager = manager
+        self.function = function
 
     def run(self):
-        self.manager.read_info()  # must be called always because of .dat format
-        self.emit(SIGNAL('file_readed'), self.manager)
+        self.function(self)

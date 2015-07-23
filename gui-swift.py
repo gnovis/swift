@@ -245,7 +245,13 @@ class GuiSwift(QtGui.QWidget):
         try:
             pbar.show()
             browser = Browser(source=source_file, **params)
-            bg = BgWorker(browser, self)
+
+            # function which will be run on background
+            def bg_func(worker):
+                browser.read_info()
+                worker.emit(SIGNAL('file_readed'), browser)
+
+            bg = BgWorker(bg_func, self)
             bg.connect(bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
             bg.start()
             return browser
@@ -323,21 +329,36 @@ class GuiSwift(QtGui.QWidget):
                 self.p_bar.reset()
                 self.p_bar.hide()
 
+            def display_data(c):
+                clear_pbar()
+                # display data
+                self.browser_target = self.browse_first_data(self.table_view_target, self.browser_target,
+                                                             self.target, self.target_params, self.target_pbar)
+
             # signal handler -> continue after thread ends
             def cont(convertor):
                 self.target_pbar.hide()
                 setup_pbar(convertor.source_line_count)
                 convertor.next_line.connect(update_pbar)
-                convertor.convert()
-                clear_pbar()
-                # display data
-                self.browser_target = self.browse_first_data(self.table_view_target, self.browser_target,
-                                                             self.target, self.target_params, self.target_pbar)
+
+                # function which will be run on background
+                def bg_func(worker):
+                    convertor.convert()
+                    worker.emit(SIGNAL('file_converted'), convertor)
+
+                bg = BgWorker(bg_func, self)
+                bg.connect(bg, SIGNAL('file_converted'), display_data, QtCore.Qt.QueuedConnection)
+                bg.start()
             try:
                 convertor = Convertor(s_p, t_p)
                 self.target_pbar.show()
 
-                bg = BgWorker(convertor, self)
+                # function which will be run on background
+                def bg_func(worker):
+                    convertor.read_info()
+                    worker.emit(SIGNAL('file_readed'), convertor)
+
+                bg = BgWorker(bg_func, self)
                 bg.connect(bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
                 bg.start()
 
