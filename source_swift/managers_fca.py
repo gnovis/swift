@@ -49,18 +49,6 @@ class Browser(ManagerFca):
         self._opened_file.close()
 
 
-class BgWorker(QtCore.QThread):
-    file_readed = QtCore.pyqtSignal(Browser)
-
-    def __init__(self, browser, mw):
-        super(BgWorker, self).__init__(mw)
-        self.br = browser
-
-    def run(self):
-        self.br.read_info()  # must be called always because of .dat format
-        self.emit(SIGNAL('file_readed'), self.br)
-
-
 class Convertor(ManagerFca):
     """Manage data conversion"""
 
@@ -69,38 +57,40 @@ class Convertor(ManagerFca):
     def __init__(self, old, new, print_info=False):
         super().__init__()
         # suffixes of input files
-        source_cls = self.get_data_class(old['source'])
-        target_cls = self.get_data_class(new['source'])
+        self._source_cls = self.get_data_class(old['source'])
+        self._target_cls = self.get_data_class(new['source'])
 
         # create data file object according suffix
-        self._old_data = source_cls(**old)
-        self._new_data = target_cls(**new)
-
-        # get information from source data
-        self._old_data.get_header_info()
-        self._old_data.get_data_info()
-        if print_info:
-            self._old_data.print_info()
-
-        self._source_line_count = self._old_data.obj_count
-
-        # check if should scale
-        self._scaling = False
-        if (source_cls == DataCsv or
-            source_cls == DataArff or
-            source_cls == DataData) and (target_cls == DataDat or
-                                         target_cls == DataCxt):
-            self._scaling = True
-            self._new_data.parse_old_attrs_for_scale(self._old_data.str_attrs,
-                                                     self._old_data.separator)
-            self._new_data.parse_new_attrs_for_scale()
+        self._old_data = self._source_cls(**old)
+        self._new_data = self._target_cls(**new)
+        self._print_info = print_info
 
     @property
     def source_line_count(self):
         return self._source_line_count
 
+    def read_info(self):
+        # get information from source data
+        self._old_data.get_header_info()
+        self._old_data.get_data_info()
+        if self._print_info:
+            self._old_data.print_info()
+        # this is for progress bar
+        self._source_line_count = self._old_data.obj_count
+        # check if should scale
+
     def convert(self):
         """Call this method to convert data"""
+
+        self._scaling = False
+        if (self._source_cls == DataCsv or
+            self._source_cls == DataArff or
+            self._source_cls == DataData) and (self._target_cls == DataDat or
+                                               self._target_cls == DataCxt):
+            self._scaling = True
+            self._new_data.parse_old_attrs_for_scale(self._old_data.str_attrs,
+                                                     self._old_data.separator)
+            self._new_data.parse_new_attrs_for_scale()
 
         target_file = open(self._new_data.source, 'w')
         # write header part
@@ -118,3 +108,13 @@ class Convertor(ManagerFca):
                                               target_file)
                 self.next_line.emit()
         target_file.close()
+
+
+class BgWorker(QtCore.QThread):
+    def __init__(self, manager, mw):
+        super(BgWorker, self).__init__(mw)
+        self.manager = manager
+
+    def run(self):
+        self.manager.read_info()  # must be called always because of .dat format
+        self.emit(SIGNAL('file_readed'), self.manager)

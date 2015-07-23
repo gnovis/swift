@@ -58,6 +58,7 @@ def run_swift():
                 other_args[new_key] = val
 
     convertor = Convertor(old_file_args, new_file_args, **other_args)
+    convertor.read_info()
     convertor.convert()
 
 # Uncomment following line to run swift application

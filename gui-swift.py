@@ -235,9 +235,8 @@ class GuiSwift(QtGui.QWidget):
         if browser:
             browser.close_file()
 
-        # add new data
+        # signal handler -> continue after thread ends
         def cont(browser):
-            print("IS HERE", browser)
             header = browser.get_header()
             table_view.model().header.extend(header)
             self.browse_data(browser, table_view)
@@ -246,9 +245,10 @@ class GuiSwift(QtGui.QWidget):
         try:
             pbar.show()
             browser = Browser(source=source_file, **params)
-            self.bg = BgWorker(browser, self)
-            self.bg.connect(self.bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
-            self.bg.start()
+            bg = BgWorker(browser, self)
+            bg.connect(bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
+            bg.start()
+            return browser
         except:
             self.clear_table(table_view)
             tb = traceback.format_exc()
@@ -285,7 +285,6 @@ class GuiSwift(QtGui.QWidget):
     def browse_source(self):
         self.browser_source = self.browse_first_data(self.table_view_source, self.browser_source,
                                                      self.source, self.source_params, self.source_pbar)
-        print(self.browser_source)
 
     def convert(self):
         validator = ParamValidator(self.source, self.target, self.source_params, self.target_params)
@@ -324,11 +323,24 @@ class GuiSwift(QtGui.QWidget):
                 self.p_bar.reset()
                 self.p_bar.hide()
 
-            try:
-                convertor = Convertor(s_p, t_p)
+            # signal handler -> continue after thread ends
+            def cont(convertor):
+                self.target_pbar.hide()
                 setup_pbar(convertor.source_line_count)
                 convertor.next_line.connect(update_pbar)
                 convertor.convert()
+                clear_pbar()
+                # display data
+                self.browser_target = self.browse_first_data(self.table_view_target, self.browser_target,
+                                                             self.target, self.target_params, self.target_pbar)
+            try:
+                convertor = Convertor(s_p, t_p)
+                self.target_pbar.show()
+
+                bg = BgWorker(convertor, self)
+                bg.connect(bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
+                bg.start()
+
             except:
                 tb = traceback.format_exc()
                 msgBox = QtGui.QMessageBox()
@@ -338,12 +350,6 @@ class GuiSwift(QtGui.QWidget):
                 msgBox.setDetailedText(tb)
                 msgBox.setIcon(QtGui.QMessageBox.Critical)
                 msgBox.exec_()
-            else:
-                # display data
-                self.browser_target = self.browse_first_data(self.table_view_target, self.browser_target,
-                                                             self.target, self.target_params, self.target_pbar)
-            finally:
-                clear_pbar()
 
     def closeEvent(self, event):
         if self.browser_source:
