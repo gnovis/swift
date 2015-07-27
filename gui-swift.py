@@ -30,6 +30,9 @@ class GuiSwift(QtGui.QWidget):
         self.browser_source = None
         self.browser_target = None
 
+        self.convert_pbar = PBar(self, title="Convert Data", label_text="Converting, please wait.")
+        self.browse_pbar = PBar(self, inf=True, title="Prepare Data", label_text="Preparing data, please wait.")
+
         self.initUI()
 
     @property
@@ -79,10 +82,6 @@ class GuiSwift(QtGui.QWidget):
 
         # Buttons
 
-        def set_btn_size(btn):
-            btn.setSizePolicy(QtGui.QSizePolicy.Fixed,
-                              QtGui.QSizePolicy.Fixed)
-
         btn_s_select = QtGui.QPushButton("Select")
         btn_t_select = QtGui.QPushButton("Select")
         self.btn_s_params = QtGui.QPushButton("Set Params")
@@ -90,10 +89,6 @@ class GuiSwift(QtGui.QWidget):
         self.btn_convert = QtGui.QPushButton("Convert")
         self.btn_browse = QtGui.QPushButton("Browse")
         self.file_filter = "FCA files (*.arff *.cxt *.data *.dat *.csv);;All(*)"
-        set_btn_size(self.btn_t_params)
-        set_btn_size(self.btn_s_params)
-        set_btn_size(self.btn_convert)
-        set_btn_size(self.btn_browse)
 
         self.btn_s_params.clicked.connect(self.change_source_params)
         self.btn_t_params.clicked.connect(self.change_target_params)
@@ -105,15 +100,8 @@ class GuiSwift(QtGui.QWidget):
         self.btn_browse.clicked.connect(self.browse_source)
         self.btn_convert.clicked.connect(self.convert)
 
-        # Progress Bar
-        self.p_bar = QtGui.QProgressBar(self)
-        self.p_bar.hide()
-
-        def get_pbar_inf(layout=None):
-            pb = PBar(layout=layout, parent=self)
-            pb.setMaximum(0)
-            pb.setMinimum(0)
-            return pb
+        # Checkbox
+        self.chb_browse_convert = QtGui.QCheckBox("Browse data after convert")
 
         # Layout
         hbox_source = QtGui.QHBoxLayout()
@@ -123,23 +111,17 @@ class GuiSwift(QtGui.QWidget):
         hbox_s_btn_set.setDirection(QtGui.QBoxLayout.RightToLeft)
         hbox_t_btn_set.setDirection(QtGui.QBoxLayout.RightToLeft)
 
-        self.source_pbar = get_pbar_inf(hbox_s_btn_set)
-        self.target_pbar = get_pbar_inf()
-
         hbox_source.addWidget(self.line_source)
         hbox_source.addWidget(btn_s_select)
         hbox_target.addWidget(self.line_target)
         hbox_target.addWidget(btn_t_select)
-        hbox_t_btn_set.addWidget(self.target_pbar)
-        hbox_s_btn_set.addWidget(self.source_pbar)
-        hbox_t_btn_set.addWidget(self.p_bar)
-        hbox_s_btn_set.addWidget(self.btn_convert, alignment=QtCore.Qt.AlignLeft)
-        hbox_s_btn_set.addWidget(self.btn_browse, alignment=QtCore.Qt.AlignLeft)
-        hbox_s_btn_set.addWidget(self.btn_s_params, alignment=QtCore.Qt.AlignLeft)
-        hbox_t_btn_set.addWidget(self.btn_t_params, alignment=QtCore.Qt.AlignLeft)
-
-        self.source_pbar.hide()
-        self.target_pbar.hide()
+        hbox_t_btn_set.addStretch(0)
+        hbox_s_btn_set.addStretch(0)
+        hbox_s_btn_set.addWidget(self.btn_convert)
+        hbox_s_btn_set.addWidget(self.btn_browse)
+        hbox_s_btn_set.addWidget(self.btn_s_params)
+        hbox_t_btn_set.addWidget(self.chb_browse_convert)
+        hbox_t_btn_set.addWidget(self.btn_t_params)
 
         grid = QtGui.QGridLayout()
         grid.setSpacing(10)
@@ -229,7 +211,7 @@ class GuiSwift(QtGui.QWidget):
         table.model().header.clear()
         table.model().layoutChanged.emit()
 
-    def browse_first_data(self, table_view, browser, source_file, params, pbar):
+    def browse_first_data(self, table_view, browser, source_file, params):
         # clear old data
         self.clear_table(table_view)
         if browser:
@@ -240,10 +222,10 @@ class GuiSwift(QtGui.QWidget):
             header = browser.get_header()
             table_view.model().header.extend(header)
             self.browse_data(browser, table_view)
-            pbar.hide()
+            self.browse_pbar.cancel()
 
         try:
-            pbar.show()
+            self.browse_pbar.open()
             browser = Browser(source=source_file, **params)
 
             # function which will be run on background
@@ -290,7 +272,7 @@ class GuiSwift(QtGui.QWidget):
 
     def browse_source(self):
         self.browser_source = self.browse_first_data(self.table_view_source, self.browser_source,
-                                                     self.source, self.source_params, self.source_pbar)
+                                                     self.source, self.source_params)
 
     def convert(self):
         validator = ParamValidator(self.source, self.target, self.source_params, self.target_params)
@@ -316,29 +298,22 @@ class GuiSwift(QtGui.QWidget):
 
             # conversion
             def update_pbar():
-                self.p_bar.setValue(self.p_bar.value() + 1)
-
-            def setup_pbar(maximum):
-                self.p_bar.show()
-                self.p_bar.setMinimum(1)
-                self.p_bar.setMaximum(maximum)
-                self.p_bar.setTextVisible(True)
-                self.p_bar.setFormat("Converting, please wait " + self.p_bar.format())
+                self.convert_pbar.increment_percent()
 
             def clear_pbar():
-                self.p_bar.reset()
-                self.p_bar.hide()
+                self.convert_pbar.cancel()
 
             def display_data(c):
                 clear_pbar()
                 # display data
-                self.browser_target = self.browse_first_data(self.table_view_target, self.browser_target,
-                                                             self.target, self.target_params, self.target_pbar)
+                if self.chb_browse_convert.isChecked():
+                    self.browser_target = self.browse_first_data(self.table_view_target, self.browser_target,
+                                                                 self.target, self.target_params)
 
             # signal handler -> continue after thread ends
             def cont(convertor):
-                self.target_pbar.hide()
-                setup_pbar(convertor.source_line_count)
+                self.browse_pbar.cancel()
+                self.convert_pbar.setup(convertor.source_line_count)
                 convertor.next_line.connect(update_pbar)
 
                 # function which will be run on background
@@ -351,7 +326,7 @@ class GuiSwift(QtGui.QWidget):
                 bg.start()
             try:  # TODO now is try0except block is not ok, fix it
                 convertor = Convertor(s_p, t_p)
-                self.target_pbar.show()
+                self.browse_pbar.open()
 
                 # function which will be run on background
                 def bg_func(worker):
@@ -582,21 +557,28 @@ class FormLabel(FormWidget):
         self.setLayout(layout)
 
 
-class PBar(QtGui.QProgressBar):
+class PBar(QtGui.QProgressDialog):
 
-    def __init__(self, layout=None, parent=None):
+    def __init__(self, parent=None, label_text="", inf=False, title=""):
         super().__init__(parent)
-        self.layout = layout
+        self.setLabelText(label_text)
+        self.setWindowTitle(title)
+        self.setWindowModality(QtCore.Qt.WindowModal)
+        self._current_percent = 0
+        self.setCancelButton(None)
+        if inf:
+            self.setMaximum(0)
 
-    def hide(self):
-        super().hide()
-        if self.layout:
-            self.layout.insertStretch(0, 1)
+    def setup(self, maximum):
+        self._one_percent = round(maximum / 100)
+        self.show()
 
-    def show(self):
-        super().show()
-        if self.layout:
-            self.layout.takeAt(0)
+    def increment_percent(self):
+        if self._current_percent == self._one_percent:
+            self._current_percent = 0
+            self.setValue(self.value() + 1)
+        else:
+            self._current_percent += 1
 
 
 def main():
