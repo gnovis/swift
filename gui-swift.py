@@ -267,11 +267,11 @@ class GuiSwift(QtGui.QWidget):
             msgBox.exec_()
 
     def browse_next_source(self, value):
-        if self.table_view_source.verticalScrollBar().maximum() == value:
+        if self.table_view_source.verticalScrollBar().maximum() == value and self.browser_source:
             self.browse_data(self.browser_source, self.table_view_source)
 
     def browse_next_target(self, value):
-        if self.table_view_target.verticalScrollBar().maximum() == value:
+        if self.table_view_target.verticalScrollBar().maximum() == value and self.browser_target:
             self.browse_data(self.browser_target, self.table_view_target)
 
     def change_source_params(self):
