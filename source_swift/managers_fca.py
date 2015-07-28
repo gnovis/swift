@@ -1,4 +1,5 @@
 import os
+import traceback
 from PyQt4 import QtCore
 from source_swift.data_fca import (Data, DataCsv, DataArff, DataDat, DataCxt, DataData)
 from source_swift.constants_fca import (FileType, RunParams)
@@ -113,6 +114,16 @@ class BgWorker(QtCore.QThread):
     def __init__(self, function, mw):
         super(BgWorker, self).__init__(mw)
         self.function = function
+        self.errors = []
+
+    def push_error(self, error):
+        self.errors.append(error)
+
+    def get_errors(self):
+        return self.errors.copy()
 
     def run(self):
-        self.function(self)
+        try:
+            self.function(self)
+        except:
+            self.push_error(traceback.format_exc())

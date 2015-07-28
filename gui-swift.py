@@ -7,7 +7,6 @@ GUI application for Swift FCA
 import sys
 import collections
 import os.path
-import traceback
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import SIGNAL
 from source_swift.managers_fca import (Browser, Convertor, BgWorker)
@@ -218,35 +217,38 @@ class GuiSwift(QtGui.QWidget):
             browser.close_file()
 
         # signal handler -> continue after thread ends
-        def cont(browser):
+        def cont(browser, worker):
             header = browser.get_header()
             table_view.model().header.extend(header)
             self.browse_data(browser, table_view)
             self.browse_pbar.cancel()
 
-        try:
-            self.browse_pbar.open()
-            browser = Browser(source=source_file, **params)
+        def worker_finished(worker):
+            errors = worker.get_errors()
+            if len(errors) > 0:
+                self.browse_pbar.cancel()
+                self.clear_table(table_view)
+                msgBox = QtGui.QMessageBox()
+                msgBox.setWindowTitle("Browse Error")
+                msgBox.setText("Wasn't possible to browse data, please check syntax in browsing file and separator used.")
+                msgBox.setStandardButtons(QtGui.QMessageBox.Close)
+                msgBox.setDetailedText("\n".join(errors))
+                msgBox.setIcon(QtGui.QMessageBox.Critical)
+                msgBox.exec_()
 
-            # function which will be run on background
-            def bg_func(worker):
-                browser.read_info()
-                worker.emit(SIGNAL('file_readed'), browser)
+        self.browse_pbar.open()
+        browser = Browser(source=source_file, **params)
 
-            bg = BgWorker(bg_func, self)
-            bg.connect(bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
-            bg.start()
-            return browser
-        except:
-            self.clear_table(table_view)
-            tb = traceback.format_exc()
-            msgBox = QtGui.QMessageBox()
-            msgBox.setWindowTitle("Browsing error")
-            msgBox.setText("Wasn't possible to browse data, please check syntax in browsing file and separator used.")
-            msgBox.setStandardButtons(QtGui.QMessageBox.Close)
-            msgBox.setDetailedText(tb)
-            msgBox.setIcon(QtGui.QMessageBox.Critical)
-            msgBox.exec_()
+        # function which will be run on background
+        def bg_func(worker):
+            browser.read_info()
+            worker.emit(SIGNAL('file_readed'), browser, worker)
+
+        bg = BgWorker(bg_func, self)
+        bg.finished.connect(lambda: worker_finished(bg))
+        bg.connect(bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
+        bg.start()
+        return browser
 
     def browse_next_source(self, value):
         if self.table_view_source.verticalScrollBar().maximum() == value and self.browser_source:
@@ -281,7 +283,7 @@ class GuiSwift(QtGui.QWidget):
         procces = True
         if len(warnings) > 0:
             msgBox = QtGui.QMessageBox()
-            msgBox.setWindowTitle("Parameters warning")
+            msgBox.setWindowTitle("Parameters Warning")
             msgBox.setText("Some of required parameters weren't specified correctly, conversion may crash. Do you want to continue?")
             msgBox.setInformativeText("Warnings: \n" + "\n".join(warnings))
             msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
@@ -300,15 +302,26 @@ class GuiSwift(QtGui.QWidget):
             def update_pbar():
                 self.convert_pbar.increment_percent()
 
-            def clear_pbar():
-                self.convert_pbar.cancel()
-
             def display_data(c):
-                clear_pbar()
+                self.convert_pbar.cancel()
                 # display data
                 if self.chb_browse_convert.isChecked():
                     self.browser_target = self.browse_first_data(self.table_view_target, self.browser_target,
                                                                  self.target, self.target_params)
+
+            # method is called when background thread finished
+            def worker_finished(worker):
+                errors = worker.get_errors()
+                if len(errors) > 0:
+                    self.browse_pbar.cancel()
+                    self.convert_pbar.cancel()
+                    msgBox = QtGui.QMessageBox()
+                    msgBox.setWindowTitle("Convert Error")
+                    msgBox.setText("Wasn't possible to convert data, please check syntax in source file and specified parameters.")
+                    msgBox.setStandardButtons(QtGui.QMessageBox.Close)
+                    msgBox.setDetailedText("\n".join(errors))
+                    msgBox.setIcon(QtGui.QMessageBox.Critical)
+                    msgBox.exec_()
 
             # signal handler -> continue after thread ends
             def cont(convertor):
@@ -322,30 +335,22 @@ class GuiSwift(QtGui.QWidget):
                     worker.emit(SIGNAL('file_converted'), convertor)
 
                 bg = BgWorker(bg_func, self)
+                bg.finished.connect(lambda: worker_finished(bg))
                 bg.connect(bg, SIGNAL('file_converted'), display_data, QtCore.Qt.QueuedConnection)
                 bg.start()
-            try:  # TODO now is try0except block is not ok, fix it
-                convertor = Convertor(s_p, t_p)
-                self.browse_pbar.open()
 
-                # function which will be run on background
-                def bg_func(worker):
-                    convertor.read_info()
-                    worker.emit(SIGNAL('file_readed'), convertor)
+            convertor = Convertor(s_p, t_p)
+            self.browse_pbar.open()
 
-                bg = BgWorker(bg_func, self)
-                bg.connect(bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
-                bg.start()
+            # function which will be run on background
+            def bg_func(worker):
+                convertor.read_info()
+                worker.emit(SIGNAL('file_readed'), convertor)
 
-            except:
-                tb = traceback.format_exc()
-                msgBox = QtGui.QMessageBox()
-                msgBox.setWindowTitle("Convert error")
-                msgBox.setText("Wasn't possible to convert data, please check syntax in source file and specified parameters.")
-                msgBox.setStandardButtons(QtGui.QMessageBox.Close)
-                msgBox.setDetailedText(tb)
-                msgBox.setIcon(QtGui.QMessageBox.Critical)
-                msgBox.exec_()
+            bg = BgWorker(bg_func, self)
+            bg.finished.connect(lambda: worker_finished(bg))
+            bg.connect(bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
+            bg.start()
 
     def closeEvent(self, event):
         if self.browser_source:
