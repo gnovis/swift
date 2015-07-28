@@ -571,15 +571,15 @@ class FormLabel(FormWidget):
 
 class PBar(QtGui.QProgressDialog):
 
-    def __init__(self, parent=None, label_text="", inf=False, title=""):
+    def __init__(self, parent=None, label_text="", title=""):
         super().__init__(parent)
         self.setLabelText(label_text)
         self.setWindowTitle(title)
         self.setWindowModality(QtCore.Qt.WindowModal)
         self._current_percent = 0
         self.setCancelButton(None)
-        if inf:
-            self.setMaximum(0)
+        self.setMinimum(1)
+        self.setMaximum(100)
 
     def setup(self, maximum):
         self._one_percent = round(maximum / 100)
@@ -599,6 +599,9 @@ class PBarEstimate(QtGui.QProgressDialog):
         self.setLabelText(label_text)
         self.setWindowTitle(title)
         self.setWindowModality(QtCore.Qt.WindowModal)
+        self.setCancelButton(None)
+        self.setMinimum(1)
+        self.setMaximum(100)
 
     def setup(self, data_file):
         self.proc_line_count = 0
