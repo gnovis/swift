@@ -30,7 +30,7 @@ class GuiSwift(QtGui.QWidget):
         self.browser_target = None
 
         self.convert_pbar = PBar(self, title="Convert Data", label_text="Converting, please wait.")
-        self.browse_pbar = PBar(self, inf=True, title="Prepare Data", label_text="Preparing data, please wait.")
+        self.browse_pbar = PBarEstimate(self, title="Prepare Data", label_text="Preparing data, please wait.")
 
         self.initUI()
 
@@ -164,6 +164,7 @@ class GuiSwift(QtGui.QWidget):
             self.btn_s_params.setEnabled(False)
             self.btn_browse.setEnabled(False)
         if sender.text() == "":
+            self.browser_source = None
             color = '#ffffff'  # white
             self._source = None
             self.btn_s_params.setEnabled(False)
@@ -185,6 +186,7 @@ class GuiSwift(QtGui.QWidget):
             color = '#f6989d'  # red
             self.btn_t_params.setEnabled(False)
         if sender.text() == "":
+            self.browser_target = None
             color = '#ffffff'  # white
             self._target = None
             self.btn_t_params.setEnabled(False)
@@ -236,8 +238,9 @@ class GuiSwift(QtGui.QWidget):
                 msgBox.setIcon(QtGui.QMessageBox.Critical)
                 msgBox.exec_()
 
-        self.browse_pbar.open()
+        self.browse_pbar.setup(source_file)
         browser = Browser(source=source_file, **params)
+        browser.next_line_prepared.connect(self.update_estimate_pbar)
 
         # function which will be run on background
         def bg_func(worker):
@@ -249,6 +252,9 @@ class GuiSwift(QtGui.QWidget):
         bg.connect(bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
         bg.start()
         return browser
+
+    def update_estimate_pbar(self, line, i):
+        self.browse_pbar.update(line, i)
 
     def browse_next_source(self, value):
         if self.table_view_source.verticalScrollBar().maximum() == value and self.browser_source:
@@ -327,7 +333,7 @@ class GuiSwift(QtGui.QWidget):
             def cont(convertor):
                 self.browse_pbar.cancel()
                 self.convert_pbar.setup(convertor.source_line_count)
-                convertor.next_line.connect(update_pbar)
+                convertor.next_line_converted.connect(update_pbar)
 
                 # function which will be run on background
                 def bg_func(worker):
@@ -339,8 +345,9 @@ class GuiSwift(QtGui.QWidget):
                 bg.connect(bg, SIGNAL('file_converted'), display_data, QtCore.Qt.QueuedConnection)
                 bg.start()
 
+            self.browse_pbar.setup(self.source)
             convertor = Convertor(s_p, t_p)
-            self.browse_pbar.open()
+            convertor.next_line_prepared.connect(self.update_estimate_pbar)
 
             # function which will be run on background
             def bg_func(worker):
@@ -584,6 +591,41 @@ class PBar(QtGui.QProgressDialog):
             self.setValue(self.value() + 1)
         else:
             self._current_percent += 1
+
+
+class PBarEstimate(QtGui.QProgressDialog):
+    def __init__(self, parent=None, label_text="", title=""):
+        super().__init__(parent)
+        self.setLabelText(label_text)
+        self.setWindowTitle(title)
+        self.setWindowModality(QtCore.Qt.WindowModal)
+
+    def setup(self, data_file):
+        self.proc_line_count = 0
+        self.proc_line_size_sum = 0
+        self.base_line_size = sys.getsizeof("")
+        self.current_percent = 0
+        self.data_size = os.path.getsize(data_file)
+        self.show()
+
+    def update(self, line, index_data_start):
+        self.proc_line_count += 1
+        curr_line_size = sys.getsizeof(line) - self.base_line_size
+        self.proc_line_size_sum += curr_line_size
+        average_line_size = self.proc_line_size_sum / self.proc_line_count
+
+        # becuase of header lines
+        if self.proc_line_count == 1:
+            self.data_size = self.data_size - (index_data_start * average_line_size)
+
+        average_line_count = self.data_size / average_line_size
+        self.one_percent = round(average_line_count / 100)
+
+        if self.current_percent == self.one_percent:
+            self.current_percent = 0
+            self.setValue(self.value() + 1)
+        else:
+            self.current_percent += 1
 
 
 def main():

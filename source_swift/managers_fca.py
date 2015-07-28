@@ -18,14 +18,17 @@ class ManagerFca(QtCore.QObject):
 
 class Browser(ManagerFca):
 
+    next_line_prepared = QtCore.pyqtSignal(str, int)
+
     def __init__(self, **kwargs):
+        super().__init__()
         file_path = kwargs[RunParams.SOURCE]
         self._data = self.get_data_class(file_path)(**kwargs)
         self._opened_file = open(file_path, "r")
 
     def read_info(self):
         self._data.get_header_info()
-        self._data.get_data_info()  # must be called always because of .dat format
+        self._data.get_data_info(self)  # must be called always because of .dat format
         Data.skip_lines(self._data.index_data_start, self._opened_file)
 
     def __del__(self):
@@ -52,7 +55,8 @@ class Browser(ManagerFca):
 class Convertor(ManagerFca):
     """Manage data conversion"""
 
-    next_line = QtCore.pyqtSignal()
+    next_line_converted = QtCore.pyqtSignal()
+    next_line_prepared = QtCore.pyqtSignal(str, int)
 
     def __init__(self, old, new, print_info=False):
         super().__init__()
@@ -72,7 +76,7 @@ class Convertor(ManagerFca):
     def read_info(self):
         # get information from source data
         self._old_data.get_header_info()
-        self._old_data.get_data_info()
+        self._old_data.get_data_info(self)
         if self._print_info:
             self._old_data.print_info()
         # this is for progress bar
@@ -81,7 +85,6 @@ class Convertor(ManagerFca):
 
     def convert(self):
         """Call this method to convert data"""
-
         self._scaling = False
         if (self._source_cls == DataCsv or
             self._source_cls == DataArff or
@@ -106,7 +109,7 @@ class Convertor(ManagerFca):
                 else:
                     self._new_data.write_line(prepared_line,
                                               target_file)
-                self.next_line.emit()
+                self.next_line_converted.emit()
         target_file.close()
 
 

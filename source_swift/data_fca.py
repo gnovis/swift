@@ -100,7 +100,7 @@ class Data:
         """
         pass
 
-    def get_data_info(self):
+    def get_data_info(self, manager=None):
         """Get much as possible information about data"""
         self._attr_count = len(self._attributes)
         with open(self.source, 'r') as f:
@@ -112,6 +112,8 @@ class Data:
                     self._attr_count = len(str_values)
                 for i, attr in enumerate(self._attributes):
                     attr.update(str_values[i])
+                if manager:
+                    manager.next_line_prepared.emit(line, self.index_data_start)
 
     def prepare_line(self, line):
         return self.ss_str(line, self.separator)
@@ -265,8 +267,8 @@ class DataCsv(Data):
                 self._str_attrs = self._get_first_line(self.source)
                 self.prepare()
 
-    def get_data_info(self):
-        super().get_data_info()
+    def get_data_info(self, manager=None):
+        super().get_data_info(manager)
         if not self._str_attrs:
             self._str_attrs = self._separator.join([str(x) for x in range(self._attr_count)])
             self.prepare()
@@ -446,12 +448,14 @@ class DataCxt(DataBivalent):
 
             self._index_data_start = index[0]
 
-    def get_data_info(self):
+    def get_data_info(self, manager=None):
         with open(self.source) as f:
             Data.skip_lines(self.index_data_start, f)
             self._attr_count = len(self._attributes)
             for line in f:
                 self._obj_count += 1
+                if manager:
+                    manager.next_line_prepared.emit(line, self.index_data_start)
 
     def prepare_line(self, line):
         splitted = list(line.strip())
@@ -496,7 +500,7 @@ class DataDat(DataBivalent):
         super().__init__(source, str_attrs, str_objects,
                          ' ', relation_name)
 
-    def get_data_info(self):
+    def get_data_info(self, manager=None):
         max_val = -1
         line_count = 0
         with open(self._source, 'r') as f:
@@ -507,6 +511,8 @@ class DataDat(DataBivalent):
                     int_val = int(val)
                     if int_val > max_val:
                         max_val = int_val
+                if manager:
+                    manager.next_line_prepared.emit(line, self.index_data_start)
         self._attr_count = max_val + 1
         self._obj_count = line_count
         # These attributes are used only if attrs for new file
