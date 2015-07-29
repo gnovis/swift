@@ -12,6 +12,18 @@ class ManagerFca(QtCore.QObject):
                   FileType.CXT: DataCxt,
                   FileType.DATA: DataData}
 
+    def __init__(self):
+        super().__init__()
+        self._stop = False
+
+    @property
+    def stop(self):
+        return self._stop
+
+    @stop.setter
+    def stop(self, value):
+        self._stop = value
+
     def get_data_class(self, file_path):
         return self.extensions[os.path.splitext(file_path)[1]]
 
@@ -109,6 +121,8 @@ class Convertor(ManagerFca):
                 else:
                     self._new_data.write_line(prepared_line,
                                               target_file)
+                if self.stop:
+                    break
                 self.next_line_converted.emit()
         target_file.close()
 

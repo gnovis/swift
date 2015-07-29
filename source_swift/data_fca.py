@@ -113,6 +113,8 @@ class Data:
                 for i, attr in enumerate(self._attributes):
                     attr.update(str_values[i])
                 if manager:
+                    if manager.stop:
+                        break
                     manager.next_line_prepared.emit(line, self.index_data_start)
 
     def prepare_line(self, line):
@@ -455,6 +457,8 @@ class DataCxt(DataBivalent):
             for line in f:
                 self._obj_count += 1
                 if manager:
+                    if manager.stop:
+                        break
                     manager.next_line_prepared.emit(line, self.index_data_start)
 
     def prepare_line(self, line):
@@ -512,6 +516,8 @@ class DataDat(DataBivalent):
                     if int_val > max_val:
                         max_val = int_val
                 if manager:
+                    if manager.stop:
+                        break
                     manager.next_line_prepared.emit(line, self.index_data_start)
         self._attr_count = max_val + 1
         self._obj_count = line_count

@@ -226,6 +226,7 @@ class GuiSwift(QtGui.QWidget):
             self.browse_pbar.cancel()
 
         def worker_finished(worker):
+            print("worker finished")
             errors = worker.get_errors()
             if len(errors) > 0:
                 self.browse_pbar.cancel()
@@ -238,8 +239,8 @@ class GuiSwift(QtGui.QWidget):
                 msgBox.setIcon(QtGui.QMessageBox.Critical)
                 msgBox.exec_()
 
-        self.browse_pbar.setup(source_file)
         browser = Browser(source=source_file, **params)
+        self.browse_pbar.setup(source_file, browser)
         browser.next_line_prepared.connect(self.update_estimate_pbar)
 
         # function which will be run on background
@@ -306,7 +307,7 @@ class GuiSwift(QtGui.QWidget):
 
             # conversion
             def update_pbar():
-                self.convert_pbar.increment_percent()
+                self.convert_pbar.update()
 
             def display_data(c):
                 self.convert_pbar.cancel()
@@ -332,7 +333,7 @@ class GuiSwift(QtGui.QWidget):
             # signal handler -> continue after thread ends
             def cont(convertor):
                 self.browse_pbar.cancel()
-                self.convert_pbar.setup(convertor.source_line_count)
+                self.convert_pbar.setup(convertor.source_line_count, convertor)
                 convertor.next_line_converted.connect(update_pbar)
 
                 # function which will be run on background
@@ -345,8 +346,8 @@ class GuiSwift(QtGui.QWidget):
                 bg.connect(bg, SIGNAL('file_converted'), display_data, QtCore.Qt.QueuedConnection)
                 bg.start()
 
-            self.browse_pbar.setup(self.source)
             convertor = Convertor(s_p, t_p)
+            self.browse_pbar.setup(self.source, convertor)
             convertor.next_line_prepared.connect(self.update_estimate_pbar)
 
             # function which will be run on background
@@ -569,23 +570,36 @@ class FormLabel(FormWidget):
         self.setLayout(layout)
 
 
-class PBar(QtGui.QProgressDialog):
-
+class PBarDialog(QtGui.QProgressDialog):
     def __init__(self, parent=None, label_text="", title=""):
         super().__init__(parent)
         self.setLabelText(label_text)
         self.setWindowTitle(title)
         self.setWindowModality(QtCore.Qt.WindowModal)
-        self._current_percent = 0
-        self.setCancelButton(None)
         self.setMinimum(1)
         self.setMaximum(100)
+        self.canceled.connect(self.canceled_by_user)
 
-    def setup(self, maximum):
+    def canceled_by_user(self):
+        self.manager.stop = True
+        self.cancel()
+
+    def setup(self, manager):
+        self.manager = manager
+
+    def update(self, *args):
+        raise NotImplementedError('update method must be implemented in child class')
+
+
+class PBar(PBarDialog):
+
+    def setup(self, maximum, manager):
+        super().setup(manager)
+        self._current_percent = 0
         self._one_percent = round(maximum / 100)
         self.show()
 
-    def increment_percent(self):
+    def update(self):
         if self._current_percent == self._one_percent:
             self._current_percent = 0
             self.setValue(self.value() + 1)
@@ -593,17 +607,10 @@ class PBar(QtGui.QProgressDialog):
             self._current_percent += 1
 
 
-class PBarEstimate(QtGui.QProgressDialog):
-    def __init__(self, parent=None, label_text="", title=""):
-        super().__init__(parent)
-        self.setLabelText(label_text)
-        self.setWindowTitle(title)
-        self.setWindowModality(QtCore.Qt.WindowModal)
-        self.setCancelButton(None)
-        self.setMinimum(1)
-        self.setMaximum(100)
+class PBarEstimate(PBarDialog):
 
-    def setup(self, data_file):
+    def setup(self, data_file, manager):
+        super().setup(manager)
         self.proc_line_count = 0
         self.proc_line_size_sum = 0
         self.base_line_size = sys.getsizeof("")
