@@ -1,5 +1,6 @@
 """Attributes classes for swift"""
 
+from __future__ import print_function
 import re
 
 
@@ -37,10 +38,10 @@ class Attribute:
     def attr_type(self):
         return self._attr_type
 
-    def print_self(self):
-        print("\nAttribute\nname: {}\nindex: {}\ntype: {}".format(
+    def print_self(self, out):
+        print("\nname: {}\nindex: {}\ntype: {}".format(
             self.name,
-            self.index, AttrType.STR_REPR[self.attr_type]))
+            self.index, AttrType.STR_REPR[self.attr_type]), file=out)
 
     def update(self, value):
         pass
@@ -113,10 +114,10 @@ class AttrScaleNumeric(AttrScale):
         except ValueError:
             pass
 
-    def print_self(self):
-        super().print_self()
-        print("max value: {}\nmin value:{}".format(
-              self.max_value, self.min_value))
+    def print_self(self, out):
+        super().print_self(out)
+        print("max value: {}\nmin value: {}".format(
+              self.max_value, self.min_value), file=out)
 
     def arff_repr(self, sep, bi_val1='0', bi_val2='1'):
         return AttrType.STR_REPR[self.attr_type]
@@ -140,9 +141,9 @@ class AttrScaleEnum(AttrScale):
             self._values.append(value)
         return self
 
-    def print_self(self):
-        super().print_self()
-        print(', '.join(self._values))
+    def print_self(self, out):
+        super().print_self(out)
+        print(', '.join(self._values), file=out)
 
     def arff_repr(self, sep, bi_val1='0', bi_val2='1'):
         return '{ ' + sep.join(self._values) + ' }'

@@ -1,5 +1,7 @@
+from __future__ import print_function
 import re
 import os
+import sys
 
 from source_swift.attributes_fca import (Attribute, AttrScale, AttrScaleNumeric,
                                          AttrScaleEnum, AttrScaleString)
@@ -165,13 +167,13 @@ class Data:
             if line.strip():
                 return line
 
-    def print_info(self):
-        print("Relation name: {}".format(self.relation_name))
-        print("Objects count: {}".format(self.obj_count))
-        print("Attributes count: {}".format(self.attr_count))
-        print("="*20)
+    def print_info(self, out_file=sys.stdout):
+        print("Relation name: {}".format(self.relation_name), file=out_file)
+        print("Objects count: {}".format(self.obj_count), file=out_file)
+        print("Attributes count: {}".format(self.attr_count), file=out_file)
+        print("="*20, file=out_file)
         for attr in self._attributes:
-            attr.print_self()
+            attr.print_self(out_file)
 
     def skip_lines(line_i, f):
         for i in range(line_i):
@@ -448,18 +450,12 @@ class DataCxt(DataBivalent):
                 new.update(DataBivalent.bi_vals['neg'])
                 self._attributes.append(new)
 
+            self._attr_count = columns
+            self._obj_count = rows
             self._index_data_start = index[0]
 
     def get_data_info(self, manager=None):
-        with open(self.source) as f:
-            Data.skip_lines(self.index_data_start, f)
-            self._attr_count = len(self._attributes)
-            for line in f:
-                self._obj_count += 1
-                if manager:
-                    if manager.stop:
-                        break
-                    manager.next_line_prepared.emit(line, self.index_data_start)
+        pass
 
     def prepare_line(self, line):
         splitted = list(line.strip())
