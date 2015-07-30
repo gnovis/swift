@@ -9,7 +9,7 @@ import collections
 import os.path
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import SIGNAL
-from source_swift.managers_fca import (Browser, Convertor, BgWorker)
+from source_swift.managers_fca import (Browser, Convertor, Printer, BgWorker)
 from source_swift.constants_fca import (RunParams, FileType)
 from source_swift.validator_fca import ParamValidator
 
@@ -19,7 +19,7 @@ class GuiSwift(QtGui.QWidget):
     SCROLL_COUNT = 50
 
     def __init__(self):
-        super(GuiSwift, self).__init__()
+        super().__init__()
 
         self._source = None
         self._target = None
@@ -87,13 +87,16 @@ class GuiSwift(QtGui.QWidget):
         self.btn_t_params = QtGui.QPushButton("Set Params")
         self.btn_convert = QtGui.QPushButton("Convert")
         self.btn_browse = QtGui.QPushButton("Browse")
+        self.btn_export_info = QtGui.QPushButton("Export Info")
         self.file_filter = "FCA files (*.arff *.cxt *.data *.dat *.csv);;All(*)"
 
+        self.btn_export_info.clicked.connect(self.export_info)
         self.btn_s_params.clicked.connect(self.change_source_params)
         self.btn_t_params.clicked.connect(self.change_target_params)
         self.btn_t_params.setEnabled(False)
         self.btn_s_params.setEnabled(False)
         self.btn_browse.setEnabled(False)
+        self.btn_export_info.setEnabled(False)
         btn_s_select.clicked.connect(self.select_source)
         btn_t_select.clicked.connect(self.select_target)
         self.btn_browse.clicked.connect(self.browse_source)
@@ -117,6 +120,7 @@ class GuiSwift(QtGui.QWidget):
         hbox_t_btn_set.addStretch(0)
         hbox_s_btn_set.addStretch(0)
         hbox_s_btn_set.addWidget(self.btn_convert)
+        hbox_s_btn_set.addWidget(self.btn_export_info)
         hbox_s_btn_set.addWidget(self.btn_browse)
         hbox_s_btn_set.addWidget(self.btn_s_params)
         hbox_t_btn_set.addWidget(self.chb_browse_convert)
@@ -140,15 +144,26 @@ class GuiSwift(QtGui.QWidget):
         self.setWindowTitle('Swift - FCA convertor')
         self.show()
 
-    def set_line_prop(self, line, validator):
-        line.setMinimumWidth(200)
-        self.set_line_bg(line, '#ffffff')
-        line.setValidator(validator)
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    " EVENTS
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-    def set_line_bg(self, line, color):
-        line.setStyleSheet('QLineEdit { background-color: %s }' % color)
+    def closeEvent(self, event):
+        if self.browser_source:
+            self.browser_source.close_file()
+        if self.browser_target:
+            self.browser_target.close_file()
+
+    def keyPressEvent(self, e):
+        if e.key() == QtCore.Qt.Key_Escape:
+            self.close()
+
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    " SLOTS
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
     def check_state_source(self, *args, **kwargs):
+        """Slot for line_source textChanged"""
         sender = self.sender()
         validator = sender.validator()
         state = validator.validate(sender.text(), 0)[0]
@@ -160,11 +175,13 @@ class GuiSwift(QtGui.QWidget):
             self._source_params.clear()
             self.btn_s_params.setEnabled(True)
             self.btn_browse.setEnabled(True)
+            self.btn_export_info.setEnabled(True)
             self._source = sender.text()
         else:
             color = '#f6989d'  # red
             self.btn_s_params.setEnabled(False)
             self.btn_browse.setEnabled(False)
+            self.btn_export_info.setEnabled(False)
         if sender.text() == "":
             color = '#ffffff'  # white
             self.browser_source = None
@@ -172,10 +189,12 @@ class GuiSwift(QtGui.QWidget):
             self._source = None
             self.btn_s_params.setEnabled(False)
             self.btn_browse.setEnabled(False)
+            self.btn_export_info.setEnabled(False)
             self._source_params.clear()
         self.set_line_bg(sender, color)
 
     def check_state_target(self, *args, **kwargs):
+        """Slot for line_target textChanged"""
         sender = self.sender()
         validator = sender.validator()
         state = validator.validate(sender.text(), 0)[0]
@@ -199,94 +218,78 @@ class GuiSwift(QtGui.QWidget):
         self.set_line_bg(sender, color)
 
     def select_source(self):
+        """Slot for btn_s_select"""
         file_name = QtGui.QFileDialog.getOpenFileName(self, "Select source file", filter=self.file_filter)
         self.line_source.setText(file_name)
 
     def select_target(self):
+        """Slot for btn_t_select"""
         file_name = QtGui.QFileDialog.getSaveFileName(self, "Select target file", filter=self.file_filter)
         self.line_target.setText(file_name)
 
-    def browse_data(self, browser, table_view):
-        data = browser.get_display_data(self.SCROLL_COUNT)
-        table_view.model().table.extend(data)
-        table_view.model().layoutChanged.emit()
+    def change_source_params(self):
+        """Slot for btn_s_params"""
+        self.change_params(SourceParamsDialog, self._source_params)
 
-    def clear_table(self, table):
-        table.model().table.clear()
-        table.model().header.clear()
-        table.model().layoutChanged.emit()
+    def change_target_params(self):
+        """Slot for btn_t_params"""
+        self.change_params(TargetParamsDialog, self._target_params)
 
-    def browse_first_data(self, table_view, browser, source_file, params):
-        # clear old data
-        self.clear_table(table_view)
-        if browser:
-            browser.close_file()
-
-        # signal handler -> continue after thread ends
-        def cont(browser, worker):
-            header = browser.get_header()
-            table_view.model().header.extend(header)
-            self.browse_data(browser, table_view)
-            self.browse_pbar.cancel()
-
-        def worker_finished(worker):
-            errors = worker.get_errors()
-            if len(errors) > 0:
-                self.browse_pbar.cancel()
-                self.clear_table(table_view)
-                msgBox = QtGui.QMessageBox()
-                msgBox.setWindowTitle("Browse Error")
-                msgBox.setText("Wasn't possible to browse data, please check syntax in browsing file and separator used.")
-                msgBox.setStandardButtons(QtGui.QMessageBox.Close)
-                msgBox.setDetailedText("\n".join(errors))
-                msgBox.setIcon(QtGui.QMessageBox.Critical)
-                msgBox.exec_()
-
-        browser = Browser(source=source_file, **params)
-        self.browse_pbar.setup(source_file, browser)
-        browser.next_line_prepared.connect(self.update_estimate_pbar)
-
-        # function which will be run on background
-        def bg_func(worker):
-            browser.read_info()
-            worker.emit(SIGNAL('file_readed'), browser, worker)
-
-        bg = BgWorker(bg_func, self)
-        bg.finished.connect(lambda: worker_finished(bg))
-        bg.connect(bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
-        bg.start()
-        return browser
-
-    def update_estimate_pbar(self, line, i):
-        self.browse_pbar.update(line, i)
+    def browse_source(self):
+        """Slot for btn_source"""
+        self.browser_source = self.browse_first_data(self.table_view_source, self.browser_source,
+                                                     self.source, self.source_params)
 
     def browse_next_source(self, value):
+        """Slot for table_view_source ValueChanged"""
         if self.table_view_source.verticalScrollBar().maximum() == value and self.browser_source:
             self.browse_data(self.browser_source, self.table_view_source)
 
     def browse_next_target(self, value):
+        """Slot for table_view_target ValueChanged"""
         if self.table_view_target.verticalScrollBar().maximum() == value and self.browser_target:
             self.browse_data(self.browser_target, self.table_view_target)
 
-    def change_source_params(self):
-        self.change_params(SourceParamsDialog, self._source_params)
+    def update_estimate_pbar(self, line, i):
+        """Slot for estimate progress bar - line_prepared"""
+        self.browse_pbar.update(line, i)
 
-    def change_target_params(self):
-        self.change_params(TargetParamsDialog, self._target_params)
+    def export_info(self):
+        file_name = QtGui.QFileDialog.getSaveFileName(self, "Select file to export info about data")
+        if file_name != "":
 
-    def change_params(self, cls, params):
-        result = cls.get_params(self)
-        confirmed = result[1]
-        if confirmed:
-            params.clear()
-            params.update(result[0])
-            print(params)
+            def worker_finished(worker):
+                errors = worker.get_errors()
+                if len(errors) > 0:
+                    self.browse_pbar.cancel()
+                    msgBox = QtGui.QMessageBox()
+                    msgBox.setWindowTitle("Print Error")
+                    msgBox.setText("Wasn't possible to prepare data for print iformations, please check syntax in source file and specified parameters.")
+                    msgBox.setStandardButtons(QtGui.QMessageBox.Close)
+                    msgBox.setDetailedText("\n".join(errors))
+                    msgBox.setIcon(QtGui.QMessageBox.Critical)
+                    msgBox.exec_()
 
-    def browse_source(self):
-        self.browser_source = self.browse_first_data(self.table_view_source, self.browser_source,
-                                                     self.source, self.source_params)
+            def cont(printer):
+                printer.print_info(file_name)
+                self.browse_pbar.cancel()
+
+            printer = Printer(source=self.source, **self.source_params)
+            self.browse_pbar.setup(self.source, printer)
+            printer.next_line_prepared.connect(self.update_estimate_pbar)
+            # function which will be run on background
+
+            def bg_func(worker):
+                printer.read_info()
+                worker.emit(SIGNAL('file_readed'), printer)
+
+            bg = BgWorker(bg_func, self)
+            bg.finished.connect(lambda: worker_finished(bg))
+            bg.connect(bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
+            bg.start()
 
     def convert(self):
+        """Slot for btn_convert"""
         validator = ParamValidator(self.source, self.target, self.source_params, self.target_params)
         warnings = validator.warnings
 
@@ -363,15 +366,76 @@ class GuiSwift(QtGui.QWidget):
             bg.connect(bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
             bg.start()
 
-    def closeEvent(self, event):
-        if self.browser_source:
-            self.browser_source.close_file()
-        if self.browser_target:
-            self.browser_target.close_file()
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    " OTHERS
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-    def keyPressEvent(self, e):
-        if e.key() == QtCore.Qt.Key_Escape:
-            self.close()
+    def set_line_prop(self, line, validator):
+        line.setMinimumWidth(200)
+        self.set_line_bg(line, '#ffffff')
+        line.setValidator(validator)
+
+    def set_line_bg(self, line, color):
+        line.setStyleSheet('QLineEdit { background-color: %s }' % color)
+
+    def browse_data(self, browser, table_view):
+        data = browser.get_display_data(self.SCROLL_COUNT)
+        table_view.model().table.extend(data)
+        table_view.model().layoutChanged.emit()
+
+    def clear_table(self, table):
+        table.model().table.clear()
+        table.model().header.clear()
+        table.model().layoutChanged.emit()
+
+    def browse_first_data(self, table_view, browser, source_file, params):
+        # clear old data
+        self.clear_table(table_view)
+        if browser:
+            browser.close_file()
+
+        # signal handler -> continue after thread ends
+        def cont(browser, worker):
+            header = browser.get_header()
+            table_view.model().header.extend(header)
+            self.browse_data(browser, table_view)
+            self.browse_pbar.cancel()
+
+        def worker_finished(worker):
+            errors = worker.get_errors()
+            if len(errors) > 0:
+                self.browse_pbar.cancel()
+                self.clear_table(table_view)
+                msgBox = QtGui.QMessageBox()
+                msgBox.setWindowTitle("Browse Error")
+                msgBox.setText("Wasn't possible to browse data, please check syntax in browsing file and separator used.")
+                msgBox.setStandardButtons(QtGui.QMessageBox.Close)
+                msgBox.setDetailedText("\n".join(errors))
+                msgBox.setIcon(QtGui.QMessageBox.Critical)
+                msgBox.exec_()
+
+        browser = Browser(source=source_file, **params)
+        self.browse_pbar.setup(source_file, browser)
+        browser.next_line_prepared.connect(self.update_estimate_pbar)
+
+        # function which will be run on background
+        def bg_func(worker):
+            browser.read_info()
+            worker.emit(SIGNAL('file_readed'), browser, worker)
+
+        bg = BgWorker(bg_func, self)
+        bg.finished.connect(lambda: worker_finished(bg))
+        bg.connect(bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
+        bg.start()
+        return browser
+
+    def change_params(self, cls, params):
+        result = cls.get_params(self)
+        confirmed = result[1]
+        if confirmed:
+            params.clear()
+            params.update(result[0])
+            print(params)
 
 
 class SwiftTableModel(QtCore.QAbstractTableModel):
@@ -574,8 +638,9 @@ class FormLabel(FormWidget):
 
 
 class PBarDialog(QtGui.QProgressDialog):
-    def __init__(self, parent=None, label_text="", title=""):
+    def __init__(self, parent, label_text="", title=""):
         super().__init__(parent)
+        self.parent = parent
         self.setLabelText(label_text)
         self.setWindowTitle(title)
         self.setWindowModality(QtCore.Qt.WindowModal)
@@ -589,6 +654,7 @@ class PBarDialog(QtGui.QProgressDialog):
 
     def setup(self, manager):
         self.manager = manager
+        self.show()
 
     def update(self, *args):
         raise NotImplementedError('update method must be implemented in child class')
@@ -597,10 +663,9 @@ class PBarDialog(QtGui.QProgressDialog):
 class PBar(PBarDialog):
 
     def setup(self, maximum, manager):
-        super().setup(manager)
         self._current_percent = 0
         self._one_percent = round(maximum / 100)
-        self.show()
+        super().setup(manager)
 
     def update(self):
         if self._current_percent == self._one_percent:
@@ -613,13 +678,12 @@ class PBar(PBarDialog):
 class PBarEstimate(PBarDialog):
 
     def setup(self, data_file, manager):
-        super().setup(manager)
         self.proc_line_count = 0
         self.proc_line_size_sum = 0
         self.base_line_size = sys.getsizeof("")
         self.current_percent = 0
         self.data_size = os.path.getsize(data_file)
-        self.show()
+        super().setup(manager)
 
     def update(self, line, index_data_start):
         self.proc_line_count += 1
@@ -644,7 +708,7 @@ class PBarEstimate(PBarDialog):
 def main():
 
     app = QtGui.QApplication(sys.argv)
-    ex = GuiSwift()  # NOQA
+    GuiSwift()
     sys.exit(app.exec_())
 
 

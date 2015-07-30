@@ -11,6 +11,8 @@ class ManagerFca(QtCore.QObject):
                   FileType.DAT: DataDat,
                   FileType.CXT: DataCxt,
                   FileType.DATA: DataData}
+    # Signals
+    next_line_prepared = QtCore.pyqtSignal(str, int)
 
     def __init__(self):
         super().__init__()
@@ -28,10 +30,22 @@ class ManagerFca(QtCore.QObject):
         return self.EXTENSIONS[os.path.splitext(file_path)[1]]
 
 
+class Printer(ManagerFca):
+    def __init__(self, **kwargs):
+        super().__init__()
+        file_path = kwargs[RunParams.SOURCE]
+        self._data = self.get_data_class(file_path)(**kwargs)
+
+    def read_info(self):
+        self._data.get_header_info()
+        self._data.get_data_info(self)
+
+    def print_info(self, file_path):
+        with open(file_path, "w") as f:
+            self._data.print_info(out_file=f)
+
+
 class Browser(ManagerFca):
-
-    next_line_prepared = QtCore.pyqtSignal(str, int)
-
     def __init__(self, **kwargs):
         super().__init__()
         file_path = kwargs[RunParams.SOURCE]
@@ -68,7 +82,6 @@ class Convertor(ManagerFca):
     """Manage data conversion"""
 
     next_line_converted = QtCore.pyqtSignal()
-    next_line_prepared = QtCore.pyqtSignal(str, int)
 
     def __init__(self, old, new, print_info=False):
         super().__init__()
