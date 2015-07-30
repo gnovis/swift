@@ -105,6 +105,10 @@ class GuiSwift(QtGui.QWidget):
         # Checkbox
         self.chb_browse_convert = QtGui.QCheckBox("Browse data after convert")
 
+        # Status Bar
+        self.status_bar = QtGui.QStatusBar(self)
+        self.status_bar.showMessage("Welcome in Swift FCA convertor", 3000)
+
         # Layout
         hbox_source = QtGui.QHBoxLayout()
         hbox_target = QtGui.QHBoxLayout()
@@ -137,6 +141,7 @@ class GuiSwift(QtGui.QWidget):
         grid.addLayout(hbox_t_btn_set, 2, 1)
         grid.addWidget(self.table_view_source, 3, 0)
         grid.addWidget(self.table_view_target, 3, 1)
+        grid.addWidget(self.status_bar, 4, 0, 1, 2)
 
         self.setLayout(grid)
 
