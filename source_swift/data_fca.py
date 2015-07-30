@@ -110,14 +110,15 @@ class Data:
             for i, line in enumerate(f):
                 self._obj_count += 1
                 str_values = self.ss_str(line, self.separator)
-                if i == 0 and self._attr_count == 0:
-                    self._attr_count = len(str_values)
                 for i, attr in enumerate(self._attributes):
                     attr.update(str_values[i])
                 if manager:
                     if manager.stop:
                         break
                     manager.next_line_prepared.emit(line, self.index_data_start)
+
+    def get_data_info_for_browse(self, manager=None):
+        pass
 
     def prepare_line(self, line):
         return self.ss_str(line, self.separator)
@@ -265,15 +266,16 @@ class DataCsv(Data):
         self.write_line_to_file(attrs_name, target, self._separator)
 
     def get_header_info(self):
-        if not self._no_attrs_first_line:
+        if not self._no_attrs_first_line:  # attrs are on first line
             self._index_data_start = 1
             if not self._str_attrs:
                 self._str_attrs = self._get_first_line(self.source)
                 self.prepare()
-
-    def get_data_info(self, manager=None):
-        super().get_data_info(manager)
-        if not self._str_attrs:
+        elif not self._str_attrs:  # attrs are not of first line and are not passed as parameter
+            with open(self.source) as f:
+                line = next(f)
+                str_values = self.ss_str(line, self.separator)
+                self._attr_count = len(str_values)
             self._str_attrs = self._separator.join([str(x) for x in range(self._attr_count)])
             self.prepare()
 
@@ -522,6 +524,9 @@ class DataDat(DataBivalent):
         self._attributes = [(AttrScaleEnum(i, str(i)).update(
                             self.bi_vals['pos'])).update(self.bi_vals['neg'])
                             for i in range(self._attr_count)]
+
+    def get_data_info_for_browse(self, manager=None):
+        self.get_data_info(manager)
 
     def prepare_line(self, line):
         splitted = super().prepare_line(line)

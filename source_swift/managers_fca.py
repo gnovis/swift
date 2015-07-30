@@ -6,7 +6,7 @@ from source_swift.constants_fca import (FileType, RunParams)
 
 
 class ManagerFca(QtCore.QObject):
-    extensions = {FileType.CSV: DataCsv,
+    EXTENSIONS = {FileType.CSV: DataCsv,
                   FileType.ARFF: DataArff,
                   FileType.DAT: DataDat,
                   FileType.CXT: DataCxt,
@@ -25,7 +25,7 @@ class ManagerFca(QtCore.QObject):
         self._stop = value
 
     def get_data_class(self, file_path):
-        return self.extensions[os.path.splitext(file_path)[1]]
+        return self.EXTENSIONS[os.path.splitext(file_path)[1]]
 
 
 class Browser(ManagerFca):
@@ -40,7 +40,7 @@ class Browser(ManagerFca):
 
     def read_info(self):
         self._data.get_header_info()
-        self._data.get_data_info(self)  # must be called always because of .dat format
+        self._data.get_data_info_for_browse(self)
         Data.skip_lines(self._data.index_data_start, self._opened_file)
 
     def __del__(self):

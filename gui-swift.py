@@ -155,6 +155,8 @@ class GuiSwift(QtGui.QWidget):
 
         if state == QtGui.QValidator.Acceptable and os.path.isfile(sender.text()):
             color = '#c4df9b'  # green
+            self.browser_source = None
+            self.clear_table(self.table_view_source)
             self._source_params.clear()
             self.btn_s_params.setEnabled(True)
             self.btn_browse.setEnabled(True)
@@ -164,13 +166,13 @@ class GuiSwift(QtGui.QWidget):
             self.btn_s_params.setEnabled(False)
             self.btn_browse.setEnabled(False)
         if sender.text() == "":
-            self.browser_source = None
             color = '#ffffff'  # white
+            self.browser_source = None
+            self.clear_table(self.table_view_source)
             self._source = None
             self.btn_s_params.setEnabled(False)
             self.btn_browse.setEnabled(False)
             self._source_params.clear()
-            self.clear_table(self.table_view_source)
         self.set_line_bg(sender, color)
 
     def check_state_target(self, *args, **kwargs):
@@ -179,6 +181,8 @@ class GuiSwift(QtGui.QWidget):
         state = validator.validate(sender.text(), 0)[0]
         if state == QtGui.QValidator.Acceptable:
             color = '#c4df9b'  # green
+            self.browser_target = None
+            self.clear_table(self.table_view_target)
             self._target_params.clear()
             self.btn_t_params.setEnabled(True)
             self._target = sender.text()
@@ -187,11 +191,11 @@ class GuiSwift(QtGui.QWidget):
             self.btn_t_params.setEnabled(False)
         if sender.text() == "":
             self.browser_target = None
+            self.clear_table(self.table_view_target)
             color = '#ffffff'  # white
             self._target = None
             self.btn_t_params.setEnabled(False)
             self._target_params.clear()
-            self.clear_table(self.table_view_target)
         self.set_line_bg(sender, color)
 
     def select_source(self):
@@ -226,7 +230,6 @@ class GuiSwift(QtGui.QWidget):
             self.browse_pbar.cancel()
 
         def worker_finished(worker):
-            print("worker finished")
             errors = worker.get_errors()
             if len(errors) > 0:
                 self.browse_pbar.cancel()
