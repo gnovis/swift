@@ -153,6 +153,7 @@ class GuiSwift(QtGui.QWidget):
 
         self.showMaximized()
         self.setWindowTitle('Swift - FCA convertor')
+        self.setWindowIcon(QtGui.QIcon('swift_icon.svg'))
         self.show()
 
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
