@@ -17,6 +17,12 @@ from source_swift.validator_fca import ParamValidator
 class GuiSwift(QtGui.QWidget):
 
     SCROLL_COUNT = 50
+    STATUS_MESSAGE_DURRATION = 5000
+
+    class Colors():
+        GREEN = '#c4df9b'
+        RED = '#f6989d'
+        WHITE = '#ffffff'
 
     def __init__(self):
         super().__init__()
@@ -29,8 +35,8 @@ class GuiSwift(QtGui.QWidget):
         self.browser_source = None
         self.browser_target = None
 
-        self.convert_pbar = PBar(self, title="Convert Data", label_text="Converting, please wait.")
-        self.browse_pbar = PBarEstimate(self, title="Prepare Data", label_text="Preparing data, please wait.")
+        self.convert_pbar = PBarDialogStandart(self, title="Convert Data", label_text="Converting, please wait.")
+        self.estimate_pbar = PBarDialogEstimate(self, title="Prepare Data", label_text="Preparing data, please wait.")
 
         self.initUI()
 
@@ -107,7 +113,7 @@ class GuiSwift(QtGui.QWidget):
 
         # Status Bar
         self.status_bar = QtGui.QStatusBar(self)
-        self.status_bar.showMessage("Welcome in Swift FCA convertor", 3000)
+        self.status_bar.showMessage("Welcome in Swift FCA convertor", self.STATUS_MESSAGE_DURRATION)
 
         # Layout
         hbox_source = QtGui.QHBoxLayout()
@@ -174,7 +180,7 @@ class GuiSwift(QtGui.QWidget):
         state = validator.validate(sender.text(), 0)[0]
 
         if state == QtGui.QValidator.Acceptable and os.path.isfile(sender.text()):
-            color = '#c4df9b'  # green
+            color = self.Colors.GREEN
             self.browser_source = None
             self.clear_table(self.table_view_source)
             self._source_params.clear()
@@ -183,12 +189,12 @@ class GuiSwift(QtGui.QWidget):
             self.btn_export_info.setEnabled(True)
             self._source = sender.text()
         else:
-            color = '#f6989d'  # red
+            color = self.Colors.RED
             self.btn_s_params.setEnabled(False)
             self.btn_browse.setEnabled(False)
             self.btn_export_info.setEnabled(False)
         if sender.text() == "":
-            color = '#ffffff'  # white
+            color = self.Colors.WHITE
             self.browser_source = None
             self.clear_table(self.table_view_source)
             self._source = None
@@ -204,19 +210,19 @@ class GuiSwift(QtGui.QWidget):
         validator = sender.validator()
         state = validator.validate(sender.text(), 0)[0]
         if state == QtGui.QValidator.Acceptable:
-            color = '#c4df9b'  # green
+            color = self.Colors.GREEN
             self.browser_target = None
             self.clear_table(self.table_view_target)
             self._target_params.clear()
             self.btn_t_params.setEnabled(True)
             self._target = sender.text()
         else:
-            color = '#f6989d'  # red
+            color = self.Colors.RED
             self.btn_t_params.setEnabled(False)
         if sender.text() == "":
             self.browser_target = None
             self.clear_table(self.table_view_target)
-            color = '#ffffff'  # white
+            color = self.Colors.WHITE
             self._target = None
             self.btn_t_params.setEnabled(False)
             self._target_params.clear()
@@ -257,7 +263,7 @@ class GuiSwift(QtGui.QWidget):
 
     def update_estimate_pbar(self, line, i):
         """Slot for estimate progress bar - line_prepared"""
-        self.browse_pbar.update(line, i)
+        self.estimate_pbar.update(line, i)
 
     def export_info(self):
         file_name = QtGui.QFileDialog.getSaveFileName(self, "Select file to export info about data")
@@ -266,7 +272,7 @@ class GuiSwift(QtGui.QWidget):
             def worker_finished(worker):
                 errors = worker.get_errors()
                 if len(errors) > 0:
-                    self.browse_pbar.cancel()
+                    self.estimate_pbar.cancel()
                     msgBox = QtGui.QMessageBox()
                     msgBox.setWindowTitle("Print Error")
                     msgBox.setText("Wasn't possible to prepare data for print iformations, please check syntax in source file and specified parameters.")
@@ -274,13 +280,17 @@ class GuiSwift(QtGui.QWidget):
                     msgBox.setDetailedText("\n".join(errors))
                     msgBox.setIcon(QtGui.QMessageBox.Critical)
                     msgBox.exec_()
+                    self.status_bar.showMessage("Export infomatios about source data aborted.",
+                                                self.STATUS_MESSAGE_DURRATION)
 
             def cont(printer):
+                self.status_bar.showMessage("Informations about source data were successfully exported.",
+                                            self.STATUS_MESSAGE_DURRATION)
                 printer.print_info(file_name)
-                self.browse_pbar.cancel()
+                self.estimate_pbar.cancel()
 
             printer = Printer(source=self.source, **self.source_params)
-            self.browse_pbar.setup(self.source, printer)
+            self.estimate_pbar.setup(self.source, printer)
             printer.next_line_prepared.connect(self.update_estimate_pbar)
             # function which will be run on background
 
@@ -322,6 +332,8 @@ class GuiSwift(QtGui.QWidget):
 
             def display_data(c):
                 self.convert_pbar.cancel()
+                self.status_bar.showMessage("Conversion was successful.",
+                                            self.STATUS_MESSAGE_DURRATION)
                 # display data
                 if self.chb_browse_convert.isChecked():
                     self.browser_target = self.browse_first_data(self.table_view_target, self.browser_target,
@@ -331,7 +343,7 @@ class GuiSwift(QtGui.QWidget):
             def worker_finished(worker):
                 errors = worker.get_errors()
                 if len(errors) > 0:
-                    self.browse_pbar.cancel()
+                    self.estimate_pbar.cancel()
                     self.convert_pbar.cancel()
                     msgBox = QtGui.QMessageBox()
                     msgBox.setWindowTitle("Convert Error")
@@ -340,10 +352,14 @@ class GuiSwift(QtGui.QWidget):
                     msgBox.setDetailedText("\n".join(errors))
                     msgBox.setIcon(QtGui.QMessageBox.Critical)
                     msgBox.exec_()
+                    self.status_bar.showMessage("Conversion aborted.",
+                                                self.STATUS_MESSAGE_DURRATION)
 
             # signal handler -> continue after thread ends
             def cont(convertor):
-                self.browse_pbar.cancel()
+                self.estimate_pbar.cancel()
+                self.status_bar.showMessage("Data were successfully prepared for conversion.",
+                                            self.STATUS_MESSAGE_DURRATION)
                 self.convert_pbar.setup(convertor.source_line_count, convertor)
                 convertor.next_line_converted.connect(update_pbar)
 
@@ -358,7 +374,7 @@ class GuiSwift(QtGui.QWidget):
                 bg.start()
 
             convertor = Convertor(s_p, t_p)
-            self.browse_pbar.setup(self.source, convertor)
+            self.estimate_pbar.setup(self.source, convertor)
             convertor.next_line_prepared.connect(self.update_estimate_pbar)
 
             # function which will be run on background
@@ -404,12 +420,14 @@ class GuiSwift(QtGui.QWidget):
             header = browser.get_header()
             table_view.model().header.extend(header)
             self.browse_data(browser, table_view)
-            self.browse_pbar.cancel()
+            self.estimate_pbar.cancel()
+            self.status_bar.showMessage("Data were successfully prepared for browsing.",
+                                        self.STATUS_MESSAGE_DURRATION)
 
         def worker_finished(worker):
             errors = worker.get_errors()
             if len(errors) > 0:
-                self.browse_pbar.cancel()
+                self.estimate_pbar.cancel()
                 self.clear_table(table_view)
                 msgBox = QtGui.QMessageBox()
                 msgBox.setWindowTitle("Browse Error")
@@ -418,9 +436,11 @@ class GuiSwift(QtGui.QWidget):
                 msgBox.setDetailedText("\n".join(errors))
                 msgBox.setIcon(QtGui.QMessageBox.Critical)
                 msgBox.exec_()
+                self.status_bar.showMessage("Data preparation for browsing aborted.",
+                                            self.STATUS_MESSAGE_DURRATION)
 
         browser = Browser(source=source_file, **params)
-        self.browse_pbar.setup(source_file, browser)
+        self.estimate_pbar.setup(source_file, browser)
         browser.next_line_prepared.connect(self.update_estimate_pbar)
 
         # function which will be run on background
@@ -654,6 +674,8 @@ class PBarDialog(QtGui.QProgressDialog):
         self.canceled.connect(self.canceled_by_user)
 
     def canceled_by_user(self):
+        self.parent.status_bar.showMessage("Operation canceled by user.",
+                                           self.STATUS_MESSAGE_DURRATION)
         self.manager.stop = True
         self.cancel()
 
@@ -665,7 +687,7 @@ class PBarDialog(QtGui.QProgressDialog):
         raise NotImplementedError('update method must be implemented in child class')
 
 
-class PBar(PBarDialog):
+class PBarDialogStandart(PBarDialog):
 
     def setup(self, maximum, manager):
         self._current_percent = 0
@@ -680,7 +702,7 @@ class PBar(PBarDialog):
             self._current_percent += 1
 
 
-class PBarEstimate(PBarDialog):
+class PBarDialogEstimate(PBarDialog):
 
     def setup(self, data_file, manager):
         self.proc_line_count = 0
@@ -711,7 +733,6 @@ class PBarEstimate(PBarDialog):
 
 
 def main():
-
     app = QtGui.QApplication(sys.argv)
     GuiSwift()
     sys.exit(app.exec_())
