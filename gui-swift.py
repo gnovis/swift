@@ -274,13 +274,10 @@ class GuiSwift(QtGui.QWidget):
                 errors = worker.get_errors()
                 if len(errors) > 0:
                     self.estimate_pbar.cancel()
-                    msgBox = QtGui.QMessageBox()
-                    msgBox.setWindowTitle("Print Error")
-                    msgBox.setText("Wasn't possible to prepare data for print iformations, please check syntax in source file and specified parameters.")
-                    msgBox.setStandardButtons(QtGui.QMessageBox.Close)
-                    msgBox.setDetailedText("\n".join(errors))
-                    msgBox.setIcon(QtGui.QMessageBox.Critical)
-                    msgBox.exec_()
+                    self.show_error_dialog(
+                        "Print Error",
+                        "Wasn't possible to prepare data for print iformations, please check syntax in source file and specified parameters.",
+                        errors)
                     self.status_bar.showMessage("Export infomatios about source data aborted.",
                                                 self.STATUS_MESSAGE_DURRATION)
 
@@ -346,13 +343,9 @@ class GuiSwift(QtGui.QWidget):
                 if len(errors) > 0:
                     self.estimate_pbar.cancel()
                     self.convert_pbar.cancel()
-                    msgBox = QtGui.QMessageBox()
-                    msgBox.setWindowTitle("Convert Error")
-                    msgBox.setText("Wasn't possible to convert data, please check syntax in source file and specified parameters.")
-                    msgBox.setStandardButtons(QtGui.QMessageBox.Close)
-                    msgBox.setDetailedText("\n".join(errors))
-                    msgBox.setIcon(QtGui.QMessageBox.Critical)
-                    msgBox.exec_()
+                    self.show_error_dialog("Convert Error",
+                                           "Wasn't possible to convert data, please check syntax in source file and specified parameters.",
+                                           errors)
                     self.status_bar.showMessage("Conversion aborted.",
                                                 self.STATUS_MESSAGE_DURRATION)
 
@@ -392,6 +385,15 @@ class GuiSwift(QtGui.QWidget):
     " OTHERS
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+    def show_error_dialog(self, title, message, errors):
+        msgBox = QtGui.QMessageBox()
+        msgBox.setWindowTitle(title)
+        msgBox.setText(message)
+        msgBox.setStandardButtons(QtGui.QMessageBox.Close)
+        msgBox.setDetailedText("\n".join(errors))
+        msgBox.setIcon(QtGui.QMessageBox.Critical)
+        msgBox.exec_()
+
     def set_line_prop(self, line, validator):
         line.setMinimumWidth(200)
         self.set_line_bg(line, '#ffffff')
@@ -430,13 +432,9 @@ class GuiSwift(QtGui.QWidget):
             if len(errors) > 0:
                 self.estimate_pbar.cancel()
                 self.clear_table(table_view)
-                msgBox = QtGui.QMessageBox()
-                msgBox.setWindowTitle("Browse Error")
-                msgBox.setText("Wasn't possible to browse data, please check syntax in browsing file and separator used.")
-                msgBox.setStandardButtons(QtGui.QMessageBox.Close)
-                msgBox.setDetailedText("\n".join(errors))
-                msgBox.setIcon(QtGui.QMessageBox.Critical)
-                msgBox.exec_()
+                self.show_error_dialog("Browse Error",
+                                       "Wasn't possible to browse data, please check syntax in browsing file and separator used.",
+                                       errors)
                 self.status_bar.showMessage("Data preparation for browsing aborted.",
                                             self.STATUS_MESSAGE_DURRATION)
 
