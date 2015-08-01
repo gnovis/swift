@@ -7,6 +7,7 @@ GUI application for Swift FCA
 import sys
 import collections
 import os.path
+import traceback
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import SIGNAL
 from source_swift.managers_fca import (Browser, Convertor, Printer, BgWorker)
@@ -89,8 +90,8 @@ class GuiSwift(QtGui.QWidget):
 
         btn_s_select = QtGui.QPushButton("Select")
         btn_t_select = QtGui.QPushButton("Select")
-        self.btn_s_params = QtGui.QPushButton("Set Params")
-        self.btn_t_params = QtGui.QPushButton("Set Params")
+        self.btn_s_params = QtGui.QPushButton("Set Arguments")
+        self.btn_t_params = QtGui.QPushButton("Set Arguments")
         self.btn_convert = QtGui.QPushButton("Convert")
         self.btn_browse = QtGui.QPushButton("Browse")
         self.btn_export_info = QtGui.QPushButton("Export Info")
@@ -276,7 +277,7 @@ class GuiSwift(QtGui.QWidget):
                     self.estimate_pbar.cancel()
                     self.show_error_dialog(
                         "Print Error",
-                        "Wasn't possible to prepare data for print iformations, please check syntax in source file and specified parameters.",
+                        "Wasn't possible to prepare data for print informations, please check syntax in source file and specified parameters.",
                         errors)
                     self.status_bar.showMessage("Export infomatios about source data aborted.",
                                                 self.STATUS_MESSAGE_DURRATION)
@@ -287,19 +288,24 @@ class GuiSwift(QtGui.QWidget):
                 printer.print_info(file_name)
                 self.estimate_pbar.cancel()
 
-            printer = Printer(source=self.source, **self.source_params)
-            self.estimate_pbar.setup(self.source, printer)
-            printer.next_line_prepared.connect(self.update_estimate_pbar)
-            # function which will be run on background
+            try:
+                printer = Printer(source=self.source, **self.source_params)
+            except:
+                errors = traceback.format_exc()
+                self.show_error_dialog(errors=errors)
+            else:
+                self.estimate_pbar.setup(self.source, printer)
+                printer.next_line_prepared.connect(self.update_estimate_pbar)
+                # function which will be run on background
 
-            def bg_func(worker):
-                printer.read_info()
-                worker.emit(SIGNAL('file_readed'), printer)
+                def bg_func(worker):
+                    printer.read_info()
+                    worker.emit(SIGNAL('file_readed'), printer)
 
-            bg = BgWorker(bg_func, self)
-            bg.finished.connect(lambda: worker_finished(bg))
-            bg.connect(bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
-            bg.start()
+                bg = BgWorker(bg_func, self)
+                bg.finished.connect(lambda: worker_finished(bg))
+                bg.connect(bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
+                bg.start()
 
     def convert(self):
         """Slot for btn_convert"""
@@ -367,25 +373,30 @@ class GuiSwift(QtGui.QWidget):
                 bg.connect(bg, SIGNAL('file_converted'), display_data, QtCore.Qt.QueuedConnection)
                 bg.start()
 
-            convertor = Convertor(s_p, t_p)
-            self.estimate_pbar.setup(self.source, convertor)
-            convertor.next_line_prepared.connect(self.update_estimate_pbar)
+            try:
+                convertor = Convertor(s_p, t_p)
+            except:
+                errors = traceback.format_exc()
+                self.show_error_dialog(errors=[errors])
+            else:
+                self.estimate_pbar.setup(self.source, convertor)
+                convertor.next_line_prepared.connect(self.update_estimate_pbar)
 
-            # function which will be run on background
-            def bg_func(worker):
-                convertor.read_info()
-                worker.emit(SIGNAL('file_readed'), convertor)
+                # function which will be run on background
+                def bg_func(worker):
+                    convertor.read_info()
+                    worker.emit(SIGNAL('file_readed'), convertor)
 
-            bg = BgWorker(bg_func, self)
-            bg.finished.connect(lambda: worker_finished(bg))
-            bg.connect(bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
-            bg.start()
+                bg = BgWorker(bg_func, self)
+                bg.finished.connect(lambda: worker_finished(bg))
+                bg.connect(bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
+                bg.start()
 
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     " OTHERS
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-    def show_error_dialog(self, title, message, errors):
+    def show_error_dialog(self, title="Arguments Error", message="Some of arguments aren't correct, operation aborted.", errors=[]):
         msgBox = QtGui.QMessageBox()
         msgBox.setWindowTitle(title)
         msgBox.setText(message)
@@ -438,20 +449,25 @@ class GuiSwift(QtGui.QWidget):
                 self.status_bar.showMessage("Data preparation for browsing aborted.",
                                             self.STATUS_MESSAGE_DURRATION)
 
-        browser = Browser(source=source_file, **params)
-        self.estimate_pbar.setup(source_file, browser)
-        browser.next_line_prepared.connect(self.update_estimate_pbar)
+        try:
+            browser = Browser(source=source_file, **params)
+        except:
+            errors = traceback.format_exc()
+            self.show_error_dialog(errors=errors)
+        else:
+            self.estimate_pbar.setup(source_file, browser)
+            browser.next_line_prepared.connect(self.update_estimate_pbar)
 
-        # function which will be run on background
-        def bg_func(worker):
-            browser.read_info()
-            worker.emit(SIGNAL('file_readed'), browser, worker)
+            # function which will be run on background
+            def bg_func(worker):
+                browser.read_info()
+                worker.emit(SIGNAL('file_readed'), browser, worker)
 
-        bg = BgWorker(bg_func, self)
-        bg.finished.connect(lambda: worker_finished(bg))
-        bg.connect(bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
-        bg.start()
-        return browser
+            bg = BgWorker(bg_func, self)
+            bg.finished.connect(lambda: worker_finished(bg))
+            bg.connect(bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
+            bg.start()
+            return browser
 
     def change_params(self, cls, params):
         result = cls.get_params(self)
