@@ -6,7 +6,7 @@ classes="Monday, Friday, Friday, Sunday, Theusday, Theusday, Wednesday, Theusday
 
 echo $format
 echo "====="
-app=../../fca_swift/swift.py
+app="python3 ../../fca_swift/swift.py"
 
 # -> csv
 $app -s $source_file -t cxt.csv

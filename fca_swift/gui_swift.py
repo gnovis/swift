@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 
 """
 GUI application for Swift FCA
