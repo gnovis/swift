@@ -475,7 +475,6 @@ class GuiSwift(QtGui.QWidget):
         if confirmed:
             params.clear()
             params.update(result[0])
-            print(params)
 
 
 class SwiftTableModel(QtCore.QAbstractTableModel):
@@ -483,6 +482,7 @@ class SwiftTableModel(QtCore.QAbstractTableModel):
         QtCore.QAbstractTableModel.__init__(self, parent, *args)
         self.table = []
         self.header = []
+        self.parent = parent
 
     def rowCount(self, parent):
         return len(self.table)
@@ -497,11 +497,16 @@ class SwiftTableModel(QtCore.QAbstractTableModel):
             return None
         elif role != QtCore.Qt.DisplayRole:
             return None
-        return self.table[index.row()][index.column()]
+        try:
+            return self.table[index.row()][index.column()]
+        except IndexError:
+            return None
 
     def headerData(self, col, orientation, role):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
             return self.header[col]
+        if orientation == QtCore.Qt.Vertical and role == QtCore.Qt.DisplayRole:
+            return col
         return None
 
 
@@ -690,7 +695,7 @@ class PBarDialog(QtGui.QProgressDialog):
 
     def canceled_by_user(self):
         self.parent.status_bar.showMessage("Operation canceled by user.",
-                                           self.STATUS_MESSAGE_DURRATION)
+                                           self.parent.STATUS_MESSAGE_DURRATION)
         self.manager.stop = True
         self.cancel()
 
