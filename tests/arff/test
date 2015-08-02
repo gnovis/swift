@@ -5,22 +5,23 @@ new_str_attrs="WINDY=windy[TRUE]e, SUNNY=outlook[sunny]e, ORDER=order, TEMP=temp
 new_str_objects="0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13"
 classes="Monday, Friday, Friday, Sunday, Theusday, Theusday, Wednesday, Theusday, Monday, Sunday, Suterday, Wednesday, Monday, Sunday"
 source_file=test.arff
+app=../../fca_swift/swift.py
 
 echo $format
 echo "====="
 
 # -> cxt
-../../swift.py -s $source_file -t arff.cxt -ta "$new_str_attrs" -to "$new_str_objects"
+$app -s $source_file -t arff.cxt -ta "$new_str_attrs" -to "$new_str_objects"
 echo $format "-> CXT"
 
 # -> csv
-../../swift.py -s $source_file -t arff.csv
+$app -s $source_file -t arff.csv
 echo $format "-> CSV"
 
 # -> dat
-../../swift.py -s $source_file -t arff.dat -ta "$new_str_attrs"
+$app -s $source_file -t arff.dat -ta "$new_str_attrs"
 echo $format "-> DAT"
 
 # -> data
-../../swift.py -s $source_file -t arff.data -cls "$classes"
+$app -s $source_file -t arff.data -cls "$classes"
 echo $format "-> DATA"

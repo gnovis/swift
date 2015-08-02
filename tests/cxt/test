@@ -6,19 +6,20 @@ classes="Monday, Friday, Friday, Sunday, Theusday, Theusday, Wednesday, Theusday
 
 echo $format
 echo "====="
+app=../../fca_swift/swift.py
 
 # -> csv
-../../swift.py -s $source_file -t cxt.csv
+$app -s $source_file -t cxt.csv
 echo $format "-> CSV"
 
 # -> arff
-../../swift.py -s $source_file -t cxt.arff 
+$app -s $source_file -t cxt.arff 
 echo $format "-> ARFF"
 
 # -> dat
-../../swift.py -s $source_file -t cxt.dat 
+$app -s $source_file -t cxt.dat 
 echo $format "-> DAT"
 
 # -> data
-../../swift.py -s $source_file -t cxt.data -cls "$classes"
+$app -s $source_file -t cxt.data -cls "$classes"
 echo $format "-> DATA"

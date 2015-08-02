@@ -4,22 +4,23 @@ format=DATA
 new_str_attrs="SEX=class[woman]e, WORK=work[true]e, AGE=age[20<x<50]n, HEIGHT=height[y>165]n, WEIGHT=weight[x<90]n, JOB1=job[doctor]e, JOB2=job[student]e"
 new_str_objects="0, 1, 2, 3"
 source_file=test.data
+app=../../fca_swift/swift.py
 
 echo $format
 echo "====="
 
 # -> cxt
-../../swift.py -s $source_file -t data.cxt -ta "$new_str_attrs" -to "$new_str_objects"
+$app -s $source_file -t data.cxt -ta "$new_str_attrs" -to "$new_str_objects"
 echo $format "-> CXT"
 
 # -> csv
-../../swift.py -s $source_file -t data.csv
+$app -s $source_file -t data.csv
 echo $format "-> CSV"
 
 # -> arff
-../../swift.py -s $source_file -t data.arff
+$app -s $source_file -t data.arff
 echo $format "-> ARFF"
 
 # -> dat
-../../swift.py -s $source_file -t data.dat -ta "$new_str_attrs"
+$app -s $source_file -t data.dat -ta "$new_str_attrs"
 echo $format "-> DAT"

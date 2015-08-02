@@ -7,22 +7,23 @@ old_str_attrs="note[s], outlook[e], temperature[n], humidity[n], windy[e], play[
 classes="Monday, Friday, Friday, Sunday, Theusday, Theusday, Wednesday, Theusday, Monday, Sunday, Suterday, Wednesday, Monday, Sunday"
 source_file=test.csv
 source_file_nfl=test_nfl.csv
+app=../../fca_swift/swift.py
 
 echo $format
 echo "====="
 
 # -> cxt
-../../swift.py -s $source_file_nfl -t csv.cxt -ta "$new_str_attrs" -to "$new_str_objects" -sa "$old_str_attrs" -nfl
+$app -s $source_file_nfl -t csv.cxt -ta "$new_str_attrs" -to "$new_str_objects" -sa "$old_str_attrs" -nfl
 echo $format "-> CXT"
 
 # -> arff
-../../swift.py -s $source_file -t csv.arff -sa "$old_str_attrs" 
+$app -s $source_file -t csv.arff -sa "$old_str_attrs" 
 echo $format "-> ARFF"
 
 # -> dat
-../../swift.py -s $source_file -t csv.dat -ta "$new_str_attrs" 
+$app -s $source_file -t csv.dat -ta "$new_str_attrs" 
 echo $format "-> DAT"
 
 # -> data
-../../swift.py -s $source_file -t csv.data -cls "$classes" -sa "$old_str_attrs"
+$app -s $source_file -t csv.data -cls "$classes" -sa "$old_str_attrs"
 echo $format "-> DATA"

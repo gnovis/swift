@@ -6,22 +6,23 @@ source_file=test.dat
 new_str_objects="0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13"
 new_str_attrs="note, outlook, temperature, humidity, windy, play"
 classes="Monday, Friday, Friday, Sunday, Theusday, Theusday, Wednesday, Theusday, Monday, Sunday, Suterday, Wednesday, Monday, Sunday"
+app=../../fca_swift/swift.py
 
 echo $format
 echo "====="
 
 # -> csv
-../../swift.py -s $source_file -t dat.csv -ta "$new_str_attrs"
+$app -s $source_file -t dat.csv -ta "$new_str_attrs"
 echo $format "-> CSV"
 
 # -> arff
-../../swift.py -s $source_file -t dat.arff -ta "$new_str_attrs"
+$app -s $source_file -t dat.arff -ta "$new_str_attrs"
 echo $format "-> ARFF"
 
 # -> cxt
-../../swift.py -s $source_file -t dat.cxt -ta "$new_str_attrs" -to "$new_str_objects"
+$app -s $source_file -t dat.cxt -ta "$new_str_attrs" -to "$new_str_objects"
 echo $format "-> CXT"
 
 # -> data
-../../swift.py -s $source_file -t dat.data -ta "$new_str_attrs" -cls "$classes"
+$app -s $source_file -t dat.data -ta "$new_str_attrs" -cls "$classes"
 echo $format "-> DATA"
