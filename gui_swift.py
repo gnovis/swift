@@ -754,7 +754,7 @@ class PBarDialogEstimate(PBarDialog):
 
 def main():
     app = QtGui.QApplication(sys.argv)
-    GuiSwift()
+    sw = GuiSwift()  # NOQA
     sys.exit(app.exec_())
 
 
