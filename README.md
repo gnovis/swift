@@ -3,7 +3,7 @@
 ## Expected parameters
 -------------------
 
-### a. non-scale (attributes and objects)
+### a. Non Scale (attributes and objects)
 String with values sepeprated by: ",", separator inside string must be escaped.  
 *Use this type, when target file don't need information about parameters type e.g .data -> .csv*  
 Example: ```"name, age, sex, nation\,ality"```
@@ -12,7 +12,7 @@ String with values and types(s-string, n-numeric, e-enumeration data) separated 
 *Use this type, when target file need information about parameters type e.g .data -> .arff*    
 Example: ```"name[s], age[n], sex[e], nation\,ality[s]"```
 
-### b. scale (attributes)  
+### b. Scale (attributes)  
 Attributes for scaling are compound of formulas seperated by: ","  
 Formula in format: ```new_attr=old_attr[expression]identifier```
 
@@ -35,7 +35,7 @@ Example:
  scaled_address=address(\w? street[0-9]+)s"
 ``` 
 
-### c. others
+### c. Others
 e.g separator, classes ...
 
 
