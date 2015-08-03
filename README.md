@@ -38,9 +38,9 @@ Is possible to write formula in format: ```new_attr=old_attr```, in this case re
  
 Example: 
 ```
-"scaled_age=age(x<50)i, 
+"scaled_age=age(x<50)n, 
  scaled_sex=sex(woman)e, 
- scaled_height=height(150<=x<=210)i,  
+ scaled_height=height(150<=x<=210)n,  
  scaled_same=same,  
  scaled_address=address(\w? street[0-9]+)s"
 ``` 
