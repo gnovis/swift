@@ -1,4 +1,5 @@
 # Swift - FCA Data Converter
+Convertor of data formats used in Formal Concept Analysis and public repositories
 
 ## Expected parameters
 -------------------
