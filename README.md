@@ -12,18 +12,16 @@ String with values and types(s-string, n-numeric, e-enumeration data) separated 
 Example: ```"name[s], age[n], sex[e], nation\,ality[s]"```
 
 ### b. scale (attributes)  
-string with formulas seperated by: ","  
-formula in format: ```new_attr=old_attr[expression]identifier```  
-new_attr = name of new attribute witch will be the result of a conversion  
-old_attr = name of attribute, whitch will be use as template for new attribute  
-expression:   
+Attributes for scaling are compound of formulas seperated by: ","  
+Formula in format: ```new_attr=old_attr[expression]identifier```  
+* new_attr = name of new attribute witch will be the result of a conversion  
+* old_attr = name of attribute, whitch will be use as template for new attribute  
+* expression:   
 string(for enum data)   
 regular expression(for string data)  
 interval(for numeric data) e.g ```x>=50 or 100<value<150```    
-identifier = s - string data, n - numeric data, e - enumeration data  
-formula in format ```new_attr=old_attr```  
-result of scaling will be same value  
-it works (and make sance) only for binary values 0 and 1  
+* identifier = s - string data, n - numeric data, e - enumeration data  
+Is possible to write formula in format: ```new_attr=old_attr```, in this case result of scaling will be same value, it works (and make sance) only for binary values 0 and 1  
  
 Example: ```"scaled_age=age(x<50)i,  
 	     scaled_sex=sex(woman)e,  
