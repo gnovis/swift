@@ -19,9 +19,9 @@ Formula in format: ```new_attr=old_attr[expression]identifier```
 * new_attr = name of new attribute witch will be the result of a conversion
 * old_attr = name of attribute, whitch will be use as template for new attribute
 * expression:
-    * string(for enum data)   
-    * regular expression(for string data)  
-    * interval(for numeric data) e.g ```x>=50 or 100<value<150```    
+    * string (for enumeration data)   
+    * regular expression (for string data)  
+    * interval (for numeric data) e.g ```x>=50``` or ```100<value<150``` - variable (x and value in example) can be anything except >,<,= and numbers.
 * identifier = s - string data, n - numeric data, e - enumeration data
 
 Is possible to write formula in format: ```new_attr=old_attr```, in this case result of scaling will be same value, it works (and make sance) only for binary values 0 and 1  
