@@ -1,6 +1,14 @@
 # Swift - FCA Data Converter
 Converter of data formats used in Formal Concept Analysis and public repositories.  
-Swift provides command line application and GUI interface.
+Swift provides command line application and GUI interface.  
+
+## Supported formats
+-------------------
+* [CSV](https://en.wikipedia.org/wiki/Comma-separated_values) 
+* [ARFF](http://weka.wikispaces.com/ARFF+%28book+version%29)
+* [DATA](http://www.cs.washington.edu/dm/vfml/appendixes/c45.htm)
+* [DAT](http://fcalgs.sourceforge.net/format.html)
+* [CXT](http://www.upriss.org.uk/fca/fcafileformats.html#Burmeister)
 
 ## Expected parameters
 -------------------
