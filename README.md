@@ -7,8 +7,8 @@
 String with values sepeprated by: ",", separator inside string must be escaped.  
 Example: ```"name, age, sex, nation\,ality"```
 
- * string with values and types(s-string, n-numeric, e-enumeration data) separated by: ","
- * Example: ```"name[s], age[n], sex[e], nation\,ality[s]"```
+String with values and types(s-string, n-numeric, e-enumeration data) separated by: ","  
+Example: ```"name[s], age[n], sex[e], nation\,ality[s]"```
 
 ### b. scale (attributes)
  * string with formulas seperated by: ","
