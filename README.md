@@ -1,6 +1,6 @@
 # Swift - FCA Data Converter
 Converter of data formats used in Formal Concept Analysis and public repositories.  
-Swift provides command line application and GUI interface.  
+Swift provides console application and GUI interface.  
 
 ## Supported formats
 -------------------
