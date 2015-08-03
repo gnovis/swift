@@ -5,7 +5,7 @@
 
 ### a. non-scale (attributes and objects)
 String with values sepeprated by: ",", separator inside string must be escaped.  
-Use this type, when target file don't need information about parameters type e.g .data -> .csv
+Use this type, when target file don't need information about parameters type e.g .data -> .csv  
 Example: ```"name, age, sex, nation\,ality"```
 
 String with values and types(s-string, n-numeric, e-enumeration data) separated by: ","  
