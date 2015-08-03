@@ -4,7 +4,8 @@
 -------------------
 
 ### a. non-scale (attributes and objects)
-String with values sepeprated by: ",", separator inside string must be escaped e.g Example: ```"name, age, sex, nation\,ality"```
+String with values sepeprated by: ",", separator inside string must be escaped. 
+Example: ```"name, age, sex, nation\,ality"```
 
  * string with values and types(s-string, n-numeric, e-enumeration data) separated by: ","
  * Example: ```"name[s], age[n], sex[e], nation\,ality[s]"```
