@@ -2,17 +2,21 @@
 
 from __future__ import print_function
 import re
+import datetime
+from source_swift.java_date_parser_fca import JavaDateParser
 
 
 class AttrType:
     NUMERIC = 0
     NOMINAL = 1
     STRING = 2
-    NOT_SPECIFIED = 3
+    DATE = 3
+    NOT_SPECIFIED = 4
 
     STR_REPR = {NUMERIC: "numeric",
                 NOMINAL: "nominal",
                 STRING: "string",
+                DATE: "date",
                 NOT_SPECIFIED: "not specified"}
 
 
@@ -24,7 +28,8 @@ class Attribute:
 
     types = {'n': AttrType.NUMERIC,
              'e': AttrType.NOMINAL,
-             's': AttrType.STRING}
+             's': AttrType.STRING,
+             'd': AttrType.DATE}
 
     @property
     def name(self):
@@ -74,8 +79,8 @@ class AttrScale(Attribute):
 
 
 class AttrScaleNumeric(AttrScale):
-    def __init__(self, index, name, attr_pattern=None, expr_pattern=None):
-        super().__init__(index, name, AttrType.NUMERIC,
+    def __init__(self, index, name, attr_type=AttrType.NUMERIC, attr_pattern=None, expr_pattern=None):
+        super().__init__(index, name, attr_type,
                          attr_pattern, expr_pattern)
         self._max_value = None
         self._min_value = None
@@ -95,7 +100,7 @@ class AttrScaleNumeric(AttrScale):
             # if value is not integer(is string or undefined e.g None, "" or ?) =>
             # result of scaling is false
             return False
-        replaced = re.sub(r"[^<>=0-9\s]+", "x", self._expr_pattern)
+        replaced = re.sub(r"[^<>=0-9\s:]+", "x", self._expr_pattern)
         return eval(replaced)
 
     def update(self, str_value):
@@ -107,7 +112,7 @@ class AttrScaleNumeric(AttrScale):
             if not self._min_value:
                 self._min_value = value
                 return
-            if value > self.max_value:
+            if value > self._max_value:
                 self._max_value = value
             if value < self._min_value:
                 self._min_value = value
@@ -124,6 +129,39 @@ class AttrScaleNumeric(AttrScale):
 
     def data_repr(self, sep, bi_val1='0', bi_val2='1'):
         return "continuous"
+
+
+class AttrScaleDate(AttrScaleNumeric):
+    def __init__(self, index, name, date_format="yyyy-MM-dd'T'HH:mm:ss",
+                 attr_type=AttrType.DATE, attr_pattern=None, expr_pattern=None):
+        super().__init__(index, name, attr_type, attr_pattern, expr_pattern)
+        self.parser = JavaDateParser(date_format)
+
+    @property
+    def max_value(self):
+        return self._time_stamp_to_str(self._max_value)
+
+    @property
+    def min_value(self):
+        return self._time_stamp_to_str(self._min_value)
+
+    def _time_stamp_to_str(self, ts):
+        return datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+
+    def scale(self, attrs, values):
+        val_i = attrs[self._attr_pattern]
+        str_date = values[val_i]
+        time_stamp = self.parser.get_time_stamp(str_date)
+        new_values = values.copy()
+        new_values[val_i] = time_stamp
+        return super().scale(attrs, new_values)
+
+    def update(self, str_date):
+        time_stamp = self.parser.get_time_stamp(str_date)
+        super().update(time_stamp)
+
+    def arff_repr(self, sep, bi_val1='0', bi_val2='1'):
+        return "{} {}".format(AttrType.STR_REPR[self.attr_type], self.parser.get_format())
 
 
 class AttrScaleEnum(AttrScale):

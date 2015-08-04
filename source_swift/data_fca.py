@@ -4,7 +4,7 @@ import os
 import sys
 
 from source_swift.attributes_fca import (Attribute, AttrScale, AttrScaleNumeric,
-                                         AttrScaleEnum, AttrScaleString)
+                                         AttrScaleEnum, AttrScaleString, AttrScaleDate)
 from source_swift.object_fca import Object
 
 
@@ -14,7 +14,8 @@ class Data:
     """Class data"""
     attr_classes = {'n': AttrScaleNumeric,
                     'e': AttrScaleEnum,
-                    's': AttrScaleString}
+                    's': AttrScaleString,
+                    'd': AttrScaleDate}
     LEFT_BRACKET = '['
     RIGHT_BRACKET = ']'
     NONE_VALUE = "None"  # TODO pridat jako volitelny parametr
@@ -182,15 +183,37 @@ class Data:
 
 
 class DataArff(Data):
-    """Attribute-Relation File Format"""
+    """
+    Attribute-Relation File Format
+
+    Pattern:
+    ========
+    @RELATION <relation-name>
+    @ATTRIBUTE <attribute-name> <attribute-type>
+    @DATA
+    <obj1-attr1>, <obj2-attr2> ....
+
+    Sample:
+    =======
+    @RELATION iris
+    @ATTRIBUTE sepallength  NUMERIC
+    @ATTRIBUTE petalwidth   STRING
+    @ATTRIBUTE class        {Iris-setosa,Iris-versicolor,Iris-virginica}
+    @ATTRIBUTE timestamp DATE yyyy-MM-dd HH:mm:ss
+    @DATA
+    5, lot, Iris-versicolor, 2001-04-03 12:12:12
+
+    """
 
     PART_SYM = '@'
     IDENTIFIER = 0
     NAME = 1
-    VALUE = 2
+    TYPE = 2
+    FORMAT = 3
 
     NUMERIC = "numeric"
     STRING = "string"
+    DATE = "date"
 
     ATTRIBUTE = "@attribute"
     RELATION = "@relation"
@@ -230,15 +253,22 @@ class DataArff(Data):
 
                     # @attribute
                     elif identifier == self.ATTRIBUTE:
-                        attr_type = values[self.VALUE].lower()  # is case insensitive
-                        if (attr_type == self.NUMERIC
-                                or attr_type == self.STRING):
-                            cls = Data.attr_classes[attr_type[0]]
+                        attr_type = values[self.TYPE].lower()  # is case insensitive
+
+                        kwargs = {}
+                        if attr_type == self.NUMERIC:
+                            cls = AttrScaleNumeric
+                        elif attr_type == self.STRING:
+                            cls = AttrScaleString
+                        elif attr_type == self.DATE:
+                            cls = AttrScaleDate
+                            if len(values) == 4:
+                                kwargs["date_format"] = (values[self.FORMAT])
                         else:
-                            cls = Data.attr_classes['e']
-                        self._attributes.append(
-                            cls(attr_index,
-                                values[self.NAME]))
+                            cls = AttrScaleEnum
+
+                        new_attr = cls(attr_index, values[self.NAME], **kwargs)
+                        self._attributes.append(new_attr)
                         attr_index += 1
                         attrs_names.append(values[self.NAME])
 
@@ -377,6 +407,10 @@ class DataBivalent(Data):
     """Data represented only by bivalnet values e.g 1/0"""
 
     bi_vals = {'pos': '1', 'neg': '0'}
+    NAME = 0
+    FORMULA = 1
+    EXPR = 0
+    DATE_FORMAT = 1
 
     def parse_old_attrs_for_scale(self, old_str_attrs, separator):
         """
@@ -399,22 +433,26 @@ class DataBivalent(Data):
         self._attributes = []
         for i, attr in enumerate(values):
             devided = self.ss_str(attr, "=", 1)
-            new_name = devided[0]
-            rest = devided[1]
+            new_name = devided[self.NAME]
+            rest = devided[self.FORMULA]
 
+            kwargs = {}
             bracket_i = rest.find(self.LEFT_BRACKET)
             if bracket_i == -1:
                 attr_class = AttrScale
-                expr_pattern = ''
-                attr_pattern = rest
+                kwargs["expr_pattern"] = ''
+                kwargs["attr_pattern"] = rest
             else:
                 attr_class = Data.attr_classes[rest[-1]]
-                expr_pattern = rest[bracket_i+1:-2]
-                attr_pattern = rest[:bracket_i]
+                kwargs["expr_pattern"] = rest[bracket_i+1:-2]
+                kwargs["attr_pattern"] = rest[:bracket_i]
+                if attr_class == AttrScaleDate:
+                    vals = kwargs["expr_pattern"].split(":")
+                    if len(vals) == 2:
+                        kwargs["date_format"] = vals[self.DATE_FORMAT].strip()
+                        kwargs["expr_pattern"] = vals[self.EXPR]
 
-            new_attr = attr_class(i, new_name,
-                                  attr_pattern=attr_pattern,
-                                  expr_pattern=expr_pattern)
+            new_attr = attr_class(i, new_name, **kwargs)
             self._attributes.append(new_attr)
 
     def write_data_scale(self, values, target_file):
