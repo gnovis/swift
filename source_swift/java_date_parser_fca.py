@@ -6,6 +6,8 @@ class JavaDateParser():
     def __init__(self, pattern):
         if not jpype.isJVMStarted():
             jpype.startJVM(jpype.getDefaultJVMPath())
+        if not jpype.isThreadAttachedToJVM():
+            jpype.attachThreadToJVM()
         self._date_format = jpype.java.text.SimpleDateFormat(pattern)
 
     def get_time_stamp(self, date):

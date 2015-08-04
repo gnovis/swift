@@ -12,7 +12,7 @@ echo $format
 echo "====="
 
 # -> cxt
-$app -s $source_file -t arff.cxt -ta "$new_str_attrs" -to "$new_str_objects"
+$app -s $source_file -t arff.cxt -ta "$new_str_attrs" -to "$new_str_objects" -si
 echo $format "-> CXT"
 
 # -> csv

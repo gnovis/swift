@@ -2,7 +2,6 @@
 
 from __future__ import print_function
 import re
-import datetime
 from source_swift.java_date_parser_fca import JavaDateParser
 
 
@@ -146,7 +145,7 @@ class AttrScaleDate(AttrScaleNumeric):
         return self._time_stamp_to_str(self._min_value)
 
     def _time_stamp_to_str(self, ts):
-        return datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+        return ts  # TODO format time stamp
 
     def scale(self, attrs, values):
         val_i = attrs[self._attr_pattern]
