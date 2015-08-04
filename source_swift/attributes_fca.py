@@ -163,6 +163,9 @@ class AttrScaleDate(AttrScaleNumeric):
     def arff_repr(self, sep, bi_val1='0', bi_val2='1'):
         return "{} {}".format(AttrType.STR_REPR[self.attr_type], self.parser.get_format())
 
+    def data_repr(self, sep, bi_val1='0', bi_val2='1'):
+        return "discrete n"
+
 
 class AttrScaleEnum(AttrScale):
     def __init__(self, index, name, attr_pattern=None, expr_pattern=None):

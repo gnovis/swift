@@ -86,10 +86,19 @@ class Data:
             for i, str_attr in enumerate(splitted):
                 attr_class = Attribute
                 attr_name = str_attr
+                kwargs = {}
                 if str_attr[-1] == Data.RIGHT_BRACKET:
-                    attr_class = Data.attr_classes[str_attr[-2]]
-                    attr_name = str_attr[:-3]
-                self._attributes.append(attr_class(i, attr_name))
+                    # attr_class = Data.attr_classes[str_attr[-2]]
+                    # attr_name = str_attr[:-3]
+
+                    bracket_i = str_attr.find(self.LEFT_BRACKET)
+                    attr_name = str_attr[:bracket_i]
+                    vals = str_attr[bracket_i+1:-1].split(":")
+                    attr_class = self.attr_classes[vals[0]]
+                    if attr_class == AttrScaleDate and len(vals) == 2:
+                        kwargs["date_format"] = vals[1]
+
+                self._attributes.append(attr_class(i, attr_name, **kwargs))
                 attrs_names.append(attr_name)
             self._str_attrs = self.separator.join(attrs_names)
 

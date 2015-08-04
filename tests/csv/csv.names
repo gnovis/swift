@@ -6,3 +6,4 @@ humidity: continuous.
 windy: FALSE,TRUE.
 play: no,yes.
 order: 1,0.
+birthday: discrete n.
