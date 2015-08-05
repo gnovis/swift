@@ -51,5 +51,6 @@ e.g separator, classes ...
 
 ## Requirements
 ------------
-* python3
-* PyQt4
+* [python3](https://www.python.org/)
+* [PyQt4](http://www.riverbankcomputing.co.uk/software/pyqt/intro)
+* [JPype](http://jpype.sourceforge.net/)
