@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 import re
-from .java_date_parser_fca import JavaDateParser
+from .date_parser_fca import DateParser
 
 
 class AttrType:
@@ -131,21 +131,18 @@ class AttrScaleNumeric(AttrScale):
 
 
 class AttrScaleDate(AttrScaleNumeric):
-    def __init__(self, index, name, date_format="yyyy-MM-dd'T'HH:mm:ss",
+    def __init__(self, index, name, date_format=DateParser.ISO_FORMAT,
                  attr_type=AttrType.DATE, attr_pattern=None, expr_pattern=None):
         super().__init__(index, name, attr_type, attr_pattern, expr_pattern)
-        self.parser = JavaDateParser(date_format)
+        self.parser = DateParser(date_format)
 
     @property
     def max_value(self):
-        return self._time_stamp_to_str(self._max_value)
+        return self.parser.time_stamp_to_str(self._max_value)
 
     @property
     def min_value(self):
-        return self._time_stamp_to_str(self._min_value)
-
-    def _time_stamp_to_str(self, ts):
-        return ts  # TODO format time stamp
+        return self.parser.time_stamp_to_str(self._min_value)
 
     def scale(self, attrs, values):
         val_i = attrs[self._attr_pattern]

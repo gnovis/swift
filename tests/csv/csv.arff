@@ -7,7 +7,7 @@
 @attribute windy { FALSE,TRUE }
 @attribute play { no,yes }
 @attribute order { 1,0 }
-@attribute birthday date yyyy-MM-dd
+@attribute birthday date %Y-%m-%d
 
 @data
 hello,sunny,85,85,FALSE,no,1,2001-04-03
