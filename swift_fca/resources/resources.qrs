@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/" >
+    <file>images/swift_icon.svg</file>
+	<file alias='swift_icon.svg'>images/swift_icon.svg</file>
+  </qresource>
+</RCC>

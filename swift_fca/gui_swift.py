@@ -12,7 +12,7 @@ from PyQt4.QtCore import SIGNAL
 from source_swift.managers_fca import (Browser, Convertor, Printer, BgWorker)
 from source_swift.constants_fca import (RunParams, FileType)
 from source_swift.validator_fca import ParamValidator
-import images_rc  # NOQA Resources file
+import resources.resources_rc  # NOQA Resources file
 
 
 class GuiSwift(QtGui.QWidget):

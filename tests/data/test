@@ -4,7 +4,7 @@ format=DATA
 new_str_attrs="SEX=class[woman]e, WORK=work[true]e, AGE=age[20<x<50]n, HEIGHT=height[y>165]n, WEIGHT=weight[x<90]n, JOB1=job[doctor]e, JOB2=job[student]e"
 new_str_objects="0, 1, 2, 3"
 source_file=test.data
-app="../../swift.py"
+app="../../swift_fca/swift.py"
 
 echo $format
 echo "====="
