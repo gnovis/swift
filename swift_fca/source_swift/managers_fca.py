@@ -1,8 +1,8 @@
 import os
 import traceback
 from PyQt4 import QtCore
-from source_swift.data_fca import (Data, DataCsv, DataArff, DataDat, DataCxt, DataData)
-from source_swift.constants_fca import (FileType, RunParams)
+from .data_fca import (Data, DataCsv, DataArff, DataDat, DataCxt, DataData)
+from .constants_fca import (FileType, RunParams)
 
 
 class ManagerFca(QtCore.QObject):

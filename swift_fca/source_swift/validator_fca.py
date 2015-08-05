@@ -1,5 +1,5 @@
 import os
-from source_swift.constants_fca import (FileType, RunParams)
+from .constants_fca import (FileType, RunParams)
 
 
 class ParamValidator:

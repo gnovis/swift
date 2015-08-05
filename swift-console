@@ -1,0 +1,3 @@
+#!/usr/bin/python3
+from swift_fca.swift import run_swift
+run_swift()

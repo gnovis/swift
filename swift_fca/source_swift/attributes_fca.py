@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 import re
-from source_swift.java_date_parser_fca import JavaDateParser
+from .java_date_parser_fca import JavaDateParser
 
 
 class AttrType:

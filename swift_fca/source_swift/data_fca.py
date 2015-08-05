@@ -3,9 +3,9 @@ import re
 import os
 import sys
 
-from source_swift.attributes_fca import (Attribute, AttrScale, AttrScaleNumeric,
-                                         AttrScaleEnum, AttrScaleString, AttrScaleDate)
-from source_swift.object_fca import Object
+from .attributes_fca import (Attribute, AttrScale, AttrScaleNumeric,
+                             AttrScaleEnum, AttrScaleString, AttrScaleDate)
+from .object_fca import Object
 
 
 class Data:

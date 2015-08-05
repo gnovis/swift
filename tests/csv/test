@@ -8,7 +8,7 @@ old_str_attrs="note[s], outlook[e], temperature[n], humidity[n], windy[e], play[
 classes="Monday, Friday, Friday, Sunday, Theusday, Theusday, Wednesday, Theusday, Monday, Sunday, Suterday, Wednesday, Monday, Sunday"
 source_file=test.csv
 source_file_nfl=test_nfl.csv
-app="../../swift_fca/swift.py"
+app="../../swift-console"
 
 echo $format
 echo "====="

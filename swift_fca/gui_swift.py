@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 GUI application for Swift FCA
 """
@@ -9,10 +8,10 @@ import os.path
 import traceback
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import SIGNAL
-from source_swift.managers_fca import (Browser, Convertor, Printer, BgWorker)
-from source_swift.constants_fca import (RunParams, FileType)
-from source_swift.validator_fca import ParamValidator
-import resources.resources_rc  # NOQA Resources file
+from .source_swift.managers_fca import (Browser, Convertor, Printer, BgWorker)
+from .source_swift.constants_fca import (RunParams, FileType)
+from .source_swift.validator_fca import ParamValidator
+import swift_fca.resources.resources_rc  # NOQA Resources file
 
 
 class GuiSwift(QtGui.QWidget):

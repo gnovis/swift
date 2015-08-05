@@ -1,9 +1,8 @@
-#!/usr/bin/python3
 """Main file of swift - FCA data converter"""
 
 import argparse
-from source_swift.managers_fca import Convertor
-from source_swift.constants_fca import RunParams
+from .source_swift.managers_fca import Convertor
+from .source_swift.constants_fca import RunParams
 
 
 def run_swift():

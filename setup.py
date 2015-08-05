@@ -8,18 +8,18 @@ if sys.platform == 'win32':
 options = {
     'build_exe': {
         'includes': 'atexit',
-        'include_files': 'swift_icon.svg'
+        'include_files': 'swift_fca/resources/images/swift_icon.svg'
     }
 }
 
 executables = [
-    Executable('gui_swift.py', base=base, icon='swift_icon.ico'),
-    Executable('swift.py')
+    Executable('swift', base=base, icon='swift_fca/resources/images/swift_icon.ico'),
+    Executable('swift-console')
 ]
 
-setup(name='FCA-Swift',
+setup(name='Swift FCA',
       version='0.1',
-      description='FCA Convertor',
+      description='FCA Converter',
       options=options,
       executables=executables
       )
