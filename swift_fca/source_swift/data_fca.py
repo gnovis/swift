@@ -88,8 +88,6 @@ class Data:
                 attr_name = str_attr
                 kwargs = {}
                 if str_attr[-1] == Data.RIGHT_BRACKET:
-                    # attr_class = Data.attr_classes[str_attr[-2]]
-                    # attr_name = str_attr[:-3]
 
                     bracket_i = str_attr.find(self.LEFT_BRACKET)
                     attr_name = str_attr[:bracket_i]
