@@ -1,0 +1,30 @@
+#!/usr/bin/python3
+
+from pyparsing import (alphanums, alphas, nums, CharsNotIn, Combine,  # NOQA
+                       Forward, Group, hexnums, OneOrMore, Literal, Dict,
+                       Optional, ParseException, ParseSyntaxException, delimitedList,
+                       Suppress, Word, ZeroOrMore, quotedString, nestedExpr)
+
+
+def test(tokens):
+    print("Old Name: ", tokens.old_name)
+    print("New Name: ", tokens.new_name)
+    print(tokens)
+
+NUMVAL = Word(nums)
+NUMVAR = Word(alphas)
+OP = Literal("<") | Literal(">") | Literal(">=") | Literal("<=") | Literal("==")
+NUMEXPR = Combine(NUMVAR + OP + NUMVAL) | Combine(NUMVAL + OP + NUMVAR) | Combine(NUMVAL + OP + NUMVAR + OP + NUMVAL)
+SCOMMA = Suppress(',')
+NUM = Literal('n') + SCOMMA + NUMEXPR
+DATE = Literal('d') + SCOMMA + NUMEXPR + SCOMMA + quotedString
+ENUM = Literal('e') + SCOMMA + Word(alphanums)
+STR = Literal('s') + SCOMMA + quotedString
+PARAMS = STR | ENUM | DATE | NUM
+OLD = Word(alphanums).setParseAction(lambda tokens: tokens[0])("old_name")
+NEW = Word(alphanums).setParseAction(lambda tokens: tokens[0])("new_name")
+VAR = OLD + Suppress('=') + NEW + Suppress('[') + PARAMS + Suppress(']')
+VAR.setParseAction(test)
+parser = VAR + ZeroOrMore(Suppress(',') + VAR)
+
+parser.parseString("a=A[e,ahoj], b=B[n, x<1], c=C[s, '[,a-z]+']")
