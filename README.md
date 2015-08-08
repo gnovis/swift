@@ -60,7 +60,7 @@ Valid syntax of formula is also: ```new_attr=old_attr[]```, in this case result 
 
 **String Attribute**  
 ```attributes = s, 'regular_expression'```   
-```regular_expression``` must be surrounded by quotes. Supported syntax is described here: [python regex](https://docs.python.org/2/library/re.html)
+```regular_expression```: must be surrounded by quotes. Supported syntax is described here: [python regex](https://docs.python.org/2/library/re.html)
 
 **Numeric Attribute**  
 ```attributes = n, bool_expression```  
@@ -77,7 +77,7 @@ Valid syntax of formula is also: ```new_attr=old_attr[]```, in this case result 
 **Date Attribute**  
 ```attributes = d, bool_expr, 'date_format'```  
 ```bool_expr```: has same syntax as bool_expr in Numeric Attribute, but number is Unix Time Stamp  
-```date_format```: [Python datetime format](https://docs.python.org/2/library/datetime.html#strftime-and-strptime-behavior) of scaled data
+```date_format```: must be surrounded by quotes. Supported syntax is described here: [python datetime](https://docs.python.org/2/library/datetime.html#module-datetime)
  
 Example: 
 ```
