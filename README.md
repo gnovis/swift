@@ -1,6 +1,5 @@
-# Swift - FCA Data Converter
-Converter of data formats used in Formal Concept Analysis and public repositories.  
-Swift provides console application and GUI interface.  
+# **Swift - FCA Data Converter**
+Converter of data formats used in Formal Concept Analysis and public repositories. Swift provides console application and GUI interface.  
 
 ## Supported formats
 -------------------
@@ -41,7 +40,7 @@ Example: ```"name[s], age[n], sex[e], nation\,ality[s]"```
 *Notes: Every token can be surrounded by any amount of white spaces. In grammar are white spaces omitted because of better readability.*  
 
 **Attributes**  
-- Attributes are compound of formulas separated by: ","  
+Attributes are compound of formulas separated by: ","  
 
 **Formula**  
 Formula has format: ```new_name=old_name[arguments]```  
@@ -50,42 +49,43 @@ Formula has format: ```new_name=old_name[arguments]```
 ```old_name``` = name of attribute, which will be use as template for new attribute  
 ```arguments``` = list of arguments separated by "," which depends on attribute type or can be omitted (explanation below)  
 
-Attributes Types - are on a first positions in ```arguments```:
+Attribute Type is on a first position of ```arguments```:
 
-* s - string
-* n - numeric
-* e - enumeration 
-* d - date  
+* s - String
+* n - Numeric
+* e - Enumeration 
+* d - Date  
 
 **String Attribute**  
 ```attributes = s, 'regular_expression'```   
 
 **Numeric Attribute**  
 ```attributes = n, bool_expression```  
-*bool_expression*: is compound of variable(any alphas name), number, and operators(<, >, >=, <=, ==), allowed are following forms:
+```bool_expression```: is compound of variable(any alphas name), number, and operators(<, >, >=, <=, ==), allowed are following forms:
 
 * variable operator number -> ```var >= 50```
 * number operator variable -> ```66 == var```
 * number operator variable operator number -> ```10 < var < 100```
 
-**Enumeration Attribute**
+**Enumeration Attribute**  
 ```attributes = e, pattern```  
-*pattern*: literal which exact match one of item in enumeration  
+```pattern```: literal which exact match one of item in enumeration  
 
 **Date Attribute**  
-```attributes = d, bool_expr, date_format```  
-*bool_expr*: has same syntax as bool_expr in Numeric Attribute, but number is Unix Time Stamp  
-*date_format*: [Python datetime format](https://docs.python.org/2/library/datetime.html#strftime-and-strptime-behavior) of scaled data
+```attributes = d, bool_expr, 'date_format'```  
+```bool_expr```: has same syntax as bool_expr in Numeric Attribute, but number is Unix Time Stamp  
+```date_format```: [Python datetime format](https://docs.python.org/2/library/datetime.html#strftime-and-strptime-behavior) of scaled data
 
-Is possible to write formula in format: ```new_attr=old_attr```, in this case result of scaling will be same value, it works (and make sance) only for binary values 0 and 1  
+Is possible to write formula in format: ```new_attr=old_attr[]```, in this case result of scaling will be same value, it works (and make seance) only for binary values 0 and 1  
  
 Example: 
 ```
-"scaled_age=age(n, x<50), 
- scaled_sex=sex(e, woman), 
- scaled_height=height(n, 150<=x<=210),  
+"scaled_age=age[n, x<50], 
+ scaled_sex=sex[e, woman], 
+ scaled_height=height[n, 150<=x<=210],  
  scaled_same=same[],  
- scaled_address=address(s, '\w? street[0-9]+')"
+ scaled_address=address[s, '\w? street[0-9]+'],
+ scaled_birthday=birthday[d, date > 1000, '%H:%M:%S %Z']"
 ``` 
 
 ### C. Others
