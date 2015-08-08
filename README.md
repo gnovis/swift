@@ -40,7 +40,7 @@ Example: ```"name[s], age[n], sex[e], nation\,ality[s]"```
 ```
 *Notes: Every token can be surrounded by any amount of white spaces. In grammar are white spaces omitted because of better readability.*  
 
-**Attributes**    
+**Attributes**  
 - Attributes are compound of formulas separated by: ","  
 
 **Formula**  
@@ -50,24 +50,23 @@ Formula has format: ```new_name=old_name[arguments]```
 ```old_name``` = name of attribute, which will be use as template for new attribute  
 ```arguments``` = list of arguments separated by "," which depends on attribute type or can be omitted (explanation below)  
 
-attributes types - are on a first positions in ```arguments```:  
-* s - String Attribute  
-* n - Numeric Attribute  
-* e - Enumeration Attribute   
-* d - Date Attribute  
+Attributes Types - are on a first positions in ```arguments```:
+
+* s - string
+* n - numeric
+* e - enumeration 
+* d - date  
 
 **String attribute**  
 ```attributes = s, regular_expression```   
 
-
 **Numeric attribute**  
 ```attributes = n, bool_expression```  
-```bool_expression``` is compound of variable(any alphas name), number, and operators(<, >, >=, <=, ==), allowed are following forms:   
-* variable operator number -> ```var >= 50```  
-* number operator variable -> ```66 == var```  
-* number operator variable operator number -> ```10 < var < 100```  
+```bool_expression``` is compound of variable(any alphas name), number, and operators(<, >, >=, <=, ==), allowed are following forms:
 
-
+* variable operator number -> ```var >= 50```
+* number operator variable -> ```66 == var```
+* number operator variable operator number -> ```10 < var < 100```
 
 Is possible to write formula in format: ```new_attr=old_attr```, in this case result of scaling will be same value, it works (and make sance) only for binary values 0 and 1  
  
@@ -88,4 +87,3 @@ e.g separator, classes ...
 ------------
 * [python3](https://www.python.org/)
 * [PyQt4](http://www.riverbankcomputing.co.uk/software/pyqt/intro)
-* [JPype](http://jpype.sourceforge.net/)
