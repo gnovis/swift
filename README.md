@@ -27,8 +27,8 @@ Example: ```"name[s], age[n], sex[e], nation\,ality[s]"```
 #### Grammar (BNF with [regular expressions](https://docs.python.org/2/library/re.html))
 
 ```
-<attr_list> ::= <attribute> | <attribute> <comma> <attr_list>
-<attribute> ::= <old_name> "=" <new_name> "[" <args>? "]"
+<formula_list> ::= <formula> | <formula> <comma> <formula_list>
+<formula> ::= <old_name> "=" <new_name> "[" <args>? "]"
 <old_name> ::= \w+
 <new_name> ::= \w+
 <args> ::= <num_arg> | <enum_arg> | <str_arg> | <date_arg>
@@ -40,26 +40,35 @@ Example: ```"name[s], age[n], sex[e], nation\,ality[s]"```
 ```
 Notes: Every token can be surrounded by any amount of white spaces. In grammar are white spaces omitted because of better readability.  
 
-Attributes for scaling are compound of formulas seperated by: ","  
-Formula in format: ```new_attr=old_attr[expression]identifier```
+Attributes for scaling are compound of formulas separated by: ","  
+Formula in format: ```new_name=old_name[arguments]```
 
-* new_attr = name of new attribute witch will be the result of a conversion
-* old_attr = name of attribute, whitch will be use as template for new attribute
+```new_name``` = name of new attribute which will be the result of a conversion  
+```old_name``` = name of attribute, which will be use as template for new attribute  
+```arguments``` = list of arguments separated by "," which depends on attribute type or can be omitted (explanation below)  
+
+attributes types - are on a first positions in ```arguments```:  
+* ```s``` - string data  
+* ```n``` - numeric data  
+* ```e``` - enumeration data  
+* ```d``` - date  
+
+
 * expression:
     * string (for enumeration data)   
     * regular expression (for string data)  
     * interval (for numeric data) e.g ```x>=50``` or ```100<value<150``` - variable (x and value in example) can be anything except >,<,= and numbers.
-* identifier = s - string data, n - numeric data, e - enumeration data
+* identifier = 
 
 Is possible to write formula in format: ```new_attr=old_attr```, in this case result of scaling will be same value, it works (and make sance) only for binary values 0 and 1  
  
 Example: 
 ```
-"scaled_age=age(x<50)n, 
- scaled_sex=sex(woman)e, 
- scaled_height=height(150<=x<=210)n,  
- scaled_same=same,  
- scaled_address=address(\w? street[0-9]+)s"
+"scaled_age=age(n, x<50), 
+ scaled_sex=sex(e, woman), 
+ scaled_height=height(n, 150<=x<=210),  
+ scaled_same=same[],  
+ scaled_address=address(s, '\w? street[0-9]+')"
 ``` 
 
 ### C. Others
