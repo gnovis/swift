@@ -57,16 +57,25 @@ Attributes Types - are on a first positions in ```arguments```:
 * e - enumeration 
 * d - date  
 
-**String attribute**  
-```attributes = s, regular_expression```   
+**String Attribute**  
+```attributes = s, 'regular_expression'```   
 
-**Numeric attribute**  
+**Numeric Attribute**  
 ```attributes = n, bool_expression```  
-```bool_expression``` is compound of variable(any alphas name), number, and operators(<, >, >=, <=, ==), allowed are following forms:
+*bool_expression*: is compound of variable(any alphas name), number, and operators(<, >, >=, <=, ==), allowed are following forms:
 
 * variable operator number -> ```var >= 50```
 * number operator variable -> ```66 == var```
 * number operator variable operator number -> ```10 < var < 100```
+
+**Enumeration Attribute**
+```attributes = e, pattern```  
+*pattern*: literal which exact match one of item in enumeration  
+
+**Date Attribute**  
+```attributes = d, bool_expr, date_format```  
+*bool_expr*: has same syntax as bool_expr in Numeric Attribute, but number is Unix Time Stamp  
+*date_format*: [Python datetime format](https://docs.python.org/2/library/datetime.html#strftime-and-strptime-behavior) of scaled data
 
 Is possible to write formula in format: ```new_attr=old_attr```, in this case result of scaling will be same value, it works (and make sance) only for binary values 0 and 1  
  
