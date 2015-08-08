@@ -58,6 +58,7 @@ Attribute Type is on a first position of ```arguments```:
 
 **String Attribute**  
 ```attributes = s, 'regular_expression'```   
+```regular_expression``` must be surrounded by quotes. Supported syntax is described here: [python regex](https://docs.python.org/2/library/re.html)
 
 **Numeric Attribute**  
 ```attributes = n, bool_expression```  
