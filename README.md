@@ -56,6 +56,8 @@ Attribute Type is on a first position of ```arguments```:
 * e - Enumeration 
 * d - Date  
 
+Valid syntax of formula is also: ```new_attr=old_attr[]```, in this case result of scaling will be same value, it works (and make seance) only for binary values 0 and 1  
+
 **String Attribute**  
 ```attributes = s, 'regular_expression'```   
 ```regular_expression``` must be surrounded by quotes. Supported syntax is described here: [python regex](https://docs.python.org/2/library/re.html)
@@ -76,8 +78,6 @@ Attribute Type is on a first position of ```arguments```:
 ```attributes = d, bool_expr, 'date_format'```  
 ```bool_expr```: has same syntax as bool_expr in Numeric Attribute, but number is Unix Time Stamp  
 ```date_format```: [Python datetime format](https://docs.python.org/2/library/datetime.html#strftime-and-strptime-behavior) of scaled data
-
-Is possible to write formula in format: ```new_attr=old_attr[]```, in this case result of scaling will be same value, it works (and make seance) only for binary values 0 and 1  
  
 Example: 
 ```
