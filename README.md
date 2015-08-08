@@ -97,3 +97,4 @@ e.g separator, classes ...
 ------------
 * [python3](https://www.python.org/)
 * [PyQt4](http://www.riverbankcomputing.co.uk/software/pyqt/intro)
+* [pyparsing](https://pyparsing.wikispaces.com/)
