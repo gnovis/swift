@@ -13,7 +13,7 @@ Swift provides console application and GUI interface.
 ## Expected parameters
 -------------------
 
-### a. Non Scale (attributes and objects)
+### A. Non Scale (attributes and objects)
 String with values sepeprated by: ",", separator inside string must be escaped.  
 *Use this type, when target file don't need information about parameters type e.g .data -> .csv*  
 Example: ```"name, age, sex, nation\,ality"```
@@ -22,7 +22,9 @@ String with values and types(s-string, n-numeric, e-enumeration data) separated 
 *Use this type, when target file need information about parameters type e.g .data -> .arff*    
 Example: ```"name[s], age[n], sex[e], nation\,ality[s]"```
 
-### b. Scale (attributes)  
+### B. Scale (attributes)  
+
+#### Grammar (BNF with [regular expressions](https://docs.python.org/2/library/re.html))
 
 ```
 <attr_list> ::= <attribute> | <attribute> <comma> <attr_list>
@@ -35,8 +37,9 @@ Example: ```"name[s], age[n], sex[e], nation\,ality[s]"```
 <str_arg> ::= "s" <comma> "'" .+ "'"
 <date_arg> ::= "d" <comma> <num_expr> (<comma> "'" .+ "'")?
 <comma> ::= ","
-
 ```
+Notes: Every token can be surrounded by any amount of white spaces. In grammar are white spaces omitted because of better readability.  
+
 Attributes for scaling are compound of formulas seperated by: ","  
 Formula in format: ```new_attr=old_attr[expression]identifier```
 
@@ -59,7 +62,7 @@ Example:
  scaled_address=address(\w? street[0-9]+)s"
 ``` 
 
-### c. Others
+### C. Others
 e.g separator, classes ...
 
 
