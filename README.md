@@ -17,9 +17,9 @@ String with values sepeprated by: ",", separator inside string must be escaped.
 *Use this type, when target file don't need information about parameters type e.g .data -> .csv*  
 Example: ```"name, age, sex, nation\,ality"```
 
-String with values and types(s-string, n-numeric, e-enumeration data) separated by: ","  
+String with values and types(s-string, n-numeric, e-enumeration, d-date) separated by: ","  
 *Use this type, when target file need information about parameters type e.g .data -> .arff*    
-Example: ```"name[s], age[n], sex[e], nation\,ality[s]"```
+Example: ```"name[s], age[n], sex[e], nation\,ality[s], birthday[d, date_format]"```
 
 ### B. Scale (attributes)  
 
