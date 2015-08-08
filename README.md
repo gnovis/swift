@@ -23,6 +23,20 @@ String with values and types(s-string, n-numeric, e-enumeration data) separated 
 Example: ```"name[s], age[n], sex[e], nation\,ality[s]"```
 
 ### b. Scale (attributes)  
+
+```
+<attr_list> ::= <attribute> | <attribute> <comma> <attr_list>
+<attribute> ::= <old_name> "=" <new_name> "[" <args>? "]"
+<old_name> ::= \w+
+<new_name> ::= \w+
+<args> ::= <num_arg> | <enum_arg> | <str_arg> | <date_arg>
+<num_arg> ::= "n" <comma> <num_expr>
+<enum_arg> ::= "e" <comma> "'" \w+ "'"
+<str_arg> ::= "s" <comma> "'" .+ "'"
+<date_arg> ::= "d" <comma> <num_expr> (<comma> "'" .+ "'")?
+<comma> ::= ","
+
+```
 Attributes for scaling are compound of formulas seperated by: ","  
 Formula in format: ```new_attr=old_attr[expression]identifier```
 

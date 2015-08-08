@@ -3,7 +3,24 @@
 from pyparsing import (alphanums, alphas, nums, CharsNotIn, Combine, Or, Empty,   # NOQA
                        Forward, Group, hexnums, OneOrMore, Literal, Dict, Keyword,
                        Optional, ParseException, ParseSyntaxException, delimitedList,
-                       Suppress, Word, ZeroOrMore, quotedString, nestedExpr)
+                       Suppress, Word, ZeroOrMore, quotedString, nestedExpr, CaselessLiteral)
+
+
+"""
+Grammar for scale arguments
+
+<attr_list> ::= <attribute> | <attribute> <comma> <attr_list>
+<attribute> ::= <old_name> "=" <new_name> "[" <args>? "]"
+<old_name> ::= \w+
+<new_name> ::= \w+
+<args> ::= <num_arg> | <enum_arg> | <str_arg> | <date_arg>
+<num_arg> ::= "n" <comma> <num_expr>
+<enum_arg> ::= "e" <comma> "'" \w+ "'"
+<str_arg> ::= "s" <comma> "'" .+ "'"
+<date_arg> ::= "d" <comma> <num_expr> (<comma> "'" .+ "'")?
+<comma> ::= ","
+
+"""
 
 
 def test(tokens):
@@ -19,10 +36,10 @@ NUMEXPR = Or(Combine(NUMVAR + OP + NUMVAL, adjacent=False) ^
              Combine(NUMVAL + OP + NUMVAR + OP + NUMVAL, adjacent=False))
 SCOMMA = Suppress(',')
 QUOTED_STR = quotedString
-NUM = Literal('n') + SCOMMA + NUMEXPR
-DATE = Literal('d') + SCOMMA + NUMEXPR + Optional(SCOMMA + QUOTED_STR, default="%Y-%m-%dT%H:%M:%S")
-ENUM = Literal('e') + SCOMMA + Word(alphanums)
-STR = Literal('s') + SCOMMA + QUOTED_STR
+NUM = CaselessLiteral('n') + SCOMMA + NUMEXPR
+DATE = CaselessLiteral('d') + SCOMMA + NUMEXPR + Optional(SCOMMA + QUOTED_STR, default="%Y-%m-%dT%H:%M:%S")
+ENUM = CaselessLiteral('e') + SCOMMA + Word(alphanums)
+STR = CaselessLiteral('s') + SCOMMA + QUOTED_STR
 GEN = Empty()
 PARAMS = Or(STR ^ ENUM ^ DATE ^ NUM ^ GEN)
 OLD = Word(alphanums)
@@ -39,5 +56,5 @@ STR.setParseAction(lambda tokens: [tokens[0], dict(expr_pattern=tokens[1])])
 QUOTED_STR.setParseAction(lambda tokens: tokens[0][1:-1])
 VAR.setParseAction(test)
 
-args = "a=A[e,ahoj], b=B[n, 5<=val<=10], c=C[s, '[,a-z]+'], d=D[], e=E[d, date>2000, '%A %d. %B %Y']"
+args = "a=A[e,ahoj], b=B[N, 5<=val<=10], c=C[S, '[,a-z]+'], d=D[], e=E[d, date>2000, '%A %d. %B %Y']"
 parser.parseString(args)
