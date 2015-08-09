@@ -6,6 +6,7 @@ import sys
 from .attributes_fca import (Attribute, AttrScale, AttrScaleNumeric,
                              AttrScaleEnum, AttrScaleString, AttrScaleDate)
 from .object_fca import Object
+from .args_parser_fca import ArgsParser
 
 
 class Data:
@@ -15,7 +16,8 @@ class Data:
     attr_classes = {'n': AttrScaleNumeric,
                     'e': AttrScaleEnum,
                     's': AttrScaleString,
-                    'd': AttrScaleDate}
+                    'd': AttrScaleDate,
+                    'g': AttrScale}
     LEFT_BRACKET = '['
     RIGHT_BRACKET = ']'
     NONE_VALUE = "None"  # TODO pridat jako volitelny parametr
@@ -87,6 +89,7 @@ class Data:
                 attr_class = Attribute
                 attr_name = str_attr
                 kwargs = {}
+                """
                 if str_attr[-1] == Data.RIGHT_BRACKET:
 
                     bracket_i = str_attr.find(self.LEFT_BRACKET)
@@ -95,7 +98,7 @@ class Data:
                     attr_class = self.attr_classes[vals[0]]
                     if attr_class == AttrScaleDate and len(vals) == 2:
                         kwargs["date_format"] = vals[1]
-
+                """
                 self._attributes.append(attr_class(i, attr_name, **kwargs))
                 attrs_names.append(attr_name)
             self._str_attrs = self.separator.join(attrs_names)
@@ -436,31 +439,31 @@ class DataBivalent(Data):
         Call this method to use data as target in scaling.
         """
 
-        values = self.ss_str(self.str_attrs, ",")
-        self._attributes = []
-        for i, attr in enumerate(values):
-            devided = self.ss_str(attr, "=", 1)
-            new_name = devided[self.NAME]
-            rest = devided[self.FORMULA]
+        NEW_NAME = 0
+        OLD_NAME = 1
+        ARGS = 2
+        TYPE = 0
+        NEXT_ARGS = 1
 
-            kwargs = {}
-            bracket_i = rest.find(self.LEFT_BRACKET)
-            if bracket_i == -1:
-                attr_class = AttrScale
-                kwargs["expr_pattern"] = ''
-                kwargs["attr_pattern"] = rest
-            else:
-                attr_class = Data.attr_classes[rest[-1]]
-                kwargs["expr_pattern"] = rest[bracket_i+1:-2]
-                kwargs["attr_pattern"] = rest[:bracket_i]
-                if attr_class == AttrScaleDate:
-                    vals = kwargs["expr_pattern"].split(":")
-                    if len(vals) == 2:
-                        kwargs["date_format"] = vals[self.DATE_FORMAT].strip()
-                        kwargs["expr_pattern"] = vals[self.EXPR]
+        class CallCounter():
+            def __init__(self, data_file):
+                self.count = 0
+                self.data_file = data_file
 
-            new_attr = attr_class(i, new_name, **kwargs)
-            self._attributes.append(new_attr)
+            def create_attrs(self, tokens):
+                old_name = tokens[OLD_NAME]
+                new_name = tokens[NEW_NAME]
+                attr_type = tokens[ARGS][TYPE]
+                next_args = tokens[ARGS][NEXT_ARGS]
+                next_args['attr_pattern'] = old_name
+
+                cls = Data.attr_classes[attr_type]
+                attribute = cls(self.count, new_name, **next_args)
+                self.data_file._attributes.append(attribute)
+                self.count += 1
+
+        self._attributes.clear()
+        ArgsParser.parse(self.str_attrs, CallCounter(self).create_attrs)
 
     def write_data_scale(self, values, target_file):
         """
