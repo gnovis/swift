@@ -3,6 +3,9 @@ from pyparsing import (alphanums, alphas, nums, Combine, Or, Empty,
                        Optional, delimitedList,
                        Suppress, Word, quotedString, CaselessLiteral)
 
+from .attributes_fca import (AttrScale, AttrScaleNumeric,
+                             AttrScaleEnum, AttrScaleString, AttrScaleDate)
+
 
 """
 Grammar for scale arguments
@@ -23,10 +26,42 @@ Grammar for scale arguments
 
 class ArgsParser():
 
-    @staticmethod
-    def parse(str_args, parse_func):
+    NEW_NAME = 0
+    OLD_NAME = 1
+    ARGS = 2
+    TYPE = 0
+    NEXT_ARGS = 1
 
-        NUMVAL = Word(nums)
+    ATTR_CLASSES = {'n': AttrScaleNumeric,
+                    'e': AttrScaleEnum,
+                    's': AttrScaleString,
+                    'd': AttrScaleDate,
+                    'g': AttrScale}
+
+    def __init__(self):
+        self.count = 0
+        self._attributes = []
+
+    def create_attrs(self, tokens):
+        old_name = tokens[self.OLD_NAME]
+        new_name = tokens[self.NEW_NAME]
+        attr_type = tokens[self.ARGS][self.TYPE]
+        next_args = tokens[self.ARGS][self.NEXT_ARGS]
+        next_args['attr_pattern'] = old_name
+
+        cls = self.ATTR_CLASSES[attr_type]
+        attribute = cls(self.count, new_name, **next_args)
+        self._attributes.append(attribute)
+        self.count += 1
+
+    @property
+    def attributes(self):
+        return self._attributes.copy()
+
+    def parse(self, str_args):
+
+        # Grammar
+        NUMVAL = Combine(Optional('-') + Word(nums))
         NUMVAR = Word(alphas)
         OP = Or(Literal("<") ^ Literal(">") ^
                 Literal("<=") ^ Literal(">=") ^
@@ -36,17 +71,22 @@ class ArgsParser():
                      Combine(NUMVAL + OP + NUMVAR + OP + NUMVAL, adjacent=False))
         SCOMMA = Suppress(',')
         QUOTED_STR = quotedString
-        NUM = CaselessLiteral('n') + SCOMMA + NUMEXPR
-        DATE = CaselessLiteral('d') + SCOMMA + NUMEXPR + Optional(SCOMMA + QUOTED_STR, default="%Y-%m-%dT%H:%M:%S")
-        ENUM = CaselessLiteral('e') + SCOMMA + Word(alphanums)
-        STR = CaselessLiteral('s') + SCOMMA + QUOTED_STR
+        N, D, E, S = list(map(CaselessLiteral, 'ndes'))
+        NUM = N + SCOMMA + NUMEXPR
+        DATE = D + SCOMMA + NUMEXPR + Optional(SCOMMA + QUOTED_STR, default="%Y-%m-%dT%H:%M:%S")
+        ENUM = E + SCOMMA + Word(alphanums)
+        STR = S + SCOMMA + QUOTED_STR
         GEN = Empty()
-        PARAMS = Or(STR ^ ENUM ^ DATE ^ NUM ^ GEN)
-        OLD = Word(alphanums)
-        NEW = Word(alphanums)
-        VAR = OLD + Suppress('=') + NEW + Suppress('[') + Group(PARAMS) + Suppress(']')
+        NO_SCALE = N | D | E | S
+        PARAMS = Or(STR ^ ENUM ^ DATE ^ NUM ^ GEN ^ NO_SCALE)
+        NAME = Word(alphanums + '_-')
+        VAR_FIRST_PART = NAME + Optional(Suppress('=') + NAME, default='')
+        VAR_SECOND_PART = Suppress('[') + Group(PARAMS) + Suppress(']')
+        VAR = VAR_FIRST_PART + VAR_SECOND_PART
         parser = delimitedList(VAR)
 
+        # Parse Actions
+        NO_SCALE.setParseAction(lambda tokens: [tokens[0], {}])
         GEN.setParseAction(lambda tokens: ['g', {}])
         NUM.setParseAction(lambda tokens: [tokens[0], dict(expr_pattern=tokens[1])])
         DATE.setParseAction(lambda tokens: [tokens[0], dict(expr_pattern=tokens[1],
@@ -54,6 +94,8 @@ class ArgsParser():
         ENUM.setParseAction(lambda tokens: [tokens[0], dict(expr_pattern=tokens[1])])
         STR.setParseAction(lambda tokens: [tokens[0], dict(expr_pattern=tokens[1])])
         QUOTED_STR.setParseAction(lambda tokens: tokens[0][1:-1])
-        VAR.setParseAction(parse_func)
+        VAR_FIRST_PART.setParseAction(lambda tokens: [tokens[0]]*2 if tokens[1] == '' else [tokens[0], tokens[1]])
+        VAR.setParseAction(self.create_attrs)
 
+        # Run parser
         parser.parseString(str_args)

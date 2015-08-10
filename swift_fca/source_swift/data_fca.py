@@ -3,8 +3,7 @@ import re
 import os
 import sys
 
-from .attributes_fca import (Attribute, AttrScale, AttrScaleNumeric,
-                             AttrScaleEnum, AttrScaleString, AttrScaleDate)
+from .attributes_fca import (AttrScaleNumeric, AttrScaleEnum, AttrScaleString, AttrScaleDate)
 from .object_fca import Object
 from .args_parser_fca import ArgsParser
 
@@ -13,11 +12,7 @@ class Data:
     """Base class of all data"""
 
     """Class data"""
-    attr_classes = {'n': AttrScaleNumeric,
-                    'e': AttrScaleEnum,
-                    's': AttrScaleString,
-                    'd': AttrScaleDate,
-                    'g': AttrScale}
+
     LEFT_BRACKET = '['
     RIGHT_BRACKET = ']'
     NONE_VALUE = "None"  # TODO pridat jako volitelny parametr
@@ -65,7 +60,7 @@ class Data:
 
     @property
     def attributes(self):
-        return list(self._attributes)
+        return self._attributes.copy()
 
     @property
     def relation_name(self):
@@ -83,25 +78,10 @@ class Data:
 
     def prepare(self):
         if self.str_attrs:
-            splitted = self.ss_str(self._str_attrs, self.separator)
-            attrs_names = []
-            for i, str_attr in enumerate(splitted):
-                attr_class = Attribute
-                attr_name = str_attr
-                kwargs = {}
-                """
-                if str_attr[-1] == Data.RIGHT_BRACKET:
-
-                    bracket_i = str_attr.find(self.LEFT_BRACKET)
-                    attr_name = str_attr[:bracket_i]
-                    vals = str_attr[bracket_i+1:-1].split(":")
-                    attr_class = self.attr_classes[vals[0]]
-                    if attr_class == AttrScaleDate and len(vals) == 2:
-                        kwargs["date_format"] = vals[1]
-                """
-                self._attributes.append(attr_class(i, attr_name, **kwargs))
-                attrs_names.append(attr_name)
-            self._str_attrs = self.separator.join(attrs_names)
+            self._attributes.clear()  # remove this if possible (prepare func should be called just once)
+            parser = ArgsParser()
+            parser.parse(self.str_attrs)
+            self._attributes = parser.attributes
 
         if self.str_objects:
             splitted = self.ss_str(self._str_objects, self.separator)
@@ -417,53 +397,15 @@ class DataBivalent(Data):
     """Data represented only by bivalnet values e.g 1/0"""
 
     bi_vals = {'pos': '1', 'neg': '0'}
-    NAME = 0
-    FORMULA = 1
-    EXPR = 0
-    DATE_FORMAT = 1
 
-    def parse_old_attrs_for_scale(self, old_str_attrs, separator):
+    def parse_old_attrs_for_scale(self, old_attrs):
         """
         Take dictionary into _attributes_temp,
         where key are strings and values are indexes
         of attributes.
         Call this method to use data object as pattern in scaling.
         """
-        values = self.ss_str(old_str_attrs, separator)
-        self._attributes_temp = {val: i for i, val in enumerate(values)}
-
-    def parse_new_attrs_for_scale(self):
-        """
-        Parse and create list of scale attributes,
-        take it into _attributes (this slot is rewritten).
-        Call this method to use data as target in scaling.
-        """
-
-        NEW_NAME = 0
-        OLD_NAME = 1
-        ARGS = 2
-        TYPE = 0
-        NEXT_ARGS = 1
-
-        class CallCounter():
-            def __init__(self, data_file):
-                self.count = 0
-                self.data_file = data_file
-
-            def create_attrs(self, tokens):
-                old_name = tokens[OLD_NAME]
-                new_name = tokens[NEW_NAME]
-                attr_type = tokens[ARGS][TYPE]
-                next_args = tokens[ARGS][NEXT_ARGS]
-                next_args['attr_pattern'] = old_name
-
-                cls = Data.attr_classes[attr_type]
-                attribute = cls(self.count, new_name, **next_args)
-                self.data_file._attributes.append(attribute)
-                self.count += 1
-
-        self._attributes.clear()
-        ArgsParser.parse(self.str_attrs, CallCounter(self).create_attrs)
+        self._attributes_temp = {attr.name: i for i, attr in enumerate(old_attrs)}
 
     def write_data_scale(self, values, target_file):
         """

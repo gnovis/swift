@@ -87,14 +87,7 @@ class Convertor(ManagerFca):
         super().__init__()
         self._source_cls = self.get_data_class(old['source'])
         self._target_cls = self.get_data_class(new['source'])
-
-        self._scaling = False
-        if (self._source_cls == DataCsv or
-            self._source_cls == DataArff or
-            self._source_cls == DataData) and (self._target_cls == DataDat or
-                                               self._target_cls == DataCxt):
-            self._scaling = True
-
+        self._scaling = self.is_scaling()
         self._old_data = self._source_cls(**old)
         self._new_data = self._target_cls(**new)
         self._print_info = print_info
@@ -102,6 +95,14 @@ class Convertor(ManagerFca):
     @property
     def source_line_count(self):
         return self._source_line_count
+
+    def is_scaling(self):
+        if (self._source_cls == DataCsv or
+            self._source_cls == DataArff or
+            self._source_cls == DataData) and (self._target_cls == DataDat or
+                                               self._target_cls == DataCxt):
+            return True
+        return False
 
     def read_info(self):
         # get information from source data
@@ -114,12 +115,13 @@ class Convertor(ManagerFca):
         # check if should scale
 
     def convert(self):
-        """Call this method to convert data"""
+        """
+        Method for converting data.
+        Before calling this, must be called read_info method !
+        """
 
         if self._scaling:
-            self._new_data.parse_old_attrs_for_scale(self._old_data.str_attrs,
-                                                     self._old_data.separator)
-            self._new_data.parse_new_attrs_for_scale()
+            self._new_data.parse_old_attrs_for_scale(self._old_data.attributes)
 
         target_file = open(self._new_data.source, 'w')
         # write header part
