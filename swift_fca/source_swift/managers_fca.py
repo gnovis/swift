@@ -85,11 +85,16 @@ class Convertor(ManagerFca):
 
     def __init__(self, old, new, print_info=False):
         super().__init__()
-        # suffixes of input files
         self._source_cls = self.get_data_class(old['source'])
         self._target_cls = self.get_data_class(new['source'])
 
-        # create data file object according suffix
+        self._scaling = False
+        if (self._source_cls == DataCsv or
+            self._source_cls == DataArff or
+            self._source_cls == DataData) and (self._target_cls == DataDat or
+                                               self._target_cls == DataCxt):
+            self._scaling = True
+
         self._old_data = self._source_cls(**old)
         self._new_data = self._target_cls(**new)
         self._print_info = print_info
@@ -110,12 +115,8 @@ class Convertor(ManagerFca):
 
     def convert(self):
         """Call this method to convert data"""
-        self._scaling = False
-        if (self._source_cls == DataCsv or
-            self._source_cls == DataArff or
-            self._source_cls == DataData) and (self._target_cls == DataDat or
-                                               self._target_cls == DataCxt):
-            self._scaling = True
+
+        if self._scaling:
             self._new_data.parse_old_attrs_for_scale(self._old_data.str_attrs,
                                                      self._old_data.separator)
             self._new_data.parse_new_attrs_for_scale()

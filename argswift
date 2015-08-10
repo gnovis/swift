@@ -26,7 +26,7 @@ Grammar for scale arguments
 def test(tokens):
     print(tokens)
 
-NUMVAL = Word(nums)
+NUMVAL = Combine(Optional('-') + Word(nums))
 NUMVAR = Word(alphas)
 OP = Or(Literal("<") ^ Literal(">") ^
         Literal("<=") ^ Literal(">=") ^
@@ -36,17 +36,21 @@ NUMEXPR = Or(Combine(NUMVAR + OP + NUMVAL, adjacent=False) ^
              Combine(NUMVAL + OP + NUMVAR + OP + NUMVAL, adjacent=False))
 SCOMMA = Suppress(',')
 QUOTED_STR = quotedString
-NUM = CaselessLiteral('n') + SCOMMA + NUMEXPR
-DATE = CaselessLiteral('d') + SCOMMA + NUMEXPR + Optional(SCOMMA + QUOTED_STR, default="%Y-%m-%dT%H:%M:%S")
-ENUM = CaselessLiteral('e') + SCOMMA + Word(alphanums)
-STR = CaselessLiteral('s') + SCOMMA + QUOTED_STR
+N, D, E, S = list(map(CaselessLiteral, 'ndes'))
+NUM = N + SCOMMA + NUMEXPR
+DATE = D + SCOMMA + NUMEXPR + Optional(SCOMMA + QUOTED_STR, default="%Y-%m-%dT%H:%M:%S")
+ENUM = E + SCOMMA + Word(alphanums)
+STR = S + SCOMMA + QUOTED_STR
 GEN = Empty()
-PARAMS = Or(STR ^ ENUM ^ DATE ^ NUM ^ GEN)
-OLD = Word(alphanums)
-NEW = Word(alphanums)
-VAR = OLD + Suppress('=') + NEW + Suppress('[') + Group(PARAMS) + Suppress(']')
+NO_SCALE = N | D | E | S
+PARAMS = Or(STR ^ ENUM ^ DATE ^ NUM ^ GEN ^ NO_SCALE)
+NAME = Word(alphanums + '_-')
+VAR_FIRST_PART = NAME + Optional(Suppress('=') + NAME, default='')
+VAR_SECOND_PART = Suppress('[') + Group(PARAMS) + Suppress(']')
+VAR = VAR_FIRST_PART + VAR_SECOND_PART
 parser = delimitedList(VAR)
 
+NO_SCALE.setParseAction(lambda tokens: [tokens[0], {}])
 GEN.setParseAction(lambda tokens: ['g', {}])
 NUM.setParseAction(lambda tokens: [tokens[0], dict(expr_pattern=tokens[1])])
 DATE.setParseAction(lambda tokens: [tokens[0], dict(expr_pattern=tokens[1],
@@ -54,7 +58,8 @@ DATE.setParseAction(lambda tokens: [tokens[0], dict(expr_pattern=tokens[1],
 ENUM.setParseAction(lambda tokens: [tokens[0], dict(expr_pattern=tokens[1])])
 STR.setParseAction(lambda tokens: [tokens[0], dict(expr_pattern=tokens[1])])
 QUOTED_STR.setParseAction(lambda tokens: tokens[0][1:-1])
+VAR_FIRST_PART.setParseAction(lambda tokens: [tokens[0]]*2 if tokens[1] == '' else [tokens[0], tokens[1]])
 VAR.setParseAction(test)
 
-args = "a=A[e,ahoj], b=B[N, 5<=val<=10], c=C[S, '[,a-z]+'], d=D[], e=E[d, date>2000, '%A %d. %B %Y']"
+args = "a=A[e,ahoj], b=B[N, -5<=val<=10], same_name[n, x>=50], no_scale[s], no_scale_gen[], c=C[S, '[,a-z]+'], d=D[], e=E[d, date>2000, '%A %d. %B %Y']"
 parser.parseString(args)
