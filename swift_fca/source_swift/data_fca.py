@@ -3,7 +3,7 @@ import re
 import os
 import sys
 
-from .attributes_fca import (AttrScaleNumeric, AttrScaleEnum, AttrScaleString, AttrScaleDate)
+from .attributes_fca import (Attribute, AttrScaleNumeric, AttrScaleEnum, AttrScaleString, AttrScaleDate)
 from .object_fca import Object
 from .args_parser_fca import ArgsParser
 
@@ -289,15 +289,15 @@ class DataCsv(Data):
         if not self._no_attrs_first_line:  # attrs are on first line
             self._index_data_start = 1
             if not self._str_attrs:
-                self._str_attrs = self._get_first_line(self.source)
-                self.prepare()
-        elif not self._str_attrs:  # attrs are not of first line and are not passed as parameter
-            with open(self.source) as f:
-                line = next(f)
+                line = self._get_first_line(self.source)
                 str_values = self.ss_str(line, self.separator)
-                self._attr_count = len(str_values)
-            self._str_attrs = self._separator.join([str(x) for x in range(self._attr_count)])
-            self.prepare()
+                self._attributes = [Attribute(i, name) for i, name in enumerate(str_values)]
+        elif not self._str_attrs:  # attrs are not of first line and are not passed as parameter
+            line = self._get_first_line(self.source)
+            str_values = self.ss_str(line, self.separator)
+            self._attr_count = len(str_values)
+            # self._str_attrs = self._separator.join([str(x) for x in range(self._attr_count)])
+            self._attributes = [Attribute(i, 'attr_' + str(i)) for i in range(self._attr_count)]
 
     def _get_first_line(self, source):
         """Return first line from data file"""
