@@ -2,7 +2,9 @@
 
 from __future__ import print_function
 import re
+from pyparsing import quotedString
 from .date_parser_fca import DateParser
+from .grammars_fca import boolexpr
 
 
 class AttrType:
@@ -99,7 +101,7 @@ class AttrScaleNumeric(AttrScale):
             # if value is not integer(is string or undefined e.g None, "" or ?) =>
             # result of scaling is false
             return False
-        replaced = re.sub(r"[^<>=0-9\s:]+", "x", self._expr_pattern)
+        replaced = re.sub(r"[^<>=0-9\s.]+", "x", self._expr_pattern)
         return eval(replaced)
 
     def update(self, str_value):
@@ -135,6 +137,8 @@ class AttrScaleDate(AttrScaleNumeric):
                  attr_type=AttrType.DATE, attr_pattern=None, expr_pattern=None):
         super().__init__(index, name, attr_type, attr_pattern, expr_pattern)
         self.parser = DateParser(date_format)
+        if expr_pattern:
+            self.substitute_date()
 
     @property
     def max_value(self):
@@ -143,6 +147,12 @@ class AttrScaleDate(AttrScaleNumeric):
     @property
     def min_value(self):
         return self.parser.time_stamp_to_str(self._min_value)
+
+    def substitute_date(self):
+        DATEXPR = quotedString.copy()
+        EXPR = boolexpr(VAL=DATEXPR)
+        DATEXPR.setParseAction(lambda tokens: self.parser.get_time_stamp(tokens[0][1:-1]))
+        self._expr_pattern = EXPR.parseString(self._expr_pattern)[0]
 
     def scale(self, attrs, values):
         val_i = attrs[self._attr_pattern]

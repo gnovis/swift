@@ -3,8 +3,10 @@ from pyparsing import (alphanums, alphas, nums, Combine, Or, Empty,
                        Optional, delimitedList,
                        Suppress, Word, quotedString, CaselessLiteral)
 
-from .attributes_fca import (AttrScale, AttrScaleNumeric,
-                             AttrScaleEnum, AttrScaleString, AttrScaleDate)
+from .attributes_fca import (AttrScale, AttrScaleNumeric, AttrScaleDate,
+                             AttrScaleEnum, AttrScaleString)
+from .date_parser_fca import DateParser
+from .grammars_fca import boolexpr
 
 
 """
@@ -20,6 +22,12 @@ Formal Grammar - BNF
 <enum_arg> ::= "e" <comma> "'" \w+ "'"
 <str_arg> ::= "s" <comma> "'" .+ "'"
 <date_arg> ::= "d" <comma> <num_expr> (<comma> "'" .+ "'")?
+<num_var> ::= [a-zA-Z_]
+<num_val> ::= "-"? \d
+<num_expr> ::= <num_var> <op> <num_val> |
+               <num_val> <op> <num_var> |
+               <num_val> <op> <num_var> <op> <num_val>
+<op> ::= "<" | ">" | "<=" | ">=" | "=="
 <no_scale_arg> ::= <no_scale_num> | <no_scale_enum> | <no_scale_str> | <no_scale_date>
 <no_scale_num> ::= "n"
 <no_scale_enum> ::= "e"
@@ -64,25 +72,30 @@ class ArgsParser():
     def attributes(self):
         return self._attributes.copy()
 
-    def parse(self, str_args):
-        # Grammar definition
-        NUMVAL = Combine(Optional('-') + Word(nums))
-        NUMVAR = Word(alphas)
+    @staticmethod
+    def boolexpr(VAL=Combine(Optional('-') + Word(nums))):
+        VAR = Word(alphas)
         OP = Or(Literal("<") ^ Literal(">") ^
                 Literal("<=") ^ Literal(">=") ^
                 Literal("=="))
-        NUMEXPR = Or(Combine(NUMVAR + OP + NUMVAL, adjacent=False) ^
-                     Combine(NUMVAL + OP + NUMVAR, adjacent=False) ^
-                     Combine(NUMVAL + OP + NUMVAR + OP + NUMVAL, adjacent=False))
+        EXPR = Or(Combine(VAR + OP + VAL, adjacent=False) ^
+                  Combine(VAL + OP + VAR, adjacent=False) ^
+                  Combine(VAL + OP + VAR + OP + VAL, adjacent=False))
+        return EXPR
+
+    def parse(self, str_args):
+        # Grammar definition
+        QUOTED_STR = quotedString.copy()
+        NUMEXPR = boolexpr()
+        DATEXPR = boolexpr(VAL=quotedString)
         SCOMMA = Suppress(',')
-        QUOTED_STR = quotedString
-        DATE_FORMAT = Optional(SCOMMA + QUOTED_STR, default="%Y-%m-%dT%H:%M:%S")
+        DATE_FORMAT = Optional(SCOMMA + QUOTED_STR, default=DateParser.ISO_FORMAT)
         NO_SCALE_NUM = CaselessLiteral('n')
         NO_SCALE_DATE = CaselessLiteral('d') + DATE_FORMAT
         NO_SCALE_ENUM = CaselessLiteral('e')
         NO_SCALE_STR = CaselessLiteral('s')
         NUM = CaselessLiteral('n') + SCOMMA + NUMEXPR
-        DATE = CaselessLiteral('d') + SCOMMA + NUMEXPR + DATE_FORMAT
+        DATE = CaselessLiteral('d') + SCOMMA + DATEXPR + DATE_FORMAT
         ENUM = CaselessLiteral('e') + SCOMMA + Word(alphanums)
         STR = CaselessLiteral('s') + SCOMMA + QUOTED_STR
         GEN = Empty()

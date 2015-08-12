@@ -1,7 +1,7 @@
 #!/bin/bash
 
 format=ARFF
-new_str_attrs="WINDY=windy[e, TRUE], SUNNY=outlook[e, sunny], ORDER=order[], TEMP=temperature[n, x>80], HUM=humidity[n, 70<=x<=80], NOTE=note[s, 'hell|[0-9]'], BIRTHDAY=birthday[d, date>0, '%Y-%m-%d']"  
+new_str_attrs="WINDY=windy[e, TRUE], SUNNY=outlook[e, sunny], ORDER=order[], TEMP=temperature[n, x>80], HUM=humidity[n, 70<=x<=80], NOTE=note[s, 'hell|[0-9]'], BIRTHDAY=birthday[d, date=='2001-04-03', '%Y-%m-%d']"  
 new_str_objects="0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13"
 classes="Monday, Friday, Friday, Sunday, Theusday, Theusday, Wednesday, Theusday, Monday, Sunday, Suterday, Wednesday, Monday, Sunday"
 source_file=test.arff
@@ -11,7 +11,7 @@ echo $format
 echo "====="
 
 # -> cxt
-$app -s $source_file -t arff.cxt -ta "$new_str_attrs" -to "$new_str_objects" -si
+$app -s $source_file -t arff.cxt -ta "$new_str_attrs" -to "$new_str_objects"
 echo $format "-> CXT"
 
 # -> csv
