@@ -35,7 +35,17 @@ Example: ```"name[s], age[n], sex[e], nation\,ality[s], birthday[d, date_format]
 <num_arg> ::= "n" <comma> <num_expr>
 <enum_arg> ::= "e" <comma> "'" \w+ "'"
 <str_arg> ::= "s" <comma> "'" .+ "'"
-<date_arg> ::= "d" <comma> <num_expr> (<comma> "'" .+ "'")?
+<date_arg> ::= "d" <comma> <date_expr> (<comma> "'" .+ "'")?
+<expr_var> ::= [a-zA-Z_]
+<num_val> ::= "-"? \d
+<num_expr> ::= <expr_var> <op> <num_val> |
+               <num_val> <op> <expr_var> |
+               <num_val> <op> <expr_var> <op> <num_val>
+<date_val> ::= "'" .+ "'"
+<date_expr> ::= <expr_var> <op> <date_val> |
+                <date_val> <op> <expr_var> |
+                <date_val> <op> <expr_var> <op> <date_val>
+<op> ::= "<" | ">" | "<=" | ">=" | "=="
 <no_scale_arg> ::= <no_scale_num> | <no_scale_enum> | <no_scale_str> | <no_scale_date>
 <no_scale_num> ::= "n"
 <no_scale_enum> ::= "e"
