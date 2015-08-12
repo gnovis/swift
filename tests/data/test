@@ -1,7 +1,7 @@
 #!/bin/bash
 
 format=DATA
-new_str_attrs="SEX=class[woman]e, WORK=work[true]e, AGE=age[20<x<50]n, HEIGHT=height[y>165]n, WEIGHT=weight[x<90]n, JOB1=job[doctor]e, JOB2=job[student]e"
+new_str_attrs="SEX=class[e,woman], WORK=work[e, true], AGE=age[n, 20<x<50], HEIGHT=height[n, y>165], WEIGHT=weight[n, x<90], JOB1=job[e, doctor], JOB2=job[e, student]"
 new_str_objects="0, 1, 2, 3"
 source_file=test.data
 app="../../swift-console"
