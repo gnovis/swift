@@ -73,7 +73,7 @@ class ArgsParser():
         NO_SCALE = NO_SCALE_NUM | NO_SCALE_DATE | NO_SCALE_ENUM | NO_SCALE_STR
         PARAMS = Or(STR ^ ENUM ^ DATE ^ NUM ^ GEN ^ NO_SCALE)
         NAME = Word(alphanums + '_-')
-        VAR_FIRST_PART = NAME + Optional(Suppress('=') + NAME, default='')
+        VAR_FIRST_PART = Optional(NAME + Suppress('='), default='') + NAME
         VAR_SECOND_PART = Suppress('[') + Group(PARAMS) + Suppress(']')
         VAR = VAR_FIRST_PART + VAR_SECOND_PART
         parser = delimitedList(VAR)
@@ -95,7 +95,7 @@ class ArgsParser():
                                                             date_format=tokens[2])])
         # Auxiliary parse actions
         QUOTED_STR.setParseAction(lambda tokens: tokens[0][1:-1])
-        VAR_FIRST_PART.setParseAction(lambda tokens: [tokens[0]]*2 if tokens[1] == '' else [tokens[0], tokens[1]])
+        VAR_FIRST_PART.setParseAction(lambda tokens: [tokens[1]]*2 if tokens[0] == '' else [tokens[0], tokens[1]])
         VAR.setParseAction(self.create_attrs)
 
         # Run parser
