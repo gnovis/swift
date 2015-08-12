@@ -8,17 +8,23 @@ from .attributes_fca import (AttrScale, AttrScaleNumeric,
 
 
 """
-Grammar for scale arguments
+Formal Grammar - BNF
 
-<attr_list> ::= <attribute> | <attribute> <comma> <attr_list>
-<attribute> ::= <old_name> "=" <new_name> "[" <args>? "]"
-<old_name> ::= \w+
-<new_name> ::= \w+
-<args> ::= <num_arg> | <enum_arg> | <str_arg> | <date_arg>
+<formula_list> ::= <formula> | <formula> <comma> <formula_list>
+<formula> ::= <formula_first_part> <formula_second_part>
+<formula_first_part> ::= <name> ("=" <name>)?
+<formula_second_part> ::= "[" <args>? "]"
+<name> ::= \w+
+<args> ::= <num_arg> | <enum_arg> | <str_arg> | <date_arg> | <no_scale_arg>
 <num_arg> ::= "n" <comma> <num_expr>
 <enum_arg> ::= "e" <comma> "'" \w+ "'"
 <str_arg> ::= "s" <comma> "'" .+ "'"
 <date_arg> ::= "d" <comma> <num_expr> (<comma> "'" .+ "'")?
+<no_scale_arg> ::= <no_scale_num> | <no_scale_enum> | <no_scale_str> | <no_scale_date>
+<no_scale_num> ::= "n"
+<no_scale_enum> ::= "e"
+<no_scale_str> ::= "s"
+<no_scale_date> ::= "d" <comma> (<comma> "'" .+ "'")?
 <comma> ::= ","
 
 """
@@ -59,8 +65,7 @@ class ArgsParser():
         return self._attributes.copy()
 
     def parse(self, str_args):
-
-        # Grammar
+        # Grammar definition
         NUMVAL = Combine(Optional('-') + Word(nums))
         NUMVAR = Word(alphas)
         OP = Or(Literal("<") ^ Literal(">") ^
@@ -71,13 +76,17 @@ class ArgsParser():
                      Combine(NUMVAL + OP + NUMVAR + OP + NUMVAL, adjacent=False))
         SCOMMA = Suppress(',')
         QUOTED_STR = quotedString
-        N, D, E, S = list(map(CaselessLiteral, 'ndes'))
-        NUM = N + SCOMMA + NUMEXPR
-        DATE = D + SCOMMA + NUMEXPR + Optional(SCOMMA + QUOTED_STR, default="%Y-%m-%dT%H:%M:%S")
-        ENUM = E + SCOMMA + Word(alphanums)
-        STR = S + SCOMMA + QUOTED_STR
+        DATE_FORMAT = Optional(SCOMMA + QUOTED_STR, default="%Y-%m-%dT%H:%M:%S")
+        NO_SCALE_NUM = CaselessLiteral('n')
+        NO_SCALE_DATE = CaselessLiteral('d') + DATE_FORMAT
+        NO_SCALE_ENUM = CaselessLiteral('e')
+        NO_SCALE_STR = CaselessLiteral('s')
+        NUM = CaselessLiteral('n') + SCOMMA + NUMEXPR
+        DATE = CaselessLiteral('d') + SCOMMA + NUMEXPR + DATE_FORMAT
+        ENUM = CaselessLiteral('e') + SCOMMA + Word(alphanums)
+        STR = CaselessLiteral('s') + SCOMMA + QUOTED_STR
         GEN = Empty()
-        NO_SCALE = N | D | E | S
+        NO_SCALE = NO_SCALE_NUM | NO_SCALE_DATE | NO_SCALE_ENUM | NO_SCALE_STR
         PARAMS = Or(STR ^ ENUM ^ DATE ^ NUM ^ GEN ^ NO_SCALE)
         NAME = Word(alphanums + '_-')
         VAR_FIRST_PART = NAME + Optional(Suppress('=') + NAME, default='')
@@ -85,14 +94,22 @@ class ArgsParser():
         VAR = VAR_FIRST_PART + VAR_SECOND_PART
         parser = delimitedList(VAR)
 
-        # Parse Actions
-        NO_SCALE.setParseAction(lambda tokens: [tokens[0], {}])
+        # Parse actions for no scale attributes
+        no_scale_default_action = lambda tokens: [tokens[0], {}]
+        NO_SCALE_NUM.setParseAction(no_scale_default_action)
+        NO_SCALE_ENUM.setParseAction(no_scale_default_action)
+        NO_SCALE_STR.setParseAction(no_scale_default_action)
+        NO_SCALE_DATE.setParseAction(lambda tokens: [tokens[0], dict(date_format=tokens[1])])
+
+        # Parse actions for scale attributes
+        scale_default_action = lambda tokens: [tokens[0], dict(expr_pattern=tokens[1])]
+        NUM.setParseAction(scale_default_action)
+        ENUM.setParseAction(scale_default_action)
+        STR.setParseAction(scale_default_action)
         GEN.setParseAction(lambda tokens: ['g', {}])
-        NUM.setParseAction(lambda tokens: [tokens[0], dict(expr_pattern=tokens[1])])
         DATE.setParseAction(lambda tokens: [tokens[0], dict(expr_pattern=tokens[1],
                                                             date_format=tokens[2])])
-        ENUM.setParseAction(lambda tokens: [tokens[0], dict(expr_pattern=tokens[1])])
-        STR.setParseAction(lambda tokens: [tokens[0], dict(expr_pattern=tokens[1])])
+        # Auxiliary parse actions
         QUOTED_STR.setParseAction(lambda tokens: tokens[0][1:-1])
         VAR_FIRST_PART.setParseAction(lambda tokens: [tokens[0]]*2 if tokens[1] == '' else [tokens[0], tokens[1]])
         VAR.setParseAction(self.create_attrs)
