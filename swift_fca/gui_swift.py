@@ -138,6 +138,7 @@ class GuiSwift(QtGui.QWidget):
 
         grid = QtGui.QGridLayout()
         grid.setSpacing(10)
+        grid.setRowStretch(3, 1)
 
         grid.addWidget(label_source, 0, 0)
         grid.addWidget(label_target, 0, 1)
@@ -145,8 +146,12 @@ class GuiSwift(QtGui.QWidget):
         grid.addLayout(hbox_target, 1, 1)
         grid.addLayout(hbox_s_btn_set, 2, 0)
         grid.addLayout(hbox_t_btn_set, 2, 1)
-        grid.addWidget(self.table_view_source, 3, 0)
-        grid.addWidget(self.table_view_target, 3, 1)
+
+        splitter = QtGui.QSplitter(QtCore.Qt.Horizontal)
+        splitter.addWidget(self.table_view_source)
+        splitter.addWidget(self.table_view_target)
+        grid.addWidget(splitter, 3, 0, 1, 2)
+
         grid.addWidget(self.status_bar, 4, 0, 1, 2)
 
         self.setLayout(grid)
