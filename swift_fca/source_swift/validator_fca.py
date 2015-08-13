@@ -39,15 +39,16 @@ class ParamValidator:
         self._target_params = target_params
         self._source_suff = ''
         self._target_suff = ''
-        if source == target:
-            self._warnings.append("Isn't possible to read and write to the same file, target and source can't be same.")
-            return
+
         if source and target:
+            if source == target:
+                self._warnings.append("Isn't possible to read and write to the same file, target and source can't be same.")
+                return
             self._source_suff = self._get_file_suff(source)
             self._target_suff = self._get_file_suff(target)
             self._validate()
         else:
-            self._warnings.append("Source and target file path must be always set if want convert.")
+            self._warnings.append("Source File and Target File are required for conversion.")
 
     @property
     def warnings(self):
