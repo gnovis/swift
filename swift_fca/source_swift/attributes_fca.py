@@ -49,7 +49,7 @@ class Attribute:
             self.name,
             self.index, AttrType.STR_REPR[self.attr_type]), file=out)
 
-    def update(self, value):
+    def update(self, value, none_val):
         pass
 
     def arff_repr(self, sep, bi_val1='0', bi_val2='1'):
@@ -104,8 +104,8 @@ class AttrScaleNumeric(AttrScale):
         replaced = re.sub(r"[^<>=0-9\s.]+", "x", self._expr_pattern)
         return eval(replaced)
 
-    def update(self, str_value):
-        try:
+    def update(self, str_value, none_val):
+        if str_value != none_val:
             value = float(str_value)
             if not self._max_value:
                 self._max_value = value
@@ -117,8 +117,6 @@ class AttrScaleNumeric(AttrScale):
                 self._max_value = value
             if value < self._min_value:
                 self._min_value = value
-        except ValueError:
-            pass
 
     def print_self(self, out):
         super().print_self(out)
@@ -162,9 +160,10 @@ class AttrScaleDate(AttrScaleNumeric):
         new_values[val_i] = time_stamp
         return super().scale(attrs, new_values)
 
-    def update(self, str_date):
-        time_stamp = self.parser.get_time_stamp(str_date)
-        super().update(time_stamp)
+    def update(self, str_date, none_val):
+        if str_date != none_val:
+            time_stamp = self.parser.get_time_stamp(str_date)
+            super().update(time_stamp, none_val)
 
     def arff_repr(self, sep, bi_val1='0', bi_val2='1'):
         return "{} {}".format(AttrType.STR_REPR[self.attr_type], self.parser.get_format())
@@ -183,8 +182,8 @@ class AttrScaleEnum(AttrScale):
         old_val = super().scale(attrs, values)
         return old_val == self._expr_pattern
 
-    def update(self, value):
-        if value not in self._values:
+    def update(self, value, none_val):
+        if value not in self._values and value != none_val:
             self._values.append(value)
         return self
 

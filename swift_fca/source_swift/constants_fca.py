@@ -11,6 +11,7 @@ class RunParams:
     RELATION_NAME = 'relation_name'
     CLASSES = 'classes'
     SOURCE_INFO = 'print_info'
+    NONE_VALUE = 'none_val'
 
 
 class FileType:

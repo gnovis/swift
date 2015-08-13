@@ -4,6 +4,7 @@ format=ARFF
 new_str_attrs="WINDY=windy[e, TRUE], SUNNY=outlook[e, sunny], ORDER=order[], TEMP=temperature[n, x>80], HUM=humidity[n, 70<=x<=80], NOTE=note[s, 'hell|[0-9]'], BIRTHDAY=birthday[d, date=='2001-04-03', '%Y-%m-%d']"  
 new_str_objects="0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13"
 classes="Monday, Friday, Friday, Sunday, Theusday, Theusday, Wednesday, Theusday, Monday, Sunday, Suterday, Wednesday, Monday, Sunday"
+none_value="?"
 source_file=test.arff
 app="../../swift-console"
 
@@ -11,17 +12,17 @@ echo $format
 echo "====="
 
 # -> cxt
-$app -s $source_file -t arff.cxt -ta "$new_str_attrs" -to "$new_str_objects"
+$app -s $source_file -t arff.cxt -ta "$new_str_attrs" -to "$new_str_objects" -nv "$none_value"
 echo $format "-> CXT"
 
 # -> csv
-$app -s $source_file -t arff.csv
+$app -s $source_file -t arff.csv -nv "$none_value"
 echo $format "-> CSV"
 
 # -> dat
-$app -s $source_file -t arff.dat -ta "$new_str_attrs"
+$app -s $source_file -t arff.dat -ta "$new_str_attrs" -nv "$none_value"
 echo $format "-> DAT"
 
 # -> data
-$app -s $source_file -t arff.data -cls "$classes"
+$app -s $source_file -t arff.data -cls "$classes" -nv "$none_value"
 echo $format "-> DATA"

@@ -10,7 +10,8 @@ def run_swift():
     SOURCE_ARGS = {"source": RunParams.SOURCE,
                    "source_separator": RunParams.SOURCE_SEP,
                    "source_attributes": RunParams.SOURCE_ATTRS,
-                   "no_first_line": RunParams.NFL}
+                   "no_first_line": RunParams.NFL,
+                   "none_value": RunParams.NONE_VALUE}
     TARGET_ARGS = {"target": RunParams.TARGET,
                    "target_separator": RunParams.TARGET_SEP,
                    "target_attributes": RunParams.TARGET_ATTRS,
@@ -26,6 +27,7 @@ def run_swift():
                         help="Separator whitch is used in source file. Default is ','.")
     parser.add_argument("-sa", "--source_attributes", help="Source file (old) attributes.")
     parser.add_argument("-si", "--source_info", action='store_true', help="Print information about source file data.")
+    parser.add_argument("-nv", "--none_value", help="Character which is used in data as value for non-specified attribute.")
     parser.add_argument("-nfl", "--no_first_line",
                         action='store_true',
                         help="Attributes aren't specified on first line in csv data file.")

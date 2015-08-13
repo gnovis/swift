@@ -5,8 +5,8 @@
 @attribute height numeric
 @attribute weight numeric
 @attribute job { pilot,doctor,teacher,student }
-@attribute vegan { false,? }
-@attribute work { true,false,? }
+@attribute vegan { false }
+@attribute work { true,false }
 @attribute class { man,woman }
 
 @data

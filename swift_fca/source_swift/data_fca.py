@@ -15,10 +15,11 @@ class Data:
 
     LEFT_BRACKET = '['
     RIGHT_BRACKET = ']'
+    NONE_VAL = ""
 
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
-                 separator=',', relation_name='', none_val='None'):
+                 separator=',', relation_name='', none_val=NONE_VAL):
         """
         str_ before param name means that it is
         string representation and must be parsed
@@ -101,7 +102,7 @@ class Data:
                 self._obj_count += 1
                 str_values = self.ss_str(line, self.separator)
                 for i, attr in enumerate(self._attributes):
-                    attr.update(str_values[i])
+                    attr.update(str_values[i], self._none_val)
                 if manager:
                     if manager.stop:
                         break
@@ -267,7 +268,7 @@ class DataCsv(Data):
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
                  separator=',', relation_name='', no_attrs_first_line=False,
-                 none_val=''):
+                 none_val=Data.NONE_VAL):
         self._no_attrs_first_line = no_attrs_first_line
         super().__init__(source, str_attrs, str_objects,
                          separator, relation_name, none_val)
@@ -430,8 +431,8 @@ class DataCxt(DataBivalent):
             for k in range(columns):
                 attr_name = self.get_not_empty_line(f, index).strip()
                 new = AttrScaleEnum(k, attr_name)
-                new.update(DataBivalent.bi_vals['pos'])
-                new.update(DataBivalent.bi_vals['neg'])
+                new.update(DataBivalent.bi_vals['pos'], self._none_val)
+                new.update(DataBivalent.bi_vals['neg'], self._none_val)
                 self._attributes.append(new)
 
             self._attr_count = columns
@@ -504,7 +505,8 @@ class DataDat(DataBivalent):
         # These attributes are used only if attrs for new file
         # are not specified
         self._attributes = [(AttrScaleEnum(i, str(i)).update(
-                            self.bi_vals['pos'])).update(self.bi_vals['neg'])
+                            self.bi_vals['pos'], self._none_val)).update(
+                                self.bi_vals['neg'], self._none_val)
                             for i in range(self._attr_count)]
 
     def get_data_info_for_browse(self, manager=None):
