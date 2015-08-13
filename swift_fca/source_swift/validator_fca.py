@@ -67,7 +67,7 @@ class ParamValidator:
 
             def get_error(param):
                 return ("In conversion " + self._source_suff.upper() + " to " +
-                        self._target_suff.upper() + " must be set '" + param + "' parameter.")
+                        self._target_suff.upper() + " must be set '" + param + "' argument.")
 
             def validate_params(input_params, oblig_params, args_display):
                 for p in oblig_params:

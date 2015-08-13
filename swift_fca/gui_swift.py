@@ -59,8 +59,8 @@ class GuiSwift(QtGui.QWidget):
     def initUI(self):
 
         # Widgets
-        label_source = QtGui.QLabel('Source File')
-        label_target = QtGui.QLabel('Target File')
+        label_source = QtGui.QLabel('<b>Source File</b>')
+        label_target = QtGui.QLabel('<b>Target File</b>')
 
         self.line_source = QtGui.QLineEdit()
         self.line_source.setObjectName('line_source')
@@ -96,6 +96,16 @@ class GuiSwift(QtGui.QWidget):
         self.btn_export_info = QtGui.QPushButton("Export Info")
         self.file_filter = "FCA files (*.arff *.cxt *.data *.dat *.csv);;All(*)"
 
+        # Buttons tool-tip
+        btn_s_select.setToolTip("Select existing data file in one of the format: ARFF, DATA, CSV, DAT, CXT")
+        btn_t_select.setToolTip(("Select name for new data file, supported formats: " +
+                                 "ARFF, DATA, CSV, DAT, CXT.\nThis file will be created or rewrited by converted data."))
+        self.btn_s_params.setToolTip("Set arguments which will be used for Source Data in selected operation.")
+        self.btn_t_params.setToolTip("Set arguments which will be used for Target Data in conversion.")
+        self.btn_browse.setToolTip("Display and browse Source Data")
+        self.btn_export_info.setToolTip("Select file for export informations about Source Data")
+        self.btn_convert.setToolTip("Convert Source Data to Target Data")
+
         self.btn_export_info.clicked.connect(self.export_info)
         self.btn_s_params.clicked.connect(self.change_source_params)
         self.btn_t_params.clicked.connect(self.change_target_params)
@@ -103,6 +113,7 @@ class GuiSwift(QtGui.QWidget):
         self.btn_s_params.setEnabled(False)
         self.btn_browse.setEnabled(False)
         self.btn_export_info.setEnabled(False)
+        self.btn_convert.setEnabled(False)
         btn_s_select.clicked.connect(self.select_source)
         btn_t_select.clicked.connect(self.select_target)
         self.btn_browse.clicked.connect(self.browse_source)
@@ -113,7 +124,7 @@ class GuiSwift(QtGui.QWidget):
 
         # Status Bar
         self.status_bar = QtGui.QStatusBar(self)
-        self.status_bar.showMessage("Welcome in Swift FCA convertor", self.STATUS_MESSAGE_DURRATION)
+        self.status_bar.showMessage("Welcome in Swift FCA Converter", self.STATUS_MESSAGE_DURRATION)
 
         # Layout
         hbox_source = QtGui.QHBoxLayout()
@@ -199,16 +210,14 @@ class GuiSwift(QtGui.QWidget):
             self.btn_s_params.setEnabled(False)
             self.btn_browse.setEnabled(False)
             self.btn_export_info.setEnabled(False)
-        if sender.text() == "":
-            color = self.Colors.WHITE
             self.browser_source = None
             self.clear_table(self.table_view_source)
             self._source = None
-            self.btn_s_params.setEnabled(False)
-            self.btn_browse.setEnabled(False)
-            self.btn_export_info.setEnabled(False)
             self._source_params.clear()
+        if sender.text() == "":
+            color = self.Colors.WHITE
         self.set_line_bg(sender, color)
+        self.btn_convert.setEnabled(self.can_convert())
 
     def check_state_target(self, *args, **kwargs):
         """Slot for line_target textChanged"""
@@ -225,14 +234,14 @@ class GuiSwift(QtGui.QWidget):
         else:
             color = self.Colors.RED
             self.btn_t_params.setEnabled(False)
-        if sender.text() == "":
             self.browser_target = None
             self.clear_table(self.table_view_target)
-            color = self.Colors.WHITE
             self._target = None
-            self.btn_t_params.setEnabled(False)
             self._target_params.clear()
+        if sender.text() == "":
+            color = self.Colors.WHITE
         self.set_line_bg(sender, color)
+        self.btn_convert.setEnabled(self.can_convert())
 
     def select_source(self):
         """Slot for btn_s_select"""
@@ -399,6 +408,9 @@ class GuiSwift(QtGui.QWidget):
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     " OTHERS
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+    def can_convert(self):
+        return bool(self.source and self.target)
 
     def show_error_dialog(self, title="Arguments Error", message="Some of arguments aren't correct, operation aborted.", errors=[]):
         msgBox = QtGui.QMessageBox()
