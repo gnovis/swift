@@ -580,7 +580,7 @@ class SourceParamsDialog(ParamsDialog):
     format_poss_args = {FileType.ARFF: (RunParams.SOURCE_SEP),
                         FileType.CSV: (RunParams.SOURCE_SEP, RunParams.NFL, RunParams.SOURCE_ATTRS),
                         FileType.CXT: (NO_PARAMS),
-                        FileType.DAT: (NO_PARAMS),
+                        FileType.DAT: (RunParams.SOURCE_ATTRS),
                         FileType.DATA: (RunParams.SOURCE_SEP)}
 
     def __init__(self, parent):
@@ -596,7 +596,7 @@ class SourceParamsDialog(ParamsDialog):
         self.widgets[RunParams.NFL] = self.cb_nfl
         self.widgets[RunParams.SOURCE_ATTRS] = self.line_str_attrs
         self.widgets[RunParams.SOURCE_SEP] = self.line_separator
-        self.widgets[self.NO_PARAMS] = FormLabel("No paramteres can be set.")
+        self.widgets[self.NO_PARAMS] = FormLabel("No arguments can be set.")
 
         suffix = os.path.splitext(parent.source)[1]  # source file must be set!
         self.fill_layout(suffix)
@@ -605,11 +605,11 @@ class SourceParamsDialog(ParamsDialog):
 
 class TargetParamsDialog(ParamsDialog):
 
-    format_poss_args = {FileType.ARFF: (RunParams.TARGET_ATTRS, RunParams.TARGET_SEP),
-                        FileType.CSV: (RunParams.TARGET_ATTRS, RunParams.TARGET_SEP),
+    format_poss_args = {FileType.ARFF: (RunParams.TARGET_SEP),
+                        FileType.CSV: (RunParams.TARGET_SEP),
                         FileType.CXT: (RunParams.TARGET_ATTRS, RunParams.TARGET_OBJECTS),
                         FileType.DAT: (RunParams.TARGET_ATTRS),
-                        FileType.DATA: (RunParams.TARGET_ATTRS, RunParams.CLASSES, RunParams.TARGET_SEP)}
+                        FileType.DATA: (RunParams.CLASSES, RunParams.TARGET_SEP)}
 
     def __init__(self, parent):
         super().__init__(parent)

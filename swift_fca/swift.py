@@ -25,7 +25,7 @@ def run_swift():
     parser.add_argument("-s", "--source", required=True, help="Name of source file.")
     parser.add_argument("-ss", "--source_separator",
                         help="Separator whitch is used in source file. Default is ','.")
-    parser.add_argument("-sa", "--source_attributes", help="Source file (old) attributes.")
+    parser.add_argument("-sa", "--source_attributes", help="Source file (old) attributes. Used as additional informations.")
     parser.add_argument("-si", "--source_info", action='store_true', help="Print information about source file data.")
     parser.add_argument("-nv", "--none_value", help="Character which is used in data as value for non-specified attribute.")
     parser.add_argument("-nfl", "--no_first_line",
@@ -35,8 +35,8 @@ def run_swift():
     parser.add_argument("-t", "--target", required=True, help="Name of target file.")
     parser.add_argument("-ts", "--target_separator",
                         help="Separator whitch will be used in target file. Default is ','.")
-    parser.add_argument("-ta", "--target_attributes", help="Target file (new) attributes.")
-    parser.add_argument("-to", "--target_objects", help="Target file (new) objects.")
+    parser.add_argument("-ta", "--target_attributes", help="Target file (new) attributes. Used for scaling.")
+    parser.add_argument("-to", "--target_objects", help="Target file (new) objects. Only for CXT format.")
     parser.add_argument("-rn", "--relation_name", help="New name of relation.")
     parser.add_argument("-cls", "--classes", help="Classes seperated by commas - for C4.5 convert.")
 

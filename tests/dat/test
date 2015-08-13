@@ -12,17 +12,17 @@ echo $format
 echo "====="
 
 # -> csv
-$app -s $source_file -t dat.csv -ta "$new_str_attrs"
+$app -s $source_file -t dat.csv -sa "$new_str_attrs"
 echo $format "-> CSV"
 
 # -> arff
-$app -s $source_file -t dat.arff -ta "$new_str_attrs"
+$app -s $source_file -t dat.arff -sa "$new_str_attrs"
 echo $format "-> ARFF"
 
 # -> cxt
-$app -s $source_file -t dat.cxt -ta "$new_str_attrs" -to "$new_str_objects"
+$app -s $source_file -t dat.cxt -sa "$new_str_attrs" -to "$new_str_objects"
 echo $format "-> CXT"
 
 # -> data
-$app -s $source_file -t dat.data -ta "$new_str_attrs" -cls "$classes"
+$app -s $source_file -t dat.data -sa "$new_str_attrs" -cls "$classes"
 echo $format "-> DATA"

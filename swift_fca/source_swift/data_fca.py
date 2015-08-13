@@ -78,7 +78,6 @@ class Data:
 
     def prepare(self):
         if self.str_attrs:
-            self._attributes.clear()  # remove this if possible (prepare func should be called just once)
             parser = ArgsParser()
             parser.parse(self.str_attrs)
             self._attributes = parser.attributes
@@ -504,10 +503,14 @@ class DataDat(DataBivalent):
         self._obj_count = line_count
         # These attributes are used only if attrs for new file
         # are not specified
-        self._attributes = [(AttrScaleEnum(i, str(i)).update(
+        if self._attributes:
+            names = [attr.name for attr in self._attributes]
+        else:
+            names = [str(i) for i in range(self._attr_count)]
+        self._attributes = [(AttrScaleEnum(i, name).update(
                             self.bi_vals['pos'], self._none_val)).update(
                                 self.bi_vals['neg'], self._none_val)
-                            for i in range(self._attr_count)]
+                            for i, name in enumerate(names)]
 
     def get_data_info_for_browse(self, manager=None):
         self.get_data_info(manager)

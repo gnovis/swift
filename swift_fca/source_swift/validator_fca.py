@@ -12,10 +12,10 @@ class ParamValidator:
                      '.csv.dat': [[], [RunParams.TARGET_ATTRS]],
                      '.csv.data': [[RunParams.SOURCE_ATTRS], [RunParams.CLASSES]],
                      '.cxt.data': [[], [RunParams.CLASSES]],
-                     '.dat.arff': [[], [RunParams.TARGET_ATTRS]],
-                     '.dat.csv': [[], [RunParams.TARGET_ATTRS]],
-                     '.dat.cxt': [[], [RunParams.TARGET_ATTRS, RunParams.TARGET_OBJECTS]],
-                     '.dat.data': [[], [RunParams.TARGET_ATTRS, RunParams.CLASSES]],
+                     '.dat.arff': [[RunParams.SOURCE_ATTRS], []],
+                     '.dat.csv': [[RunParams.SOURCE_ATTRS], []],
+                     '.dat.cxt': [[RunParams.SOURCE_ATTRS], [RunParams.TARGET_OBJECTS]],
+                     '.dat.data': [[RunParams.SOURCE_ATTRS], [RunParams.CLASSES]],
                      '.data.dat': [[], [RunParams.TARGET_ATTRS]],
                      '.data.cxt': [[], [RunParams.TARGET_ATTRS, RunParams.TARGET_OBJECTS]]}
 
