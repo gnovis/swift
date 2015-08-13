@@ -15,12 +15,10 @@ class Data:
 
     LEFT_BRACKET = '['
     RIGHT_BRACKET = ']'
-    NONE_VALUE = "None"  # TODO pridat jako volitelny parametr
-    empty_vals = ["", "?", NONE_VALUE]
 
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
-                 separator=',', relation_name=''):
+                 separator=',', relation_name='', none_val='None'):
         """
         str_ before param name means that it is
         string representation and must be parsed
@@ -32,6 +30,7 @@ class Data:
         self._str_objects = str_objects
         self._separator = separator
         self._relation_name = relation_name
+        self._none_val = none_val
         self._index_data_start = 0
         self._obj_count = 0
         self._attr_count = 0
@@ -143,14 +142,8 @@ class Data:
         Strip and split string by separator. Ignore escaped separators.
         Return list of values.
         """
-        return list(map(lambda x: self._prepare_value(x),
+        return list(map(lambda x: x.strip(),
                     re.split(r'(?<!\\)' + separator, string, max_split)))
-
-    def _prepare_value(self, val):
-        stripped = val.strip()
-        if stripped in self.empty_vals:
-            return self.NONE_VALUE
-        return stripped
 
     def get_not_empty_line(self, f, i_ref):
         while True:
@@ -273,10 +266,11 @@ class DataCsv(Data):
     """Column seperated value format"""
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
-                 separator=',', relation_name='', no_attrs_first_line=False):
+                 separator=',', relation_name='', no_attrs_first_line=False,
+                 none_val=''):
         self._no_attrs_first_line = no_attrs_first_line
         super().__init__(source, str_attrs, str_objects,
-                         separator, relation_name)
+                         separator, relation_name, none_val)
 
     def write_header(self, target, old_data):
         attrs_to_write = super().write_header(target, old_data)
@@ -310,12 +304,10 @@ class DataData(Data):
 
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
-                 separator=',', relation_name='', classes=""):
+                 separator=',', relation_name='', classes="", none_val='?'):
         super().__init__(source, str_attrs, str_objects,
-                         separator, relation_name)
+                         separator, relation_name, none_val)
         self._classes = list(reversed(self.ss_str(classes, self._separator)))
-        if self.NONE_VALUE in self._classes:
-            self._classes.remove(self.NONE_VALUE)
 
     COMMENT_SYM = "\|"
     ATTR_SEP = ":"
@@ -358,7 +350,7 @@ class DataData(Data):
                 for k, entry in enumerate(entries):
                     # on a first line are names of classes, seperated by commas
                     # others formats doesn't have classes => class is enum attribute!
-                    if (j == 0 and k == 0) or entry is self.NONE_VALUE:
+                    if (j == 0 and k == 0) or not entry:
                         continue
                     else:
                         devided = self._devide_two_part(entry, self.ATTR_SEP)

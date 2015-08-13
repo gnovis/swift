@@ -59,8 +59,8 @@ class GuiSwift(QtGui.QWidget):
     def initUI(self):
 
         # Widgets
-        label_source = QtGui.QLabel('Source file')
-        label_target = QtGui.QLabel('Target file')
+        label_source = QtGui.QLabel('Source File')
+        label_target = QtGui.QLabel('Target File')
 
         self.line_source = QtGui.QLineEdit()
         self.line_source.setObjectName('line_source')
@@ -281,7 +281,7 @@ class GuiSwift(QtGui.QWidget):
                     self.estimate_pbar.cancel()
                     self.show_error_dialog(
                         "Print Error",
-                        "Wasn't possible to prepare data for print informations, please check syntax in source file and specified parameters.",
+                        "Wasn't possible to prepare data for print informations, please check syntax in source file and specified arguments.",
                         errors)
                     self.status_bar.showMessage("Export infomatios about source data aborted.",
                                                 self.STATUS_MESSAGE_DURRATION)
@@ -319,8 +319,8 @@ class GuiSwift(QtGui.QWidget):
         procces = True
         if len(warnings) > 0:
             msgBox = QtGui.QMessageBox()
-            msgBox.setWindowTitle("Parameters Warning")
-            msgBox.setText("Some of required parameters weren't specified correctly, conversion may crash. Do you want to continue?")
+            msgBox.setWindowTitle("Arguments Warning")
+            msgBox.setText("Some of required arguments weren't specified correctly, conversion may crash. Do you want to continue?")
             msgBox.setInformativeText("Warnings: \n" + "\n".join(warnings))
             msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
             msgBox.setDefaultButton(QtGui.QMessageBox.No)
@@ -354,7 +354,7 @@ class GuiSwift(QtGui.QWidget):
                     self.estimate_pbar.cancel()
                     self.convert_pbar.cancel()
                     self.show_error_dialog("Convert Error",
-                                           "Wasn't possible to convert data, please check syntax in source file and specified parameters.",
+                                           "Wasn't possible to convert data, please check syntax in source file and specified arguments.",
                                            errors)
                     self.status_bar.showMessage("Conversion aborted.",
                                                 self.STATUS_MESSAGE_DURRATION)
@@ -588,7 +588,7 @@ class SourceParamsDialog(ParamsDialog):
 
         suffix = os.path.splitext(parent.source)[1]  # source file must be set!
         self.fill_layout(suffix)
-        self.setWindowTitle('Parameters for source file')
+        self.setWindowTitle('Arguments for source file')
 
 
 class TargetParamsDialog(ParamsDialog):
@@ -616,7 +616,7 @@ class TargetParamsDialog(ParamsDialog):
         self.widgets[RunParams.RELATION_NAME] = self.line_rel_name
         suffix = os.path.splitext(parent.target)[1]
         self.fill_layout(suffix)
-        self.setWindowTitle('Parameters for target file')
+        self.setWindowTitle('Arguments for target file')
 
 
 class FormWidget(QtGui.QWidget):

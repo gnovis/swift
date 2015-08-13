@@ -1,9 +1,9 @@
 hello,sunny,85,85,FALSE,no,1,2001-04-03,Monday
-hellllllo,sunny,80,None,TRUE,no,0,2001-04-03,Friday
+hellllllo,sunny,80,?,TRUE,no,0,2001-04-03,Friday
 hi,overcast,83,86,FALSE,yes,1,2001-04-03,Friday
 hello hi,rainy,70,96,FALSE,yes,0,2001-04-03,Sunday
 hi hello,rainy,68,80,FALSE,yes,1,2001-04-03,Theusday
-hi10ii,None,65,70,TRUE,no,0,2001-04-03,Theusday
+hi10ii,?,65,70,TRUE,no,0,2001-04-03,Theusday
 goood,overcast,64,65,TRUE,yes,1,2001-04-03,Wednesday
 evening,sunny,72,95,FALSE,no,0,2001-04-03,Theusday
 helllllo,sunny,69,70,FALSE,yes,1,2001-04-03,Monday
@@ -13,11 +13,11 @@ forest,overcast,72,90,TRUE,yes,1,2001-04-03,Wednesday
 helllll,overcast,81,75,FALSE,yes,1,2001-04-03,Monday
 holll2,rainy,71,91,TRUE,no,1,2001-04-03,Sunday
 hello,sunny,85,85,FALSE,no,1,2001-04-03
-hellllllo,sunny,80,None,TRUE,no,0,2001-04-03
+hellllllo,sunny,80,?,TRUE,no,0,2001-04-03
 hi,overcast,83,86,FALSE,yes,1,2001-04-03
 hello hi,rainy,70,96,FALSE,yes,0,2001-04-03
 hi hello,rainy,68,80,FALSE,yes,1,2001-04-03
-hi10ii,None,65,70,TRUE,no,0,2001-04-03
+hi10ii,?,65,70,TRUE,no,0,2001-04-03
 goood,overcast,64,65,TRUE,yes,1,2001-04-03
 evening,sunny,72,95,FALSE,no,0,2001-04-03
 helllllo,sunny,69,70,FALSE,yes,1,2001-04-03
@@ -27,11 +27,11 @@ forest,overcast,72,90,TRUE,yes,1,1001-04-03
 helllll,overcast,81,75,FALSE,yes,1,1001-04-03
 holll2,rainy,71,91,TRUE,no,1,1001-04-03
 hello,sunny,85,85,FALSE,no,1,1001-04-03
-hellllllo,sunny,80,None,TRUE,no,0,1001-04-03
+hellllllo,sunny,80,?,TRUE,no,0,1001-04-03
 hi,overcast,83,86,FALSE,yes,1,1001-04-03
 hello hi,rainy,70,96,FALSE,yes,0,1001-04-03
 hi hello,rainy,68,80,FALSE,yes,1,1001-04-03
-hi10ii,None,65,70,TRUE,no,0,1001-04-03
+hi10ii,?,65,70,TRUE,no,0,1001-04-03
 goood,overcast,64,65,TRUE,yes,1,1001-04-03
 evening,sunny,72,95,FALSE,no,0,1001-04-03
 helllllo,sunny,69,70,FALSE,yes,1,1001-04-03
@@ -41,11 +41,11 @@ forest,overcast,72,90,TRUE,yes,1,1001-04-03
 helllll,overcast,81,75,FALSE,yes,1,1001-04-03
 holll2,rainy,71,91,TRUE,no,1,1001-04-03
 hello,sunny,85,85,FALSE,no,1,1001-04-03
-hellllllo,sunny,80,None,TRUE,no,0,1001-04-03
+hellllllo,sunny,80,?,TRUE,no,0,1001-04-03
 hi,overcast,83,86,FALSE,yes,1,1001-04-03
 hello hi,rainy,70,96,FALSE,yes,0,1001-04-03
 hi hello,rainy,68,80,FALSE,yes,1,1001-04-03
-hi10ii,None,65,70,TRUE,no,0,1001-04-03
+hi10ii,?,65,70,TRUE,no,0,1001-04-03
 goood,overcast,64,65,TRUE,yes,1,1001-04-03
 evening,sunny,72,95,FALSE,no,0,1001-04-03
 helllllo,sunny,69,70,FALSE,yes,1,1001-04-03
@@ -55,11 +55,11 @@ forest,overcast,72,90,TRUE,yes,1,1001-04-03
 helllll,overcast,81,75,FALSE,yes,1,1001-04-03
 holll2,rainy,71,91,TRUE,no,1,1001-04-03
 hello,sunny,85,85,FALSE,no,1,1001-04-03
-hellllllo,sunny,80,None,TRUE,no,0,1001-04-03
+hellllllo,sunny,80,?,TRUE,no,0,1001-04-03
 hi,overcast,83,86,FALSE,yes,1,1001-04-03
 hello hi,rainy,70,96,FALSE,yes,0,1001-04-03
 hi hello,rainy,68,80,FALSE,yes,1,1001-04-03
-hi10ii,None,65,70,TRUE,no,0,1001-04-03
+hi10ii,?,65,70,TRUE,no,0,1001-04-03
 goood,overcast,64,65,TRUE,yes,1,1001-04-03
 evening,sunny,72,95,FALSE,no,0,1001-04-03
 helllllo,sunny,69,70,FALSE,yes,1,1001-04-03
