@@ -589,6 +589,7 @@ class SourceParamsDialog(ParamsDialog):
         # form lines
         self.line_separator = FormLine("Separator", default_val=',')
         self.line_str_attrs = FormLine("Attributes")
+        self.line_str_attrs.setPlaceholderText("str_attr[s], enum_attr[e], date_attr[d, '%Y-%m-%d'], num_attr[n], no_type_attr[]")
         # check box
         self.cb_nfl = FormCheckBox('Attributes on first line')
 
@@ -616,10 +617,16 @@ class TargetParamsDialog(ParamsDialog):
         self.params = parent.target_params
         # form lines
         self.line_separator = FormLine("Separator", default_val=',')
-        self.line_str_attrs = FormLine("Attributes")
+        self.line_str_attrs = FormLine("Scale Attributes")
         self.line_str_objects = FormLine("Objects")
         self.line_rel_name = FormLine("Relation Name")
         self.line_classes = FormLine("Classes")
+        # placeholders
+        placeholder = ("new_str=old_str[s, 'moon[1-9]'], new_date=old_date[d, date>2015, '%Y']," +
+                       " new_num=old_num[n, age>45], same_name_enum[e, True]")
+        self.line_str_attrs.setPlaceholderText(placeholder)
+        self.line_str_objects.setPlaceholderText("obj1_name, obj2_name, obj3_name")
+        self.line_classes.setPlaceholderText("cls1_name, cls2_name, cls3_name")
         # layout
         self.widgets[RunParams.CLASSES] = self.line_classes
         self.widgets[RunParams.TARGET_SEP] = self.line_separator
@@ -687,6 +694,9 @@ class FormLine(FormWidget):
 
     def set_data(self, data):
         self.line.setText(data)
+
+    def setPlaceholderText(self, text):
+        self.line.setPlaceholderText(text)
 
 
 class FormLabel(FormWidget):
