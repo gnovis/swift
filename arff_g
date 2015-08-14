@@ -1,7 +1,8 @@
 #!/bin/python3
+
 from pyparsing import (OneOrMore, Word, Forward, delimitedList, Literal, printables,
-                       LineEnd, restOfLine, Optional, Suppress, quotedString,
-                       ZeroOrMore, CaselessLiteral, CharsNotIn, Group)
+                       restOfLine, Optional, Suppress, quotedString,
+                       ZeroOrMore, CaselessLiteral, Group)
 
 
 """
@@ -23,6 +24,33 @@ from pyparsing import (OneOrMore, Word, Forward, delimitedList, Literal, printab
 
 """
 
+
+class Attribute():
+    def __init__(self, attr_type, attr_name):
+        self.type = attr_type
+        self.name = attr_name
+        self.children = []
+
+    def has_children(self):
+        return bool(self.children)
+
+
+def show_children(attrs, parent_name=""):
+    for attr in attrs:
+        name = ".".join([parent_name, attr.name])
+        print("{}, {}".format(name, attr.type))
+        if attr.has_children():
+            show_children(attr.children, name)
+
+
+def parse_attribute(string, pos, tokens):
+    # print(tokens)
+    attr = Attribute(tokens.attr_type, tokens.attr_name)
+    if attr.type == "relational":
+        attr.children = tokens.children
+    return attr
+
+
 comment = Literal("%") + restOfLine
 quoted = quotedString.copy()
 string = quoted | Word(printables,  excludeChars='{},%@')
@@ -32,14 +60,14 @@ nominal = Suppress(Literal("{")) + Group(delimitedList(string)) + Suppress(Liter
 date = CaselessLiteral("date") + Optional(string)
 attributes_part = Forward()
 relational = CaselessLiteral("relational") + attributes_part + Suppress(CaselessLiteral("@end")) + string
-attr_type = CaselessLiteral("numeric") | CaselessLiteral("string") | nominal | date | relational
-attribute = Suppress(CaselessLiteral("@attribute")) + string + attr_type
+attr_type = (CaselessLiteral("numeric") | CaselessLiteral("string") | nominal | date | relational)("attr_type")
+attribute = Suppress(CaselessLiteral("@attribute")) + (string.copy())("attr_name") + attr_type
 attribute_line = comment | attribute
-attributes_part << Group(OneOrMore(attribute_line))
+attributes_part << (Group(OneOrMore(attribute_line)))("children")
 data_part = Suppress(CaselessLiteral("@data"))
 arff_header = relation_part + attributes_part + data_part
 arff_header.ignore(comment)
-attribute.setParseAction(lambda tokens: print(tokens))
+attribute.setParseAction(parse_attribute)
 
 test = ("% This is comment \n" +
         "% This is other comment \n" +
@@ -59,6 +87,8 @@ test = ("% This is comment \n" +
         "@end big \n" +
         "@data \n" +
         "ahoj, ajok, ajowe, ejcek")
-print(test)
+print(test, "\n")
 
-print(arff_header.parseString(test))
+result = arff_header.parseString(test)
+print("Relation: ", result[0])
+show_children(result[1])
