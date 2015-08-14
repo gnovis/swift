@@ -1,7 +1,7 @@
 #!/bin/python3
 
 from pyparsing import (OneOrMore, Word, Forward, delimitedList, Literal, printables,
-                       restOfLine, Optional, Suppress, quotedString, removeQuotes,
+                       restOfLine, CharsNotIn, Optional, Suppress, quotedString, removeQuotes,
                        ZeroOrMore, CaselessLiteral, Group)
 
 
@@ -58,13 +58,14 @@ def set_def_date(tk):
         date = 'default date format'
     return date
 
-comment = Literal("%") + restOfLine
+comment = Suppress(Literal("%") + restOfLine)
 quoted = quotedString.copy()
 string = quoted | Word(printables,  excludeChars='{},%')
 relation = Suppress(CaselessLiteral("@relation")) + Optional(string)
 relation_part = ZeroOrMore(comment) + relation + ZeroOrMore(comment)
 nominal = Suppress(Literal("{")) + Group(delimitedList(string)) + Suppress(Literal("}"))
-date = CaselessLiteral("date") + Optional(quotedString.copy().setParseAction(removeQuotes))
+# date = CaselessLiteral("date") + Optional(quotedString.copy().setParseAction(removeQuotes))
+date = CaselessLiteral("date") + Optional(CharsNotIn("{},\n"))
 attributes_part = Forward()
 relational = CaselessLiteral("relational") + attributes_part + Suppress(CaselessLiteral("@end")) + string
 attr_type = (CaselessLiteral("numeric") | CaselessLiteral("string") | nominal | date | relational)("attr_type")
@@ -73,7 +74,7 @@ attribute_line = comment | attribute
 attributes_part << (Group(OneOrMore(attribute_line)))("children")
 data_part = Suppress(CaselessLiteral("@data"))
 arff_header = relation_part + attributes_part + data_part
-arff_header.ignore(comment)
+# arff_header.ignore(comment)
 attribute.setParseAction(parse_attribute)
 
 test = ("% This is comment \n" +
@@ -82,7 +83,7 @@ test = ("% This is comment \n" +
         "% this is comment \n" +
         "@attribute age numeric \n" +
         "@attribute not@e string \n" +
-        "@attribute birthday date  \n" +
+        "@attribute birthday date  %d  \n" +
         "@attribute values {val1, val2, val3} \n" +
         "% Attributes below are relational\n" +
         "@attribute big relational \n" +
