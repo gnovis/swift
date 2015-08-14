@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 import re
-from pyparsing import quotedString
+from pyparsing import quotedString, removeQuotes
 from .date_parser_fca import DateParser
 from .grammars_fca import boolexpr
 
@@ -149,7 +149,7 @@ class AttrScaleDate(AttrScaleNumeric):
     def substitute_date(self):
         DATEXPR = quotedString.copy()
         EXPR = boolexpr(VAL=DATEXPR)
-        DATEXPR.setParseAction(lambda tokens: self.parser.get_time_stamp(tokens[0][1:-1]))
+        DATEXPR.setParseAction(lambda s, loc, tokens: self.parser.get_time_stamp(removeQuotes(s, loc, tokens)))
         self._expr_pattern = EXPR.parseString(self._expr_pattern)[0]
 
     def scale(self, attrs, values):

@@ -1,5 +1,5 @@
-from pyparsing import (alphanums, alphas, nums, Combine, Or, Empty,
-                       Group, Literal,
+from pyparsing import (alphanums, Or, Empty,
+                       Group, removeQuotes,
                        Optional, delimitedList,
                        Suppress, Word, quotedString, CaselessLiteral)
 
@@ -43,17 +43,6 @@ class ArgsParser():
     def attributes(self):
         return self._attributes.copy()
 
-    @staticmethod
-    def boolexpr(VAL=Combine(Optional('-') + Word(nums))):
-        VAR = Word(alphas)
-        OP = Or(Literal("<") ^ Literal(">") ^
-                Literal("<=") ^ Literal(">=") ^
-                Literal("=="))
-        EXPR = Or(Combine(VAR + OP + VAL, adjacent=False) ^
-                  Combine(VAL + OP + VAR, adjacent=False) ^
-                  Combine(VAL + OP + VAR + OP + VAL, adjacent=False))
-        return EXPR
-
     def parse(self, str_args):
         # Grammar definition
         QUOTED_STR = quotedString.copy()
@@ -94,7 +83,7 @@ class ArgsParser():
         DATE.setParseAction(lambda tokens: [tokens[0], dict(expr_pattern=tokens[1],
                                                             date_format=tokens[2])])
         # Auxiliary parse actions
-        QUOTED_STR.setParseAction(lambda tokens: tokens[0][1:-1])
+        QUOTED_STR.setParseAction(removeQuotes)
         VAR_FIRST_PART.setParseAction(lambda tokens: [tokens[1]]*2 if tokens[0] == '' else [tokens[0], tokens[1]])
         VAR.setParseAction(self.create_attrs)
 

@@ -1,0 +1,64 @@
+#!/bin/python3
+from pyparsing import (OneOrMore, Word, Forward, delimitedList, Literal, printables,
+                       LineEnd, restOfLine, Optional, Suppress, quotedString,
+                       ZeroOrMore, CaselessLiteral, CharsNotIn, Group)
+
+
+"""
+<header> ::= <relation_part> <attributes_part> <data_part>
+<relation_part> ::= <comment_line>* <relation> "\n" <comment_line>*
+<attributes_part> ::= (<attributes_line> "\n")+
+<data_part> ::= "@data"
+<attributes_line> ::= <comment> | <attribute> | <blank>
+<attribute> ::= "@attribute" <string> <type>
+<type> ::= "numeric" | "string" | <nominal> | <date> | <relational>
+<nominal> ::= "{" <string> | ("," <string>)* "}"
+<date> ::= 'date' <string>?
+<relational> ::= "relational" "\n" <attributes_part> "@end" <string>
+<relation> ::= "@relation" <string>?
+<string> ::= [^%,{}]+ | "'" .+ "'"
+<blank> ::= ^$
+<comment> ::= "%".*
+<comment_line> ::= <comment> "\n"
+
+"""
+
+comment = Literal("%") + restOfLine
+quoted = quotedString.copy()
+string = quoted | Word(printables,  excludeChars='{},%@')
+relation = Suppress(CaselessLiteral("@relation")) + Optional(string)
+relation_part = ZeroOrMore(comment) + relation + ZeroOrMore(comment)
+nominal = Suppress(Literal("{")) + Group(delimitedList(string)) + Suppress(Literal("}"))
+date = CaselessLiteral("date") + Optional(string)
+attributes_part = Forward()
+relational = CaselessLiteral("relational") + attributes_part + Suppress(CaselessLiteral("@end")) + string
+attr_type = CaselessLiteral("numeric") | CaselessLiteral("string") | nominal | date | relational
+attribute = Suppress(CaselessLiteral("@attribute")) + string + attr_type
+attribute_line = comment | attribute
+attributes_part << Group(OneOrMore(attribute_line))
+data_part = Suppress(CaselessLiteral("@data"))
+arff_header = relation_part + attributes_part + data_part
+arff_header.ignore(comment)
+attribute.setParseAction(lambda tokens: print(tokens))
+
+test = ("% This is comment \n" +
+        "% This is other comment \n" +
+        "@relation rel_name \n " +
+        "% this is comment \n" +
+        "@attribute age numeric \n" +
+        "@attribute 'n@ote' string \n" +
+        "@attribute birthday date \n" +
+        "@attribute values {val1, val2, val3} \n" +
+        "@attribute big relational \n" +
+        "  @attribute big1 numeric \n" +
+        "  @attribute huge relational \n" +
+        "    @attribute huge1 string \n" +
+        "    @attribute huge2 string \n" +
+        "  @end huge \n" +
+        "  @attribute big2 {b1, b2, b3, b4} \n" +
+        "@end big \n" +
+        "@data \n" +
+        "ahoj, ajok, ajowe, ejcek")
+print(test)
+
+print(arff_header.parseString(test))

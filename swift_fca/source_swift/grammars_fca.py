@@ -1,7 +1,20 @@
-from pyparsing import Literal, Combine, Optional, Or, Word, alphas, nums
+from pyparsing import Literal, Combine, Optional, Or, Word, alphas, nums, CaselessLiteral
 
 
-def boolexpr(VAL=Combine(Optional('-') + Word(nums))):
+def numeric():
+    point = Literal('.')
+    e = CaselessLiteral('E')
+    plusorminus = Literal('+') | Literal('-')
+    number = Word(nums)
+    integer = Combine(Optional(plusorminus) + number)
+    floatnumber = Combine(integer +
+                          Optional(point + Optional(number)) +
+                          Optional(e + integer))
+    numeric = number | floatnumber
+    return numeric
+
+
+def boolexpr(VAL=numeric()):
     VAR = Word(alphas)
     OP = Or(Literal("<") ^ Literal(">") ^
             Literal("<=") ^ Literal(">=") ^
