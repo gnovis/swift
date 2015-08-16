@@ -2,8 +2,22 @@
 
 from pyparsing import (OneOrMore, Word, Forward, delimitedList, Literal, printables,
                        restOfLine, CharsNotIn, Optional, Suppress, quotedString, removeQuotes,
-                       ZeroOrMore, CaselessLiteral, Group)
+                       ZeroOrMore, CaselessLiteral, Group, lineno)
 
+"""
+from swift_fca.source_swift.parser_fca import ArffParser
+
+with open('tests/arff/test.arff', 'r') as f:
+    header_to_parse = ''
+    for line in f:
+        header_to_parse += line
+        if line.strip() == '@data':
+            break
+
+parser = ArffParser()
+parser.parse(header_to_parse)
+parser.show_result()
+"""
 
 """
 <header> ::= <relation_part> <attributes_part> <data_part>
@@ -38,9 +52,10 @@ class Attribute():
 def show_children(attrs, parent_name=""):
     for attr in attrs:
         name = ".".join([parent_name, attr.name])
-        print("{}, {}".format(name, attr.type))
         if attr.has_children():
             show_children(attr.children, name)
+        else:
+            print("{}, {}".format(name, attr.type))
 
 
 def parse_attribute(string, pos, tokens):
@@ -51,53 +66,39 @@ def parse_attribute(string, pos, tokens):
     return attr
 
 
-def set_def_date(tk):
-    print(tk)
-    date = tk[0].strip()
-    if date == '':
-        date = 'default date format'
-    return date
+def adapt_date_format(tokens):
+    date_format = tokens.date_format.strip()
+    if not date_format:
+        date_format = '%Y-%m-%d'
+    return {'date_format': date_format}
+
 
 comment = Suppress(Literal("%") + restOfLine)
-quoted = quotedString.copy()
+quoted = quotedString.copy().setParseAction(removeQuotes)
 string = quoted | Word(printables,  excludeChars='{},%')
-relation = Suppress(CaselessLiteral("@relation")) + Optional(string)
+relation = Suppress(CaselessLiteral("@relation")) + Optional(string, default='default_name')('rel_name')
 relation_part = ZeroOrMore(comment) + relation + ZeroOrMore(comment)
-nominal = Suppress(Literal("{")) + Group(delimitedList(string)) + Suppress(Literal("}"))
-# date = CaselessLiteral("date") + Optional(quotedString.copy().setParseAction(removeQuotes))
-date = CaselessLiteral("date") + Optional(CharsNotIn("{},\n"))
+nominal = (Suppress(Literal("{")) + Group(delimitedList(string)) + Suppress(Literal("}")))
+nominal.setParseAction(lambda t: 'g')
+date = CaselessLiteral("date") + Optional(CharsNotIn("{},\n"))("next_arg").setParseAction(adapt_date_format)
 attributes_part = Forward()
 relational = CaselessLiteral("relational") + attributes_part + Suppress(CaselessLiteral("@end")) + string
 attr_type = (CaselessLiteral("numeric") | CaselessLiteral("string") | nominal | date | relational)("attr_type")
 attribute = Suppress(CaselessLiteral("@attribute")) + (string.copy())("attr_name") + attr_type
 attribute_line = comment | attribute
 attributes_part << (Group(OneOrMore(attribute_line)))("children")
-data_part = Suppress(CaselessLiteral("@data"))
+data_part = (CaselessLiteral("@data"))("data_start").setParseAction(lambda s, p, k: (lineno(p, s)))
 arff_header = relation_part + attributes_part + data_part
-# arff_header.ignore(comment)
 attribute.setParseAction(parse_attribute)
 
-test = ("% This is comment \n" +
-        "% This is other comment \n" +
-        "@relation rel_name \n " +
-        "% this is comment \n" +
-        "@attribute age numeric \n" +
-        "@attribute not@e string \n" +
-        "@attribute birthday date  %d  \n" +
-        "@attribute values {val1, val2, val3} \n" +
-        "% Attributes below are relational\n" +
-        "@attribute big relational \n" +
-        "  @attribute big1 numeric \n" +
-        "  @attribute huge relational \n" +
-        "    @attribute huge1 string \n" +
-        "    @attribute huge2 string \n" +
-        "  @end huge \n" +
-        "  @attribute big2 {b1, b2, b3, b4} \n" +
-        "@end big \n" +
-        "@data \n" +
-        "ahoj, ajok, ajowe, ejcek")
-print(test, "\n")
+with open('ignore/ignore.g.arff', 'r') as f:
+    header_to_parse = ''
+    for line in f:
+        header_to_parse += line
+        if line.strip() == '@data':
+            break
+    result = arff_header.parseString(header_to_parse)
 
-result = arff_header.parseString(test)
-print("Relation: ", result[0])
-show_children(result[1])
+print("Relation: ", result.rel_name)
+show_children(result.children)
+print(result.data_start)

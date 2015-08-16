@@ -26,6 +26,7 @@ class Attribute:
         self._name = name
         self._index = index
         self._attr_type = attr_type
+        self._children = []
 
     types = {'n': AttrType.NUMERIC,
              'e': AttrType.NOMINAL,
@@ -36,6 +37,10 @@ class Attribute:
     def name(self):
         return self._name
 
+    @name.setter
+    def name(self, value):
+        self._name = value
+
     @property
     def index(self):
         return self._index
@@ -43,6 +48,17 @@ class Attribute:
     @property
     def attr_type(self):
         return self._attr_type
+
+    @property
+    def children(self):
+        return self._children.copy()
+
+    @children.setter
+    def children(self, children):
+        self._children = children
+
+    def has_children(self):
+        return bool(self._children)
 
     def print_self(self, out):
         print("\nname: {}\nindex: {}\ntype: {}".format(

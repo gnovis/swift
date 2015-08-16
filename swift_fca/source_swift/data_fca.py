@@ -3,9 +3,9 @@ import re
 import os
 import sys
 
-from .attributes_fca import (Attribute, AttrScaleNumeric, AttrScaleEnum, AttrScaleString, AttrScaleDate)
+from .attributes_fca import (Attribute, AttrScaleNumeric, AttrScaleEnum)
 from .object_fca import Object
-from .args_parser_fca import ArgsParser
+from .parser_fca import ArgsParser, ArffParser
 
 
 class Data:
@@ -88,7 +88,7 @@ class Data:
 
     def get_header_info(self):
         """
-        Set attributes, objects and index_data_start.
+        Set attributes, objects, relation name and index_data_start.
         """
         pass
 
@@ -221,45 +221,21 @@ class DataArff(Data):
         target.write('\n' + self.DATA + '\n')
 
     def get_header_info(self):
-        with open(self.source) as f:
-            attr_index = 0
-            attrs_names = []
-            for i, line in enumerate(f):
-                curr_line = line.strip()
-                if curr_line.startswith(self.PART_SYM):
-                    values = curr_line.split()
-                    identifier = values[self.IDENTIFIER].lower()  # is case insensitive
+        header = self._get_header_str()
+        parser = ArffParser()
+        parser.parse(header)
+        self._relation_name = parser.relation_name
+        self._index_data_start = parser.data_start
+        self._attributes = parser.attributes
 
-                    # @relation
-                    if identifier == self.RELATION and len(values) > 1:
-                        self._relation_name = values[self.NAME]
-
-                    # @attribute
-                    elif identifier == self.ATTRIBUTE:
-                        attr_type = values[self.TYPE].lower()  # is case insensitive
-
-                        kwargs = {}
-                        if attr_type == self.NUMERIC:
-                            cls = AttrScaleNumeric
-                        elif attr_type == self.STRING:
-                            cls = AttrScaleString
-                        elif attr_type == self.DATE:
-                            cls = AttrScaleDate
-                            if len(values) == 4:
-                                kwargs["date_format"] = (values[self.FORMAT])
-                        else:
-                            cls = AttrScaleEnum
-
-                        new_attr = cls(attr_index, values[self.NAME], **kwargs)
-                        self._attributes.append(new_attr)
-                        attr_index += 1
-                        attrs_names.append(values[self.NAME])
-
-                    # @data
-                    elif identifier == self.DATA:
-                        self._index_data_start = i + 1
-                        break
-            self._str_attrs = self.separator.join(attrs_names)
+    def _get_header_str(self):
+        with open(self.source, 'r') as f:
+            header_to_parse = ''
+            for line in f:
+                header_to_parse += line
+                if line.strip() == '@data':
+                    break
+        return header_to_parse
 
 
 class DataCsv(Data):
@@ -290,7 +266,6 @@ class DataCsv(Data):
             line = self._get_first_line(self.source)
             str_values = self.ss_str(line, self.separator)
             self._attr_count = len(str_values)
-            # self._str_attrs = self._separator.join([str(x) for x in range(self._attr_count)])
             self._attributes = [Attribute(i, 'attr_' + str(i)) for i in range(self._attr_count)]
 
     def _get_first_line(self, source):
@@ -336,8 +311,7 @@ class DataData(Data):
 
     def get_header_info(self):
         """
-        This method must set _attributes(obejcts) and
-        _str_attrs(coma seperated) names of attributes (this is used for scaling)
+        This method must set _attributes(obejcts)
         """
         with open(self._get_name_file(self._source), 'r') as names:
             i = 0
@@ -367,8 +341,6 @@ class DataData(Data):
             # append class as last attribute
             attr_names.append(self.CLASS)
             self._attributes.append(AttrScaleEnum(i, self.CLASS))
-            # set str_attrs slot
-            self._str_attrs = self.separator.join(attr_names)
 
     def _get_class_occur(self):
         occur = []
