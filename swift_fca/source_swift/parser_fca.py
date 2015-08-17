@@ -121,6 +121,43 @@ class ArffParser(Parser):
     def data_start(self):
         return self._data_start
 
+    def parse(self, header):
+        comment = Suppress(Literal("%") + restOfLine)
+        quoted = quotedString.copy().setParseAction(removeQuotes)
+        string = quoted | Word(printables,  excludeChars='{},%')
+        relation = Suppress(CaselessLiteral("@relation")) + Optional(string, default='default_name')('rel_name')
+        relation_part = ZeroOrMore(comment) + relation + ZeroOrMore(comment)
+        nominal = (Suppress(Literal("{")) +
+                   Group(delimitedList(string, delim=self._separator)) + Suppress(Literal("}"))).setParseAction(lambda t: self.ENUM)
+        date = CaselessLiteral("date") + Optional(CharsNotIn("{},\n"))("next_arg").setParseAction(self._adapt_date_format)
+        attributes_part = Forward()
+        relational = CaselessLiteral("relational") + attributes_part + Suppress(CaselessLiteral("@end")) + string
+        attr_type = (CaselessLiteral("numeric") | CaselessLiteral("string") | nominal | date | relational)("attr_type")
+        attribute = Suppress(CaselessLiteral("@attribute")) + (string.copy())("attr_name") + attr_type
+        attribute_line = comment | attribute
+        attributes_part << (Group(OneOrMore(attribute_line)))("children")
+        data_part = (CaselessLiteral("@data"))("data_start").setParseAction(lambda s, p, k: (lineno(p, s)))
+        arff_header = relation_part + attributes_part + data_part
+        attribute.setParseAction(self._create_attribute)
+        result = arff_header.parseString(header)
+
+        self._relation_name = result.rel_name
+        self._find_relational(result.children)
+        self._linearize_attrs(result.children)
+        self._data_start = result.data_start
+        self._index = 0
+
+    def parse_line(self, line):
+        self._index = 0
+        return self._rel_delim_list_parser.parseString(line).asList()
+
+    def show_result(self):
+        """Method only for testing"""
+        print(self.relation_name)
+        print(self.data_start)
+        for a in self._attributes:
+            print(a.name, a.index)
+
     def _create_attribute(self, tokens):
         kwargs = tokens.get('next_arg', defaultValue={})
         attr = self.ATTR_CLASSES[tokens.attr_type](self._index, tokens.attr_name, **kwargs)
@@ -152,32 +189,6 @@ class ArffParser(Parser):
             if attr.has_children():
                 self._rel_occur.append(i)
 
-    def parse(self, header):
-        comment = Suppress(Literal("%") + restOfLine)
-        quoted = quotedString.copy().setParseAction(removeQuotes)
-        string = quoted | Word(printables,  excludeChars='{},%')
-        relation = Suppress(CaselessLiteral("@relation")) + Optional(string, default='default_name')('rel_name')
-        relation_part = ZeroOrMore(comment) + relation + ZeroOrMore(comment)
-        nominal = (Suppress(Literal("{")) +
-                   Group(delimitedList(string, delim=self._separator)) + Suppress(Literal("}"))).setParseAction(lambda t: self.ENUM)
-        date = CaselessLiteral("date") + Optional(CharsNotIn("{},\n"))("next_arg").setParseAction(self._adapt_date_format)
-        attributes_part = Forward()
-        relational = CaselessLiteral("relational") + attributes_part + Suppress(CaselessLiteral("@end")) + string
-        attr_type = (CaselessLiteral("numeric") | CaselessLiteral("string") | nominal | date | relational)("attr_type")
-        attribute = Suppress(CaselessLiteral("@attribute")) + (string.copy())("attr_name") + attr_type
-        attribute_line = comment | attribute
-        attributes_part << (Group(OneOrMore(attribute_line)))("children")
-        data_part = (CaselessLiteral("@data"))("data_start").setParseAction(lambda s, p, k: (lineno(p, s)))
-        arff_header = relation_part + attributes_part + data_part
-        attribute.setParseAction(self._create_attribute)
-        result = arff_header.parseString(header)
-
-        self._relation_name = result.rel_name
-        self._find_relational(result.children)
-        self._linearize_attrs(result.children)
-        self._data_start = result.data_start
-        self._index = 0
-
     def _parse_rel(self, value, sep):
         if self._index in self._rel_occur:
             rel = self._delim_list_parser.parseString(str(value))
@@ -185,10 +196,6 @@ class ArffParser(Parser):
 
     def _inc_index(self):
         self._index += 1
-
-    def parse_line(self, line):
-        self._index = 0
-        return self._rel_delim_list_parser.parseString(line).asList()
 
     def _delim_list(self, sep):
         quoted = quotedString.copy()
@@ -203,10 +210,3 @@ class ArffParser(Parser):
         value.setParseAction(self._inc_index)
         parser = delimitedList(value, delim=sep)
         return parser
-
-    def show_result(self):
-        """Method only for testing"""
-        print(self.relation_name)
-        print(self.data_start)
-        for a in self._attributes:
-            print(a.name, a.index)
