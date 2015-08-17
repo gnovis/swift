@@ -71,7 +71,10 @@ class Browser(ManagerFca):
             if line == END_FILE:
                 break
             else:
-                to_display.append(self._data.prepare_line(line))
+                prepared_line = self._data.prepare_line(line)
+                if not prepared_line:  # line is comment
+                    continue
+                to_display.append(prepared_line)
         return to_display
 
     def close_file(self):
@@ -131,6 +134,8 @@ class Convertor(ManagerFca):
             Data.skip_lines(self._old_data.index_data_start, f)
             for i, line in enumerate(f):
                 prepared_line = self._old_data.prepare_line(line)
+                if not prepared_line:  # line is comment
+                    continue
                 if self._scaling:
                     self._new_data.write_data_scale(prepared_line,
                                                     target_file)

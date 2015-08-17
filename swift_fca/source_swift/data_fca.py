@@ -100,6 +100,8 @@ class Data:
             for i, line in enumerate(f):
                 self._obj_count += 1
                 str_values = self.prepare_line(line)
+                if not str_values:  # current line is comment
+                    continue
                 for i, attr in enumerate(self._attributes):
                     attr.update(str_values[i], self._none_val)
                 if manager:
@@ -111,6 +113,7 @@ class Data:
         pass
 
     def prepare_line(self, line):
+        """If return empty list -> line is comment"""
         return self.ss_str(line, self.separator)
 
     def write_line_to_file(self, line, target_file, separator):

@@ -31,6 +31,7 @@ hi,        overcast, 83, "86, 86, 86, 86, hi        ", FALSE, yes, 1, 2001-04-03
 hi10ii,    ?,        65, "70, 70, 70, 70, hi10ii    ", TRUE,  no,  0, 2001-04-03
 goood,     overcast, 64, "65, 65, 65, 65, goood     ", TRUE,  yes, 1, 2001-04-03
 evening,   sunny,    72, "95, 95, 95, 95, evening   ", FALSE, no,  0, 2001-04-03
+% Comment in data section
 helllllo,  sunny,    69, "70, 70, 70, 70, helllllo  ", FALSE, yes, 1, 2001-04-03
 lll9mon,   rainy,    75, "80, 80, 80, 80, lll9mon   ", FALSE, yes, 1, 2001-04-03
 loveve,    sunny,    75, "70, 70, 70, 70, loveve    ", TRUE,  yes, 1, 2001-04-03

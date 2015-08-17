@@ -177,7 +177,7 @@ class ArffParser(Parser):
         return self._data_start
 
     def parse(self, header):
-        comment = Suppress(Literal("%") + restOfLine)
+        comment = self._comment()
         quoted = quotedString.copy().setParseAction(removeQuotes)
         string = quoted | Word(printables,  excludeChars='{},%')
         relation = Suppress(CaselessLiteral("@relation")) + Optional(string, default='default_name')('rel_name')
@@ -267,5 +267,9 @@ class ArffParser(Parser):
         quoted.setParseAction(lambda s, p, t: self._parse_rel(removeQuotes(s, p, t), sep))
         value = quoted | Word(printables,  excludeChars=('%' + sep))
         value.setParseAction(self._inc_index)
-        parser = delimitedList(value, delim=sep)
+        comment = self._comment()
+        parser = comment | delimitedList(value, delim=sep)
         return parser
+
+    def _comment(self):
+        return Suppress(Literal("%") + restOfLine)
