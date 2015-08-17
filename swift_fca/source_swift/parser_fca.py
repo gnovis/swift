@@ -103,12 +103,15 @@ class ArgsParser(Parser):
 
 class ArffParser(Parser):
 
-    def __init__(self):
+    def __init__(self, separator):
         super().__init__()
         self._relation_name = ''
         self._data_start = 0
+        self._separator = separator
         # first level relational attribute occurrences
         self._rel_occur = []
+        self._delim_list_parser = self._delim_list(separator)
+        self._rel_delim_list_parser = self._relational_delim_list(separator)
 
     @property
     def relation_name(self):
@@ -156,7 +159,7 @@ class ArffParser(Parser):
         relation = Suppress(CaselessLiteral("@relation")) + Optional(string, default='default_name')('rel_name')
         relation_part = ZeroOrMore(comment) + relation + ZeroOrMore(comment)
         nominal = (Suppress(Literal("{")) +
-                   Group(delimitedList(string)) + Suppress(Literal("}"))).setParseAction(lambda t: self.ENUM)
+                   Group(delimitedList(string, delim=self._separator)) + Suppress(Literal("}"))).setParseAction(lambda t: self.ENUM)
         date = CaselessLiteral("date") + Optional(CharsNotIn("{},\n"))("next_arg").setParseAction(self._adapt_date_format)
         attributes_part = Forward()
         relational = CaselessLiteral("relational") + attributes_part + Suppress(CaselessLiteral("@end")) + string
@@ -177,22 +180,29 @@ class ArffParser(Parser):
 
     def _parse_rel(self, value, sep):
         if self._index in self._rel_occur:
-            rel = self.parse_line(str(value), sep, False)
+            rel = self._delim_list_parser.parseString(str(value))
             return rel
 
     def _inc_index(self):
         self._index += 1
 
-    def parse_line(self, line, sep=',', parse_quoted=True):
+    def parse_line(self, line):
+        self._index = 0
+        return self._rel_delim_list_parser.parseString(line).asList()
+
+    def _delim_list(self, sep):
         quoted = quotedString.copy()
-        if parse_quoted:
-            quoted.setParseAction(lambda s, p, t: self._parse_rel(removeQuotes(s, p, t), sep))
+        value = quoted | Word(printables,  excludeChars=('%' + sep))
+        parser = delimitedList(value, delim=sep)
+        return parser
+
+    def _relational_delim_list(self, sep):
+        quoted = quotedString.copy()
+        quoted.setParseAction(lambda s, p, t: self._parse_rel(removeQuotes(s, p, t), sep))
         value = quoted | Word(printables,  excludeChars=('%' + sep))
         value.setParseAction(self._inc_index)
-        values = delimitedList(value, delim=sep)
-        result = values.parseString(line).asList()
-        self._index = 0
-        return result
+        parser = delimitedList(value, delim=sep)
+        return parser
 
     def show_result(self):
         """Method only for testing"""

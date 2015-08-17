@@ -194,7 +194,7 @@ class DataArff(Data):
                  none_val=Data.NONE_VAL):
         super().__init__(source, str_attrs, str_objects,
                          separator, relation_name, none_val)
-        self._parser = ArffParser()
+        self._parser = ArffParser(separator)
 
     NUMERIC = "numeric"
     STRING = "string"
@@ -230,7 +230,7 @@ class DataArff(Data):
         self._attributes = self._parser.attributes
 
     def prepare_line(self, line):
-        return self._parser.parse_line(line, sep=self.separator)
+        return self._parser.parse_line(line)
 
     def _get_header_str(self):
         with open(self.source, 'r') as f:
