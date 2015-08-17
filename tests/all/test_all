@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# run test script for all formats
+echo Tests for all formats are running...
+echo ""
+for folder in ./*; do
+	if [ -d "$folder" ]; then
+		 cd $folder
+		./test
+		printf "done...\n\n"
+		cd ../
+	fi;
+done
