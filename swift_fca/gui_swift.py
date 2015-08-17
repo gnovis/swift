@@ -315,7 +315,7 @@ class GuiSwift(QtGui.QWidget):
                     printer.read_info()
                     worker.emit(SIGNAL('file_readed'), printer)
 
-                bg = BgWorker(bg_func, self)
+                bg = BgWorker(bg_func)
                 bg.finished.connect(lambda: worker_finished(bg))
                 bg.connect(bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
                 bg.start()
@@ -381,7 +381,7 @@ class GuiSwift(QtGui.QWidget):
                     convertor.convert()
                     worker.emit(SIGNAL('file_converted'), convertor)
 
-                bg = BgWorker(bg_func, self)
+                bg = BgWorker(bg_func)
                 bg.finished.connect(lambda: worker_finished(bg))
                 bg.connect(bg, SIGNAL('file_converted'), display_data, QtCore.Qt.QueuedConnection)
                 bg.start()
@@ -400,7 +400,7 @@ class GuiSwift(QtGui.QWidget):
                     convertor.read_info()
                     worker.emit(SIGNAL('file_readed'), convertor)
 
-                bg = BgWorker(bg_func, self)
+                bg = BgWorker(bg_func)
                 bg.finished.connect(lambda: worker_finished(bg))
                 bg.connect(bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
                 bg.start()
@@ -479,7 +479,7 @@ class GuiSwift(QtGui.QWidget):
                 browser.read_info()
                 worker.emit(SIGNAL('file_readed'), browser, worker)
 
-            bg = BgWorker(bg_func, self)
+            bg = BgWorker(bg_func)
             bg.finished.connect(lambda: worker_finished(bg))
             bg.connect(bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
             bg.start()
@@ -782,7 +782,3 @@ def main():
     app = QtGui.QApplication(sys.argv)
     sw = GuiSwift()  # NOQA
     sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    main()

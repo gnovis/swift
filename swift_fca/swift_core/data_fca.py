@@ -97,11 +97,11 @@ class Data:
         self._attr_count = len(self._attributes)
         with open(self.source, 'r') as f:
             Data.skip_lines(self.index_data_start, f)
-            for i, line in enumerate(f):
-                self._obj_count += 1
+            for index, line in enumerate(f):
                 str_values = self.prepare_line(line)
                 if not str_values:  # current line is comment
                     continue
+                self._obj_count += 1
                 for i, attr in enumerate(self._attributes):
                     attr.update(str_values[i], self._none_val)
                 if manager:

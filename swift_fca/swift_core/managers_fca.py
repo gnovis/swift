@@ -149,8 +149,8 @@ class Convertor(ManagerFca):
 
 
 class BgWorker(QtCore.QThread):
-    def __init__(self, function, mw):
-        super(BgWorker, self).__init__(mw)
+    def __init__(self, function, parent=None):
+        QtCore.QThread.__init__(self, parent)
         self.function = function
         self.errors = []
 
