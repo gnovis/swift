@@ -15,7 +15,7 @@ class Data:
 
     LEFT_BRACKET = '['
     RIGHT_BRACKET = ']'
-    NONE_VAL = ""
+    NONE_VAL = "?"
 
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
@@ -99,7 +99,7 @@ class Data:
             Data.skip_lines(self.index_data_start, f)
             for i, line in enumerate(f):
                 self._obj_count += 1
-                str_values = self.ss_str(line, self.separator)
+                str_values = self.prepare_line(line)
                 for i, attr in enumerate(self._attributes):
                     attr.update(str_values[i], self._none_val)
                 if manager:
@@ -188,11 +188,13 @@ class DataArff(Data):
 
     """
 
-    PART_SYM = '@'
-    IDENTIFIER = 0
-    NAME = 1
-    TYPE = 2
-    FORMAT = 3
+    def __init__(self, source,
+                 str_attrs=None, str_objects=None,
+                 separator=',', relation_name='',
+                 none_val=Data.NONE_VAL):
+        super().__init__(source, str_attrs, str_objects,
+                         separator, relation_name, none_val)
+        self._parser = ArffParser()
 
     NUMERIC = "numeric"
     STRING = "string"
@@ -222,11 +224,13 @@ class DataArff(Data):
 
     def get_header_info(self):
         header = self._get_header_str()
-        parser = ArffParser()
-        parser.parse(header)
-        self._relation_name = parser.relation_name
-        self._index_data_start = parser.data_start
-        self._attributes = parser.attributes
+        self._parser.parse(header)
+        self._relation_name = self._parser.relation_name
+        self._index_data_start = self._parser.data_start
+        self._attributes = self._parser.attributes
+
+    def prepare_line(self, line):
+        return self._parser.parse_line(line, sep=self.separator)
 
     def _get_header_str(self):
         with open(self.source, 'r') as f:
@@ -279,7 +283,7 @@ class DataData(Data):
 
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
-                 separator=',', relation_name='', classes="", none_val='?'):
+                 separator=',', relation_name='', classes="", none_val=Data.NONE_VAL):
         super().__init__(source, str_attrs, str_objects,
                          separator, relation_name, none_val)
         self._classes = list(reversed(self.ss_str(classes, self._separator)))

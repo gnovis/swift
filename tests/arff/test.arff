@@ -1,83 +1,87 @@
 % The weather data
 @relation weather
 
-@attribute note         STRING
-@attribute outlook      { sunny, overcast, rainy }
+@attribute note STRING
+@attribute outlook { sunny, overcast, rainy }
 @attribute temperature NUMERIC
-@ATTRIBUTE humidity numeric
+% Relational data can be access with dot notation
+% e.g: humidity.relative.day
+@attribute humidity relational
+    @attribute relative relational
+        @attribute day numeric
+        @attribute night numeric
+    @end relative
+    @attribute absolute relational
+        @attribute day numeric
+        @attribute nigth numeric
+    @end absolute
+    @attribute report string
+@end humidity
 @attribute windy { TRUE, FALSE }
-@attribute play { yes, no }
-@attribute order { 1, 0 }
-@attribute birthday DATE %Y-%m-%d
+@attribute fog { yes, no }
+@attribute fog_bival { 1, 0 }
+@attribute day DATE %Y-%m-%d
 
 @data
-hello,     sunny,    85, 85, FALSE, no,  1, 2001-04-03
-hellllllo, sunny,    80, ?, TRUE,  no,   0, 2001-04-03
-hi,        overcast, 83, 86, FALSE, yes, 1, 2001-04-03
-hello hi,  rainy,    70, 96, FALSE, yes, 0, 2001-04-03
-hi hello,  rainy,    68, 80, FALSE, yes, 1, 2001-04-03
-hi10ii,    ?,        65, 70, TRUE,  no,  0, 2001-04-03
-goood,     overcast, 64, 65, TRUE,  yes, 1, 2001-04-03
-evening,   sunny,    72, 95, FALSE, no,  0, 2001-04-03
-helllllo,  sunny,    69, 70, FALSE, yes, 1, 2001-04-03
-lll9mon,   rainy,    75, 80, FALSE, yes, 1, 2001-04-03
-loveve,    sunny,    75, 70, TRUE,  yes, 1, 2001-04-03
-forest,    overcast, 72, 90, TRUE,  yes, 1, 2001-04-03
-helllll,   overcast, 81, 75, FALSE, yes, 1, 2001-04-03
-holll2,    rainy,    71, 91, TRUE,  no,  1, 2001-04-03
-hello,     sunny,    85, 85, FALSE, no,  1, 2001-04-03
-hellllllo, sunny,    80, ?, TRUE,  no,   0, 2001-04-03
-hi,        overcast, 83, 86, FALSE, yes, 1, 2001-04-03
-hello hi,  rainy,    70, 96, FALSE, yes, 0, 2001-04-03
-hi hello,  rainy,    68, 80, FALSE, yes, 1, 2001-04-03
-hi10ii,    ?,        65, 70, TRUE,  no,  0, 2001-04-03
-goood,     overcast, 64, 65, TRUE,  yes, 1, 2001-04-03
-evening,   sunny,    72, 95, FALSE, no,  0, 2001-04-03
-helllllo,  sunny,    69, 70, FALSE, yes, 1, 2001-04-03
-lll9mon,   rainy,    75, 80, FALSE, yes, 1, 2001-04-03
-loveve,    sunny,    75, 70, TRUE,  yes, 1, 1001-04-03
-forest,    overcast, 72, 90, TRUE,  yes, 1, 1001-04-03
-helllll,   overcast, 81, 75, FALSE, yes, 1, 1001-04-03
-holll2,    rainy,    71, 91, TRUE,  no,  1, 1001-04-03
-hello,     sunny,    85, 85, FALSE, no,  1, 1001-04-03
-hellllllo, sunny,    80, ?, TRUE,  no,   0, 1001-04-03
-hi,        overcast, 83, 86, FALSE, yes, 1, 1001-04-03
-hello hi,  rainy,    70, 96, FALSE, yes, 0, 1001-04-03
-hi hello,  rainy,    68, 80, FALSE, yes, 1, 1001-04-03
-hi10ii,    ?,        65, 70, TRUE,  no,  0, 1001-04-03
-goood,     overcast, 64, 65, TRUE,  yes, 1, 1001-04-03
-evening,   sunny,    72, 95, FALSE, no,  0, 1001-04-03
-helllllo,  sunny,    69, 70, FALSE, yes, 1, 1001-04-03
-lll9mon,   rainy,    75, 80, FALSE, yes, 1, 1001-04-03
-loveve,    sunny,    75, 70, TRUE,  yes, 1, 1001-04-03
-forest,    overcast, 72, 90, TRUE,  yes, 1, 1001-04-03
-helllll,   overcast, 81, 75, FALSE, yes, 1, 1001-04-03
-holll2,    rainy,    71, 91, TRUE,  no,  1, 1001-04-03
-hello,     sunny,    85, 85, FALSE, no,  1, 1001-04-03
-hellllllo, sunny,    80, ?, TRUE,  no,   0, 1001-04-03
-hi,        overcast, 83, 86, FALSE, yes, 1, 1001-04-03
-hello hi,  rainy,    70, 96, FALSE, yes, 0, 1001-04-03
-hi hello,  rainy,    68, 80, FALSE, yes, 1, 1001-04-03
-hi10ii,    ?,        65, 70, TRUE,  no,  0, 1001-04-03
-goood,     overcast, 64, 65, TRUE,  yes, 1, 1001-04-03
-evening,   sunny,    72, 95, FALSE, no,  0, 1001-04-03
-helllllo,  sunny,    69, 70, FALSE, yes, 1, 1001-04-03
-lll9mon,   rainy,    75, 80, FALSE, yes, 1, 1001-04-03
-loveve,    sunny,    75, 70, TRUE,  yes, 1, 1001-04-03
-forest,    overcast, 72, 90, TRUE,  yes, 1, 1001-04-03
-helllll,   overcast, 81, 75, FALSE, yes, 1, 1001-04-03
-holll2,    rainy,    71, 91, TRUE,  no,  1, 1001-04-03
-hello,     sunny,    85, 85, FALSE, no,  1, 1001-04-03
-hellllllo, sunny,    80, ?, TRUE,  no,   0, 1001-04-03
-hi,        overcast, 83, 86, FALSE, yes, 1, 1001-04-03
-hello hi,  rainy,    70, 96, FALSE, yes, 0, 1001-04-03
-hi hello,  rainy,    68, 80, FALSE, yes, 1, 1001-04-03
-hi10ii,    ?,        65, 70, TRUE,  no,  0, 1001-04-03
-goood,     overcast, 64, 65, TRUE,  yes, 1, 1001-04-03
-evening,   sunny,    72, 95, FALSE, no,  0, 1001-04-03
-helllllo,  sunny,    69, 70, FALSE, yes, 1, 1001-04-03
-lll9mon,   rainy,    75, 80, FALSE, yes, 1, 1001-04-03
-loveve,    sunny,    75, 70, TRUE,  yes, 1, 1001-04-03
-forest,    overcast, 72, 90, TRUE,  yes, 1, 1001-04-03
-helllll,   overcast, 81, 75, FALSE, yes, 1, 1001-04-03
-holll2,    rainy,    71, 91, TRUE,  no,  1, 1001-04-03
+hello,     sunny,    85, "85, 85, 85, 85", hello,      FALSE, no,  1, 2001-04-03
+hellllllo, sunny,    80, "?,  ?,  ?,  ?" ,  hellllllo, TRUE,  no,   0, 2001-04-03
+hi,        overcast, 83, "86, 86, 86, 86", hi,         FALSE, yes, 1, 2001-04-03
+'hello hi',  rainy,    70, "96, 96, 96, 96", 'hello hi',   FALSE, yes, 0, 2001-04-03
+'hi hello',  rainy,    68, "80, 80, 80, 80", 'hi hello',   FALSE, yes, 1, 2001-04-03
+hi10ii,    ?,        65, "70, 70, 70, 70", hi10ii,     TRUE,  no,  0, 2001-04-03
+goood,     overcast, 64, "65, 65, 65, 65", goood,      TRUE,  yes, 1, 2001-04-03
+evening,   sunny,    72, "95, 95, 95, 95", evening,    FALSE, no,  0, 2001-04-03
+helllllo,  sunny,    69, "70, 70, 70, 70", helllllo,   FALSE, yes, 1, 2001-04-03
+lll9mon,   rainy,    75, "80, 80, 80, 80", lll9mon,    FALSE, yes, 1, 2001-04-03
+loveve,    sunny,    75, "70, 70, 70, 70", loveve,     TRUE,  yes, 1, 2001-04-03
+forest,    overcast, 72, "90, 90, 90, 90", forest,     TRUE,  yes, 1, 2001-04-03
+helllll,   overcast, 81, "75, 75, 75, 75", helllll,    FALSE, yes, 1, 2001-04-03
+holll2,    rainy,    71, "91, 91, 91, 91", holll2,     TRUE,  no,  1, 2001-04-03
+hello,     sunny,    85, "85, 85, 85, 85", hello,      FALSE, no,  1, 2001-04-03
+hellllllo, sunny,    80, "?,  ?,  ?,  ?" ,  hellllllo, TRUE,  no,   0, 2001-04-03
+hi,        overcast, 83, "86, 86, 86, 86", hi,         FALSE, yes, 1, 2001-04-03
+hi10ii,    ?,        65, "70, 70, 70, 70", hi10ii,     TRUE,  no,  0, 2001-04-03
+goood,     overcast, 64, "65, 65, 65, 65", goood,      TRUE,  yes, 1, 2001-04-03
+evening,   sunny,    72, "95, 95, 95, 95", evening,    FALSE, no,  0, 2001-04-03
+helllllo,  sunny,    69, "70, 70, 70, 70", helllllo,   FALSE, yes, 1, 2001-04-03
+lll9mon,   rainy,    75, "80, 80, 80, 80", lll9mon,    FALSE, yes, 1, 2001-04-03
+loveve,    sunny,    75, "70, 70, 70, 70", loveve,     TRUE,  yes, 1, 1001-04-03
+forest,    overcast, 72, "90, 90, 90, 90", forest,     TRUE,  yes, 1, 1001-04-03
+helllll,   overcast, 81, "75, 75, 75, 75", helllll,    FALSE, yes, 1, 1001-04-03
+holll2,    rainy,    71, "91, 91, 91, 91", holll2,     TRUE,  no,  1, 1001-04-03
+hello,     sunny,    85, "85, 85, 85, 85", hello,      FALSE, no,  1, 1001-04-03
+hellllllo, sunny,    80, "?,  ?,  ?,  ?" ,  hellllllo, TRUE,  no,   0, 1001-04-03
+hi,        overcast, 83, "86, 86, 86, 86", hi,         FALSE, yes, 1, 1001-04-03
+hi10ii,    ?,        65, "70, 70, 70, 70", hi10ii,     TRUE,  no,  0, 1001-04-03
+goood,     overcast, 64, "65, 65, 65, 65", goood,      TRUE,  yes, 1, 1001-04-03
+evening,   sunny,    72, "95, 95, 95, 95", evening,    FALSE, no,  0, 1001-04-03
+helllllo,  sunny,    69, "70, 70, 70, 70", helllllo,   FALSE, yes, 1, 1001-04-03
+lll9mon,   rainy,    75, "80, 80, 80, 80", lll9mon,    FALSE, yes, 1, 1001-04-03
+loveve,    sunny,    75, "70, 70, 70, 70", loveve,     TRUE,  yes, 1, 1001-04-03
+forest,    overcast, 72, "90, 90, 90, 90", forest,     TRUE,  yes, 1, 1001-04-03
+helllll,   overcast, 81, "75, 75, 75, 75", helllll,    FALSE, yes, 1, 1001-04-03
+holll2,    rainy,    71, "91, 91, 91, 91", holll2,     TRUE,  no,  1, 1001-04-03
+hello,     sunny,    85, "85, 85, 85, 85", hello,      FALSE, no,  1, 1001-04-03
+hellllllo, sunny,    80, "?,  ?,  ?,  ?" ,  hellllllo, TRUE,  no,   0, 1001-04-03
+hi,        overcast, 83, "86, 86, 86, 86", hi,         FALSE, yes, 1, 1001-04-03
+hi10ii,    ?,        65, "70, 70, 70, 70", hi10ii,     TRUE,  no,  0, 1001-04-03
+goood,     overcast, 64, "65, 65, 65, 65", goood,      TRUE,  yes, 1, 1001-04-03
+evening,   sunny,    72, "95, 95, 95, 95", evening,    FALSE, no,  0, 1001-04-03
+helllllo,  sunny,    69, "70, 70, 70, 70", helllllo,   FALSE, yes, 1, 1001-04-03
+lll9mon,   rainy,    75, "80, 80, 80, 80", lll9mon,    FALSE, yes, 1, 1001-04-03
+loveve,    sunny,    75, "70, 70, 70, 70", loveve,     TRUE,  yes, 1, 1001-04-03
+forest,    overcast, 72, "90, 90, 90, 90", forest,     TRUE,  yes, 1, 1001-04-03
+helllll,   overcast, 81, "75, 75, 75, 75", helllll,    FALSE, yes, 1, 1001-04-03
+holll2,    rainy,    71, "91, 91, 91, 91", holll2,     TRUE,  no,  1, 1001-04-03
+hello,     sunny,    85, "85, 85, 85, 85", hello,      FALSE, no,  1, 1001-04-03
+hellllllo, sunny,    80, "?,  ?,  ?,  ?" ,  hellllllo, TRUE,  no,   0, 1001-04-03
+hi,        overcast, 83, "86, 86, 86, 86", hi,         FALSE, yes, 1, 1001-04-03
+hi10ii,    ?,        65, "70, 70, 70, 70", hi10ii,     TRUE,  no,  0, 1001-04-03
+goood,     overcast, 64, "65, 65, 65, 65", goood,      TRUE,  yes, 1, 1001-04-03
+evening,   sunny,    72, "95, 95, 95, 95", evening,    FALSE, no,  0, 1001-04-03
+helllllo,  sunny,    69, "70, 70, 70, 70", helllllo,   FALSE, yes, 1, 1001-04-03
+lll9mon,   rainy,    75, "80, 80, 80, 80", lll9mon,    FALSE, yes, 1, 1001-04-03
+loveve,    sunny,    75, "70, 70, 70, 70", loveve,     TRUE,  yes, 1, 1001-04-03
+forest,    overcast, 72, "90, 90, 90, 90", forest,     TRUE,  yes, 1, 1001-04-03
+helllll,   overcast, 81, "75, 75, 75, 75", helllll,    FALSE, yes, 1, 1001-04-03
+holll2,    rainy,    71, "91, 91, 91, 91", holll2,     TRUE,  no,  1, 1001-04-03

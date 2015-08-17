@@ -25,7 +25,7 @@ class Parser():
                     'relational': AttrScale}
 
     def __init__(self):
-        self.count = 0
+        self._index = 0
         self._attributes = []
 
     @property
@@ -41,7 +41,7 @@ class ArgsParser(Parser):
     TYPE = 0
     NEXT_ARGS = 1
 
-    def create_attribute(self, tokens):
+    def _create_attribute(self, tokens):
         old_name = tokens[self.OLD_NAME]
         new_name = tokens[self.NEW_NAME]
         attr_type = tokens[self.ARGS][self.TYPE]
@@ -49,9 +49,9 @@ class ArgsParser(Parser):
         next_args['attr_pattern'] = old_name
 
         cls = self.ATTR_CLASSES[attr_type]
-        attribute = cls(self.count, new_name, **next_args)
+        attribute = cls(self._index, new_name, **next_args)
         self._attributes.append(attribute)
-        self.count += 1
+        self._index += 1
 
     def parse(self, str_args):
         # Grammar definition
@@ -71,7 +71,7 @@ class ArgsParser(Parser):
         GEN = Empty()
         NO_SCALE = NO_SCALE_NUM | NO_SCALE_DATE | NO_SCALE_ENUM | NO_SCALE_STR
         PARAMS = Or(STR ^ ENUM ^ DATE ^ NUM ^ GEN ^ NO_SCALE)
-        NAME = Word(alphanums + '_-')
+        NAME = Word(alphanums + '_-.')
         VAR_FIRST_PART = Optional(NAME + Suppress('='), default='') + NAME
         VAR_SECOND_PART = Suppress('[') + Group(PARAMS) + Suppress(']')
         VAR = VAR_FIRST_PART + VAR_SECOND_PART
@@ -95,7 +95,7 @@ class ArgsParser(Parser):
         # Auxiliary parse actions
         QUOTED_STR.setParseAction(removeQuotes)
         VAR_FIRST_PART.setParseAction(lambda tokens: [tokens[1]]*2 if tokens[0] == '' else [tokens[0], tokens[1]])
-        VAR.setParseAction(self.create_attribute)
+        VAR.setParseAction(self._create_attribute)
 
         # Run parser
         parser.parseString(str_args)
@@ -107,6 +107,8 @@ class ArffParser(Parser):
         super().__init__()
         self._relation_name = ''
         self._data_start = 0
+        # first level relational attribute occurrences
+        self._rel_occur = []
 
     @property
     def relation_name(self):
@@ -116,31 +118,36 @@ class ArffParser(Parser):
     def data_start(self):
         return self._data_start
 
-    def create_attribute(self, tokens):
+    def _create_attribute(self, tokens):
         kwargs = tokens.get('next_arg', defaultValue={})
-        attr = self.ATTR_CLASSES[tokens.attr_type](self.count, tokens.attr_name, **kwargs)
+        attr = self.ATTR_CLASSES[tokens.attr_type](self._index, tokens.attr_name, **kwargs)
         if tokens.attr_type == "relational":
             attr.children = tokens.children
         else:
-            self.count += 1
+            self._index += 1
         return attr
 
-    def adapt_date_format(self, tokens):
+    def _adapt_date_format(self, tokens):
         date_format = tokens.date_format.strip()
         if not date_format:
             date_format = '%Y-%m-%d'
         return {'date_format': date_format}
 
-    def linearize_attrs(self, attrs, parent_name=""):
+    def _linearize_attrs(self, attrs, parent_name=""):
         for attr in attrs:
             name = attr.name
             if parent_name:
                 name = ".".join([parent_name, name])
             attr.name = name
             if attr.has_children():
-                self.linearize_attrs(attr.children, name)
+                self._linearize_attrs(attr.children, name)
             else:
                 self._attributes.append(attr)
+
+    def _find_relational(self, attrs):
+        for i, attr in enumerate(attrs):
+            if attr.has_children():
+                self._rel_occur.append(i)
 
     def parse(self, header):
         comment = Suppress(Literal("%") + restOfLine)
@@ -150,7 +157,7 @@ class ArffParser(Parser):
         relation_part = ZeroOrMore(comment) + relation + ZeroOrMore(comment)
         nominal = (Suppress(Literal("{")) +
                    Group(delimitedList(string)) + Suppress(Literal("}"))).setParseAction(lambda t: self.ENUM)
-        date = CaselessLiteral("date") + Optional(CharsNotIn("{},\n"))("next_arg").setParseAction(self.adapt_date_format)
+        date = CaselessLiteral("date") + Optional(CharsNotIn("{},\n"))("next_arg").setParseAction(self._adapt_date_format)
         attributes_part = Forward()
         relational = CaselessLiteral("relational") + attributes_part + Suppress(CaselessLiteral("@end")) + string
         attr_type = (CaselessLiteral("numeric") | CaselessLiteral("string") | nominal | date | relational)("attr_type")
@@ -159,12 +166,33 @@ class ArffParser(Parser):
         attributes_part << (Group(OneOrMore(attribute_line)))("children")
         data_part = (CaselessLiteral("@data"))("data_start").setParseAction(lambda s, p, k: (lineno(p, s)))
         arff_header = relation_part + attributes_part + data_part
-        attribute.setParseAction(self.create_attribute)
+        attribute.setParseAction(self._create_attribute)
         result = arff_header.parseString(header)
 
         self._relation_name = result.rel_name
-        self.linearize_attrs(result.children)
+        self._find_relational(result.children)
+        self._linearize_attrs(result.children)
         self._data_start = result.data_start
+        self._index = 0
+
+    def _parse_rel(self, value, sep):
+        if self._index in self._rel_occur:
+            rel = self.parse_line(str(value), sep, False)
+            return rel
+
+    def _inc_index(self):
+        self._index += 1
+
+    def parse_line(self, line, sep=',', parse_quoted=True):
+        quoted = quotedString.copy()
+        if parse_quoted:
+            quoted.setParseAction(lambda s, p, t: self._parse_rel(removeQuotes(s, p, t), sep))
+        value = quoted | Word(printables,  excludeChars=('%' + sep))
+        value.setParseAction(self._inc_index)
+        values = delimitedList(value, delim=sep)
+        result = values.parseString(line).asList()
+        self._index = 0
+        return result
 
     def show_result(self):
         """Method only for testing"""

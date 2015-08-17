@@ -2,8 +2,12 @@ Sunday,Monday,Wednesday,Suterday,Theusday,Friday.
 note: discrete n.
 outlook: sunny,overcast,rainy.
 temperature: continuous.
-humidity: continuous.
+humidity.relative.day: continuous.
+humidity.relative.night: continuous.
+humidity.absolute.day: continuous.
+humidity.absolute.nigth: continuous.
+humidity.report: discrete n.
 windy: FALSE,TRUE.
-play: no,yes.
-order: 1,0.
-birthday: discrete n.
+fog: no,yes.
+fog_bival: 1,0.
+day: discrete n.

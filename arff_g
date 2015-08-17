@@ -1,6 +1,6 @@
 #!/bin/python3
 
-from pyparsing import (OneOrMore, Word, Forward, delimitedList, Literal, printables,
+from pyparsing import (OneOrMore, col, Word, Forward, delimitedList, Literal, printables,
                        restOfLine, CharsNotIn, Optional, Suppress, quotedString, removeQuotes,
                        ZeroOrMore, CaselessLiteral, Group, lineno)
 
@@ -90,7 +90,7 @@ attributes_part << (Group(OneOrMore(attribute_line)))("children")
 data_part = (CaselessLiteral("@data"))("data_start").setParseAction(lambda s, p, k: (lineno(p, s)))
 arff_header = relation_part + attributes_part + data_part
 attribute.setParseAction(parse_attribute)
-
+"""
 with open('ignore/ignore.g.arff', 'r') as f:
     header_to_parse = ''
     for line in f:
@@ -102,3 +102,31 @@ with open('ignore/ignore.g.arff', 'r') as f:
 print("Relation: ", result.rel_name)
 show_children(result.children)
 print(result.data_start)
+"""
+
+occur = [2, 4]
+
+index = [0]
+
+
+def parse_rel(value, sep):
+    if index[0] in occur:
+        rel = parse_line(str(value), sep, False)
+        print(rel)
+        return rel
+
+
+def inc(t):
+    index[0] += 1
+
+
+def parse_line(line, sep=',', parse_quoted=True):
+    quoted = quotedString.copy()
+    if parse_quoted:
+        quoted.setParseAction(lambda s, p, t: parse_rel(removeQuotes(s, p, t), sep))
+    value = quoted | Word(printables,  excludeChars=('%' + sep))
+    value.setParseAction(inc)
+    values = delimitedList(value, delim=sep)
+    return values.parseString(line).asList()
+
+print(parse_line("'tohle ne', jo, '1, 2, \"nejaky text\", 3', me, stve"))
