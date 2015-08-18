@@ -1,0 +1,38 @@
+#!/bin/python3
+
+from pyparsing import (OneOrMore, Combine, nums, col, Word, Forward, delimitedList, Literal, printables,
+                       restOfLine, CharsNotIn, Optional, Suppress, quotedString, removeQuotes,
+                       ZeroOrMore, CaselessLiteral, LineEnd, Group, lineno)
+
+"""
+<names> ::= <entry> | (<delimiter> <entry>)*
+<entry> ::= <classes> | <attribute> | <blank>
+<classes> ::= <string> | <string> "," <classes> | <comment>
+<attribute> ::= <string> ":" <type> <comment>? | <comment>
+<blank> ::= \s*
+<delimiter> ::= "." | "\n"
+<string> ::= [^|?,.\s]+
+<type> ::= "continuous" | "ignore"| <discrete> | <enum>
+<discrete> ::= "discrete" \d+
+<enum> ::= <string> | ("," <string>)*
+<comment> ::= "|".*
+
+"""
+
+
+def test(t):
+    print(t)
+
+string = Word(printables, excludeChars="|?,.:")
+comment = "|" + restOfLine
+delimiter = Suppress(".") | LineEnd()
+enum = Group(delimitedList(string))
+discrete = string + Word(nums)
+attr_type = Literal("continuous") | Literal("ignore") | discrete | enum
+attribute = string + Suppress(":") + attr_type
+classes = delimitedList(string)
+entry = attribute | classes
+entry.setParseAction(test)
+parser = OneOrMore(entry + Optional(delimiter))
+parser.ignore(comment)
+parser.parseFile('ignore/ignore.names', parseAll=True)

@@ -141,16 +141,16 @@ class ArffParser(Parser):
 
     <header> ::= <relation_part> <attributes_part> <data_part>
     <relation_part> ::= <comment_line>* <relation> "\n" <comment_line>*
-    <attributes_part> ::= (<attributes_line> "\n")+
-    <data_part> ::= "@data" "\n" (<data_line> "\n")*
+    <attributes_part> ::= <attribute_line> | ("\n" <attribute_line>)*
+    <data_part> ::= "@data" "\n" (<data_line> | ("\n" <data_line>)*)
     <data_line> ::= <comment> | <instance> | <blank>
     <instance> ::= <string> | ("," <string>)*
-    <attributes_line> ::= <comment> | <attribute> | <blank>
+    <attribute_line> ::= <comment> | <attribute> | <blank>
     <attribute> ::= "@attribute" <string> <type>
     <type> ::= "numeric" | "string" | <nominal> | <date> | <relational>
     <nominal> ::= "{" <string> | ("," <string>)* "}"
     <date> ::= 'date' <string>?
-    <relational> ::= "relational" "\n" <attributes_part> "@end" <string>
+    <relational> ::= "relational" "\n" <attribute_part> "@end" <string>
     <relation> ::= "@relation" <string>?
     <string> ::= [^%,{}]+ | "'" .+ "'"
     <blank> ::= ^$
