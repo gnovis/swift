@@ -712,6 +712,8 @@ class PBarDialog(QtGui.QProgressDialog):
         self.manager = manager
         self.setLabelText(label_text)
         self.setWindowTitle(title)
+        self.setMinimumWidth(450)
+        self.setMinimumHeight(120)
         self.setWindowModality(QtCore.Qt.WindowModal)
         self.canceled.connect(self.canceled_by_user)
         self.show()

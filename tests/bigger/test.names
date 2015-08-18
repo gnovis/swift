@@ -1,8 +1,0 @@
-man, woman. |classes (this is comment)
-age: continuous. | human ege
-eye-color: blue, red, green, brown. height: continuous. |more entries can be on single line
-weight: continuous.
-job: doctor, teacher, pilot, student.
-sport: ignore.
-vegan: discrete 2.
-work: true, false.
