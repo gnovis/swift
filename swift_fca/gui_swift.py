@@ -35,9 +35,6 @@ class GuiSwift(QtGui.QWidget):
         self.browser_source = None
         self.browser_target = None
 
-        self.convert_pbar = PBarDialogStandart(self, title="Convert Data", label_text="Converting, please wait.")
-        self.estimate_pbar = PBarDialogEstimate(self, title="Prepare Data", label_text="Preparing data, please wait.")
-
         self.initUI()
 
     @property
@@ -276,18 +273,14 @@ class GuiSwift(QtGui.QWidget):
         if self.table_view_target.verticalScrollBar().maximum() == value and self.browser_target:
             self.browse_data(self.browser_target, self.table_view_target)
 
-    def update_estimate_pbar(self, line, i):
-        """Slot for estimate progress bar - line_prepared"""
-        self.estimate_pbar.update(line, i)
-
     def export_info(self):
         file_name = QtGui.QFileDialog.getSaveFileName(self, "Select file to export info about data")
         if file_name != "":
 
-            def worker_finished(worker):
+            def worker_finished(worker, pbar):
                 errors = worker.get_errors()
                 if len(errors) > 0:
-                    self.estimate_pbar.cancel()
+                    pbar.cancel()
                     self.show_error_dialog(
                         "Print Error",
                         "Wasn't possible to prepare data for print informations, please check syntax in source file and specified arguments.",
@@ -295,11 +288,12 @@ class GuiSwift(QtGui.QWidget):
                     self.status_bar.showMessage("Export infomatios about source data aborted.",
                                                 self.STATUS_MESSAGE_DURRATION)
 
-            def cont(printer):
-                self.status_bar.showMessage("Informations about source data were successfully exported.",
-                                            self.STATUS_MESSAGE_DURRATION)
-                printer.print_info(file_name)
-                self.estimate_pbar.cancel()
+            def cont(printer, pbar):
+                if not printer.stop:
+                    self.status_bar.showMessage("Informations about source data were successfully exported to {}".format(file_name),
+                                                self.STATUS_MESSAGE_DURRATION)
+                    printer.print_info(file_name)
+                    pbar.cancel()
 
             try:
                 printer = Printer(source=self.source, **self.source_params)
@@ -307,16 +301,16 @@ class GuiSwift(QtGui.QWidget):
                 errors = traceback.format_exc()
                 self.show_error_dialog(errors=errors)
             else:
-                self.estimate_pbar.setup(self.source, printer)
-                printer.next_line_prepared.connect(self.update_estimate_pbar)
-                # function which will be run on background
+                pbar = self.get_prepare_pbar(printer)
+                printer.next_percent.connect(pbar.update)
 
                 def bg_func(worker):
+                    """function which will be run on background"""
                     printer.read_info()
-                    worker.emit(SIGNAL('file_readed'), printer)
+                    worker.emit(SIGNAL('file_readed'), printer, pbar)
 
                 bg = BgWorker(bg_func)
-                bg.finished.connect(lambda: worker_finished(bg))
+                bg.finished.connect(lambda: worker_finished(bg, pbar))
                 bg.connect(bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
                 bg.start()
 
@@ -344,24 +338,22 @@ class GuiSwift(QtGui.QWidget):
             t_p[RunParams.TARGET] = self.target
 
             # conversion
-            def update_pbar():
-                self.convert_pbar.update()
 
-            def display_data(c):
-                self.convert_pbar.cancel()
-                self.status_bar.showMessage("Conversion was successful.",
-                                            self.STATUS_MESSAGE_DURRATION)
-                # display data
-                if self.chb_browse_convert.isChecked():
-                    self.browser_target = self.browse_first_data(self.table_view_target, self.browser_target,
-                                                                 self.target, self.target_params)
+            def display_data(convertor, pbar):
+                if not convertor.stop:
+                    pbar.cancel()
+                    self.status_bar.showMessage("Conversion was successful.",
+                                                self.STATUS_MESSAGE_DURRATION)
+                    # display data
+                    if self.chb_browse_convert.isChecked():
+                        self.browser_target = self.browse_first_data(self.table_view_target, self.browser_target,
+                                                                     self.target, self.target_params)
 
             # method is called when background thread finished
-            def worker_finished(worker):
+            def worker_finished(worker, pbar):
                 errors = worker.get_errors()
                 if len(errors) > 0:
-                    self.estimate_pbar.cancel()
-                    self.convert_pbar.cancel()
+                    pbar.cancel()
                     self.show_error_dialog("Convert Error",
                                            "Wasn't possible to convert data, please check syntax in source file and specified arguments.",
                                            errors)
@@ -369,22 +361,23 @@ class GuiSwift(QtGui.QWidget):
                                                 self.STATUS_MESSAGE_DURRATION)
 
             # signal handler -> continue after thread ends
-            def cont(convertor):
-                self.estimate_pbar.cancel()
-                self.status_bar.showMessage("Data were successfully prepared for conversion.",
-                                            self.STATUS_MESSAGE_DURRATION)
-                self.convert_pbar.setup(convertor.source_line_count, convertor)
-                convertor.next_line_converted.connect(update_pbar)
+            def cont(convertor, pbar):
+                if not convertor.stop:
+                    pbar.cancel()
+                    self.status_bar.showMessage("Data were successfully prepared for conversion.",
+                                                self.STATUS_MESSAGE_DURRATION)
+                    pbar_convert = PBarDialog(self, convertor, title="Convert Data", label_text="Converting, please wait.")
+                    convertor.next_percent_converted.connect(pbar_convert.update)
 
-                # function which will be run on background
-                def bg_func(worker):
-                    convertor.convert()
-                    worker.emit(SIGNAL('file_converted'), convertor)
+                    # function which will be run on background
+                    def bg_func(worker):
+                        convertor.convert()
+                        worker.emit(SIGNAL('file_converted'), convertor, pbar_convert)
 
-                bg = BgWorker(bg_func)
-                bg.finished.connect(lambda: worker_finished(bg))
-                bg.connect(bg, SIGNAL('file_converted'), display_data, QtCore.Qt.QueuedConnection)
-                bg.start()
+                    bg = BgWorker(bg_func)
+                    bg.finished.connect(lambda: worker_finished(bg, pbar_convert))
+                    bg.connect(bg, SIGNAL('file_converted'), display_data, QtCore.Qt.QueuedConnection)
+                    bg.start()
 
             try:
                 convertor = Convertor(s_p, t_p)
@@ -392,22 +385,25 @@ class GuiSwift(QtGui.QWidget):
                 errors = traceback.format_exc()
                 self.show_error_dialog(errors=[errors])
             else:
-                self.estimate_pbar.setup(self.source, convertor)
-                convertor.next_line_prepared.connect(self.update_estimate_pbar)
+                pbar = self.get_prepare_pbar(convertor)
+                convertor.next_percent.connect(pbar.update)
 
                 # function which will be run on background
                 def bg_func(worker):
                     convertor.read_info()
-                    worker.emit(SIGNAL('file_readed'), convertor)
+                    worker.emit(SIGNAL('file_readed'), convertor, pbar)
 
                 bg = BgWorker(bg_func)
-                bg.finished.connect(lambda: worker_finished(bg))
+                bg.finished.connect(lambda: worker_finished(bg, pbar))
                 bg.connect(bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
                 bg.start()
 
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     " OTHERS
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+    def get_prepare_pbar(self, convertor):
+        return PBarDialog(self, convertor, title="Prepare Data", label_text="Preparing data, please wait.")
 
     def can_convert(self):
         return bool(self.source and self.target)
@@ -446,18 +442,19 @@ class GuiSwift(QtGui.QWidget):
             browser.close_file()
 
         # signal handler -> continue after thread ends
-        def cont(browser, worker):
-            header = browser.get_header()
-            table_view.model().header.extend(header)
-            self.browse_data(browser, table_view)
-            self.estimate_pbar.cancel()
-            self.status_bar.showMessage("Data were successfully prepared for browsing.",
-                                        self.STATUS_MESSAGE_DURRATION)
+        def cont(browser, pbar):
+            if not browser.stop:
+                header = browser.get_header()
+                table_view.model().header.extend(header)
+                self.browse_data(browser, table_view)
+                pbar.cancel()
+                self.status_bar.showMessage("Data were successfully prepared for browsing.",
+                                            self.STATUS_MESSAGE_DURRATION)
 
-        def worker_finished(worker):
+        def worker_finished(worker, pbar):
             errors = worker.get_errors()
             if len(errors) > 0:
-                self.estimate_pbar.cancel()
+                pbar.cancel()
                 self.clear_table(table_view)
                 self.show_error_dialog("Browse Error",
                                        "Wasn't possible to browse data, please check syntax in browsing file and separator used.",
@@ -471,16 +468,16 @@ class GuiSwift(QtGui.QWidget):
             errors = traceback.format_exc()
             self.show_error_dialog(errors=errors)
         else:
-            self.estimate_pbar.setup(source_file, browser)
-            browser.next_line_prepared.connect(self.update_estimate_pbar)
+            pbar = self.get_prepare_pbar(browser)
+            browser.next_percent.connect(pbar.update)
 
             # function which will be run on background
             def bg_func(worker):
                 browser.read_info()
-                worker.emit(SIGNAL('file_readed'), browser, worker)
+                worker.emit(SIGNAL('file_readed'), browser, pbar)
 
             bg = BgWorker(bg_func)
-            bg.finished.connect(lambda: worker_finished(bg))
+            bg.finished.connect(lambda: worker_finished(bg, pbar))
             bg.connect(bg, SIGNAL('file_readed'), cont, QtCore.Qt.QueuedConnection)
             bg.start()
             return browser
@@ -709,15 +706,15 @@ class FormLabel(FormWidget):
 
 
 class PBarDialog(QtGui.QProgressDialog):
-    def __init__(self, parent, label_text="", title=""):
+    def __init__(self, parent, manager, label_text="", title=""):
         super().__init__(parent)
         self.parent = parent
+        self.manager = manager
         self.setLabelText(label_text)
         self.setWindowTitle(title)
         self.setWindowModality(QtCore.Qt.WindowModal)
-        self.setMinimum(1)
-        self.setMaximum(100)
         self.canceled.connect(self.canceled_by_user)
+        self.show()
 
     def canceled_by_user(self):
         self.parent.status_bar.showMessage("Operation canceled by user.",
@@ -725,57 +722,8 @@ class PBarDialog(QtGui.QProgressDialog):
         self.manager.stop = True
         self.cancel()
 
-    def setup(self, manager):
-        self.manager = manager
-        self.show()
-
     def update(self, *args):
-        raise NotImplementedError('update method must be implemented in child class')
-
-
-class PBarDialogStandart(PBarDialog):
-
-    def setup(self, maximum, manager):
-        self._current_percent = 0
-        self._one_percent = round(maximum / 100)
-        super().setup(manager)
-
-    def update(self):
-        if self._current_percent == self._one_percent:
-            self._current_percent = 0
-            self.setValue(self.value() + 1)
-        else:
-            self._current_percent += 1
-
-
-class PBarDialogEstimate(PBarDialog):
-
-    def setup(self, data_file, manager):
-        self.proc_line_count = 0
-        self.proc_line_size_sum = 0
-        self.base_line_size = sys.getsizeof("")
-        self.current_percent = 0
-        self.data_size = os.path.getsize(data_file)
-        super().setup(manager)
-
-    def update(self, line, index_data_start):
-        self.proc_line_count += 1
-        curr_line_size = sys.getsizeof(line) - self.base_line_size
-        self.proc_line_size_sum += curr_line_size
-        average_line_size = self.proc_line_size_sum / self.proc_line_count
-
-        # becuase of header lines
-        if self.proc_line_count == 1:
-            self.data_size = self.data_size - (index_data_start * average_line_size)
-
-        average_line_count = self.data_size / average_line_size
-        self.one_percent = round(average_line_count / 100)
-
-        if self.current_percent == self.one_percent:
-            self.current_percent = 0
-            self.setValue(self.value() + 1)
-        else:
-            self.current_percent += 1
+        self.setValue(self.value() + 1)
 
 
 def main():

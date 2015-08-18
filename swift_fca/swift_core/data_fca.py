@@ -107,7 +107,7 @@ class Data:
                 if manager:
                     if manager.stop:
                         break
-                    manager.next_line_prepared.emit(line, self.index_data_start)
+                    manager.update_counter(line, self.index_data_start)
 
     def get_data_info_for_browse(self, manager=None):
         pass
@@ -477,7 +477,7 @@ class DataDat(DataBivalent):
                 if manager:
                     if manager.stop:
                         break
-                    manager.next_line_prepared.emit(line, self.index_data_start)
+                    manager.update_counter(line, self.index_data_start)
         self._attr_count = max_val + 1
         self._obj_count = line_count
         # These attributes are used only if attrs for new file

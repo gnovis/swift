@@ -1,5 +1,6 @@
 import os
 import traceback
+import sys
 from PyQt4 import QtCore
 from .data_fca import (Data, DataCsv, DataArff, DataDat, DataCxt, DataData)
 from .constants_fca import (FileType, RunParams)
@@ -12,11 +13,12 @@ class ManagerFca(QtCore.QObject):
                   FileType.CXT: DataCxt,
                   FileType.DATA: DataData}
     # Signals
-    next_line_prepared = QtCore.pyqtSignal(str, int)
+    next_percent = QtCore.pyqtSignal()
 
     def __init__(self):
         super().__init__()
         self._stop = False
+        self._counter = None
 
     @property
     def stop(self):
@@ -29,14 +31,21 @@ class ManagerFca(QtCore.QObject):
     def get_data_class(self, file_path):
         return self.EXTENSIONS[os.path.splitext(file_path)[1]]
 
+    def update_percent(self):
+        self.next_percent.emit()
+
+    def update_counter(self, line, index):
+        self._counter.update(line, index)
+
 
 class Printer(ManagerFca):
     def __init__(self, **kwargs):
         super().__init__()
-        file_path = kwargs[RunParams.SOURCE]
-        self._data = self.get_data_class(file_path)(**kwargs)
+        self._file_path = kwargs[RunParams.SOURCE]
+        self._data = self.get_data_class(self._file_path)(**kwargs)
 
     def read_info(self):
+        self._counter = EstimateCounter(self._file_path, self)
         self._data.get_header_info()
         self._data.get_data_info(self)
 
@@ -48,11 +57,12 @@ class Printer(ManagerFca):
 class Browser(ManagerFca):
     def __init__(self, **kwargs):
         super().__init__()
-        file_path = kwargs[RunParams.SOURCE]
-        self._data = self.get_data_class(file_path)(**kwargs)
-        self._opened_file = open(file_path, "r")
+        self._file_path = kwargs[RunParams.SOURCE]
+        self._data = self.get_data_class(self._file_path)(**kwargs)
+        self._opened_file = open(self._file_path, "r")
 
     def read_info(self):
+        self._counter = EstimateCounter(self._file_path, self)
         self._data.get_header_info()
         self._data.get_data_info_for_browse(self)
         Data.skip_lines(self._data.index_data_start, self._opened_file)
@@ -84,11 +94,12 @@ class Browser(ManagerFca):
 class Convertor(ManagerFca):
     """Manage data conversion"""
 
-    next_line_converted = QtCore.pyqtSignal()
+    next_percent_converted = QtCore.pyqtSignal()
 
     def __init__(self, old, new, print_info=False):
         super().__init__()
-        self._source_cls = self.get_data_class(old['source'])
+        self._source_file_path = old['source']
+        self._source_cls = self.get_data_class(self._source_file_path)
         self._target_cls = self.get_data_class(new['source'])
         self._scaling = self.is_scaling()
         self._old_data = self._source_cls(**old)
@@ -99,6 +110,12 @@ class Convertor(ManagerFca):
     def source_line_count(self):
         return self._source_line_count
 
+    def update_convert_counter(self):
+        self._counter.update()
+
+    def update_percent_converted(self):
+        self.next_percent_converted.emit()
+
     def is_scaling(self):
         if (self._source_cls == DataCsv or
             self._source_cls == DataArff or
@@ -108,6 +125,7 @@ class Convertor(ManagerFca):
         return False
 
     def read_info(self):
+        self._counter = EstimateCounter(self._source_file_path, self)
         # get information from source data
         self._old_data.get_header_info()
         self._old_data.get_data_info(self)
@@ -122,6 +140,8 @@ class Convertor(ManagerFca):
         Method for converting data.
         Before calling this, must be called read_info method !
         """
+
+        self._counter = Counter(self._source_line_count, self)
 
         if self._scaling:
             self._new_data.parse_old_attrs_for_scale(self._old_data.attributes)
@@ -144,7 +164,7 @@ class Convertor(ManagerFca):
                                               target_file)
                 if self.stop:
                     break
-                self.next_line_converted.emit()
+                self.update_convert_counter()
         target_file.close()
 
 
@@ -165,3 +185,48 @@ class BgWorker(QtCore.QThread):
             self.function(self)
         except:
             self.push_error(traceback.format_exc())
+
+
+class EstimateCounter():
+
+    def __init__(self, data_file, manager):
+        self.proc_line_count = 0
+        self.proc_line_size_sum = 0
+        self.base_line_size = sys.getsizeof("")
+        self.current_percent = 0
+        self.data_size = os.path.getsize(data_file)
+        self.manager = manager
+
+    def update(self, line, index_data_start):
+        self.proc_line_count += 1
+        curr_line_size = sys.getsizeof(line) - self.base_line_size
+        self.proc_line_size_sum += curr_line_size
+        average_line_size = self.proc_line_size_sum / self.proc_line_count
+
+        # becuase of header lines
+        if self.proc_line_count == 1:
+            self.data_size = self.data_size - (index_data_start * average_line_size)
+
+        average_line_count = self.data_size / average_line_size
+        self.one_percent = round(average_line_count / 100)
+
+        if self.current_percent == self.one_percent:
+            self.current_percent = 0
+            self.manager.update_percent()
+        else:
+            self.current_percent += 1
+
+
+class Counter():
+
+    def __init__(self, maximum, manager):
+        self._current_percent = 0
+        self._one_percent = round(maximum / 100)
+        self.manager = manager
+
+    def update(self):
+        if self._current_percent == self._one_percent:
+            self._current_percent = 0
+            self.manager.update_percent_converted()
+        else:
+            self._current_percent += 1
