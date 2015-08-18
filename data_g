@@ -2,7 +2,7 @@
 
 from pyparsing import (OneOrMore, Combine, nums, col, Word, Forward, delimitedList, Literal, printables,
                        restOfLine, CharsNotIn, Optional, Suppress, quotedString, removeQuotes,
-                       ZeroOrMore, CaselessLiteral, LineEnd, Group, lineno)
+                       ZeroOrMore, CaselessLiteral, LineEnd, Group, lineno, WordEnd)
 
 """
 <names> ::= <entry> | (<delimiter> <entry>)*
@@ -23,7 +23,14 @@ from pyparsing import (OneOrMore, Combine, nums, col, Word, Forward, delimitedLi
 def test(t):
     print(t)
 
-string = Word(printables, excludeChars="|?,.:")
+
+def remove_dots(t):
+    value = t.value
+    if value.endswith("."):
+        return value[:-1]
+    return value
+
+string = Word(printables, excludeChars="|?,:")("value").setParseAction(remove_dots)
 comment = "|" + restOfLine
 delimiter = Suppress(".") | LineEnd()
 enum = Group(delimitedList(string))
