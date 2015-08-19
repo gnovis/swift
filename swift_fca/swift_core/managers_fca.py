@@ -1,6 +1,7 @@
 import os
 import traceback
 import sys
+import time
 from PyQt4 import QtCore
 from .data_fca import (Data, DataCsv, DataArff, DataDat, DataCxt, DataData)
 from .constants_fca import (FileType, RunParams)
@@ -213,6 +214,7 @@ class EstimateCounter():
         if self.current_percent == self.one_percent:
             self.current_percent = 0
             self.manager.update_percent()
+            time.sleep(0.02)
         else:
             self.current_percent += 1
 
@@ -228,5 +230,6 @@ class Counter():
         if self._current_percent == self._one_percent:
             self._current_percent = 0
             self.manager.update_percent_converted()
+            time.sleep(0.01)
         else:
             self._current_percent += 1
