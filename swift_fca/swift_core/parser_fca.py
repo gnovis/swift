@@ -182,7 +182,8 @@ class ArffParser(Parser):
         comment = self._comment()
         quoted = quotedString.copy().setParseAction(removeQuotes)
         string = quoted | Word(printables,  excludeChars='{},%')
-        relation = Suppress(CaselessLiteral("@relation")) + Optional(string, default='default_name')('rel_name')
+        relation = (Suppress(CaselessLiteral("@relation")) +
+                    Optional(restOfLine, default='default_name')('rel_name').setParseAction(lambda t: t.rel_name.strip()))
         relation_part = ZeroOrMore(comment) + relation + ZeroOrMore(comment)
         nominal = (Suppress(Literal("{")) +
                    Group(delimitedList(string, delim=self._separator)) + Suppress(Literal("}"))).setParseAction(lambda t: self.ENUM)
