@@ -20,26 +20,32 @@ from pyparsing import (OneOrMore, Combine, nums, col, Word, Forward, delimitedLi
 """
 
 
-def test(t):
-    print(t)
+def get_attr(t):
+    print("name: {}, type: {}".format(t.name, t.type))
+
+
+def get_class(t):
+    print("class: {}".format(t.cls))
 
 
 def remove_dots(t):
-    value = t.value
+    value = t[0]
     if value.endswith("."):
         return value[:-1]
     return value
 
-string = Word(printables, excludeChars="|?,:")("value").setParseAction(remove_dots)
+string = Word(printables, excludeChars="|?,:").setParseAction(remove_dots)
 comment = "|" + restOfLine
 delimiter = Suppress(".") | LineEnd()
-enum = Group(delimitedList(string))
-discrete = string + Word(nums)
-attr_type = Literal("continuous") | Literal("ignore") | discrete | enum
-attribute = string + Suppress(":") + attr_type
-classes = delimitedList(string)
+enum = Group(delimitedList(string)).setParseAction(lambda t: 'e')
+discrete = Literal("discrete") + Suppress(Word(nums))
+attr_type = (Literal("continuous") | Literal("ignore") | discrete | enum)("type")
+attribute = string("name") + Suppress(":") + attr_type
+cls = string("cls")
+cls.addParseAction(get_class)
+classes = delimitedList(cls)
 entry = attribute | classes
-entry.setParseAction(test)
+attribute.setParseAction(get_attr)
 parser = OneOrMore(entry + Optional(delimiter))
 parser.ignore(comment)
 parser.parseFile('ignore/ignore.names', parseAll=True)

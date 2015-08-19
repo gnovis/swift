@@ -3,9 +3,9 @@ import re
 import os
 import sys
 
-from .attributes_fca import (Attribute, AttrScaleNumeric, AttrScaleEnum)
+from .attributes_fca import (Attribute, AttrScaleEnum)
 from .object_fca import Object
-from .parser_fca import ArgsParser, ArffParser
+from .parser_fca import ArgsParser, ArffParser, DataParser
 
 
 class Data:
@@ -317,37 +317,9 @@ class DataData(Data):
                 f.write(line)
 
     def get_header_info(self):
-        """
-        This method must set _attributes(obejcts)
-        """
-        with open(self._get_name_file(self._source), 'r') as names:
-            i = 0
-            attr_names = []
-            for j, line in enumerate(names):
-                # ignore comments
-                l = self._devide_two_part(line, self.COMMENT_SYM)[0]
-                # on one line can be more entries seperated by "."
-                entries = self.ss_str(l, self.LINE_SEP)
-                for k, entry in enumerate(entries):
-                    # on a first line are names of classes, seperated by commas
-                    # others formats doesn't have classes => class is enum attribute!
-                    if (j == 0 and k == 0) or not entry:
-                        continue
-                    else:
-                        devided = self._devide_two_part(entry, self.ATTR_SEP)
-                        attr_name = devided[0]
-                        attr_type = devided[1]
-                        if attr_type != self.IGNORE:
-                            attr_names.append(attr_name)
-                            if attr_type == self.CONTINUOUS:
-                                self._attributes.append(AttrScaleNumeric(i, attr_name))
-                            else:
-                                self._attributes.append(AttrScaleEnum(i, attr_name))
-                            i += 1
-
-            # append class as last attribute
-            attr_names.append(self.CLASS)
-            self._attributes.append(AttrScaleEnum(i, self.CLASS))
+        parser = DataParser()
+        parser.parse(self._get_name_file(self._source))
+        self._attributes = parser.attributes
 
     def _get_class_occur(self):
         occur = []

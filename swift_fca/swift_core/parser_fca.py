@@ -1,4 +1,4 @@
-from pyparsing import (alphanums, Or, Empty, CharsNotIn, ZeroOrMore,
+from pyparsing import (alphanums, Or, Empty, CharsNotIn, ZeroOrMore, nums, LineEnd,
                        Group, removeQuotes, Literal, restOfLine, lineno,
                        Optional, delimitedList, printables, OneOrMore, Forward,
                        Suppress, Word, quotedString, CaselessLiteral)
@@ -15,8 +15,10 @@ class Parser():
     ENUM = 'e'
     ATTR_CLASSES = {'n': AttrScaleNumeric,
                     'numeric': AttrScaleNumeric,
+                    'continuous': AttrScaleNumeric,
                     ENUM: AttrScaleEnum,
                     'nominal': AttrScaleEnum,
+                    'discrete': AttrScaleEnum,
                     's': AttrScaleString,
                     'string': AttrScaleString,
                     'd': AttrScaleDate,
@@ -273,3 +275,69 @@ class ArffParser(Parser):
 
     def _comment(self):
         return Suppress(Literal("%") + restOfLine)
+
+
+class DataParser(Parser):
+
+    """
+    Grammar for .names file
+    =======================
+
+    <names> ::= <entry> | (<delimiter> <entry>)*
+    <entry> ::= <classes> | <attribute> | <blank>
+    <classes> ::= <string> | <string> "," <classes> | <comment>
+    <attribute> ::= <string> ":" <type> <comment>? | <comment>
+    <blank> ::= \s*
+    <delimiter> ::= "." | "\n"
+    <string> ::= [^|?,.\s]+
+    <type> ::= "continuous" | "ignore"| <discrete> | <enum>
+    <discrete> ::= "discrete" \d+
+    <enum> ::= <string> | ("," <string>)*
+    <comment> ::= "|".*
+    """
+
+    def __init__(self):
+        super().__init__()
+        self._classes = []
+
+    @property
+    def attributes(self):
+        self._attributes.append(AttrScaleEnum(self._index, "class"))
+        return self._attributes.copy()
+
+    @property
+    def classes(self):
+        return self._classes.copy()
+
+    def _create_attribute(self, tokens):
+        if tokens.type == "ignore":
+            return
+        attr = self.ATTR_CLASSES[tokens.type](self._index, tokens.name)
+        self._attributes.append(attr)
+        self._index += 1
+
+    def _get_class(self, tokens):
+        self._classes.append(tokens.cls)
+
+    def _remove_dots(self, t):
+        value = t[0]
+        if value.endswith("."):
+            return value[:-1]
+        return value
+
+    def parse(self, file_path):
+        string = Word(printables, excludeChars="|?,:").setParseAction(self._remove_dots)
+        comment = "|" + restOfLine
+        delimiter = Suppress(".") | LineEnd()
+        enum = Group(delimitedList(string)).setParseAction(lambda t: self.ENUM)
+        discrete = Literal("discrete") + Suppress(Word(nums))
+        attr_type = (Literal("continuous") | Literal("ignore") | discrete | enum)("type")
+        attribute = string("name") + Suppress(":") + attr_type
+        cls = string("cls")
+        cls.addParseAction(self._get_class)
+        classes = delimitedList(cls)
+        entry = attribute | classes
+        attribute.setParseAction(self._create_attribute)
+        parser = OneOrMore(entry + Optional(delimiter))
+        parser.ignore(comment)
+        parser.parseFile(file_path, parseAll=True)
