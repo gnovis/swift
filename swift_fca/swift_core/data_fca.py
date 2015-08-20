@@ -403,7 +403,7 @@ class DataCxt(DataBivalent):
         attrs_to_write = super().write_header(target, old_data)
 
         target.write('B\n')
-        if not self.relation_name and old_data:
+        if not self.relation_name:
             self._relation_name = old_data.relation_name
         target.write(self.relation_name + '\n')
         target.write(str(len(self._objects))+'\n')

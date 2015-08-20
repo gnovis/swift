@@ -118,6 +118,7 @@ class GuiSwift(QtGui.QWidget):
 
         # Checkbox
         self.chb_browse_convert = QtGui.QCheckBox("Browse data after convert")
+        self.chb_browse_convert.setChecked(True)
 
         # Status Bar
         self.status_bar = QtGui.QStatusBar(self)
@@ -374,10 +375,10 @@ class GuiSwift(QtGui.QWidget):
                         convertor.convert()
                         worker.emit(SIGNAL('file_converted'), convertor, pbar_convert)
 
-                    bg = BgWorker(bg_func)
-                    bg.finished.connect(lambda: worker_finished(bg, pbar_convert))
-                    bg.connect(bg, SIGNAL('file_converted'), display_data, QtCore.Qt.QueuedConnection)
-                    bg.start()
+                    self.bg_worker = BgWorker(bg_func)
+                    self.bg_worker.finished.connect(lambda: worker_finished(self.bg_worker, pbar_convert))
+                    self.bg_worker.connect(self.bg_worker, SIGNAL('file_converted'), display_data, QtCore.Qt.QueuedConnection)
+                    self.bg_worker.start()
 
             try:
                 convertor = Convertor(s_p, t_p)
