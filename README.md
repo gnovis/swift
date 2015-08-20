@@ -54,9 +54,9 @@ Example: ```"obj1, obj2, obj3, ... "```
 Attributes are compound of formulas separated by: ","  
 
 **Formula**  
-Formula has format: ```new_name=old_name[arguments]```  
+Formula has format: ```new_name=old_name[arguments]``` or ```old_name[arguments]```  
 
-```new_name``` = name of new attribute which will be the result of a conversion  
+```new_name``` = name of new attribute which will be the result of a conversion. If this new name and `=` is ommited, name of scaled attribute will be old name.  
 ```old_name``` = name of attribute, which will be use as template for new attribute  
 ```arguments``` = list of arguments separated by "," which depends on attribute type or can be omitted (explanation below)  
 
