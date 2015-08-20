@@ -487,5 +487,4 @@ class DataDat(DataBivalent):
         for i, val in enumerate(line):
             if bool(int(val)):
                 result.append(str(i))
-        if result:
-            self.write_line_to_file(result, target_file, self._separator)
+        self.write_line_to_file(result, target_file, self._separator)
