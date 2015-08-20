@@ -97,8 +97,9 @@ class Convertor(ManagerFca):
 
     next_percent_converted = QtCore.pyqtSignal()
 
-    def __init__(self, old, new, print_info=False):
+    def __init__(self, old, new, print_info=False, gui=False):
         super().__init__()
+        self._gui = gui
         self._source_file_path = old['source']
         self._source_cls = self.get_data_class(self._source_file_path)
         self._target_cls = self.get_data_class(new['source'])
@@ -126,7 +127,7 @@ class Convertor(ManagerFca):
         return False
 
     def read_info(self):
-        self._counter = EstimateCounter(self._source_file_path, self)
+        self._counter = EstimateCounter(self._source_file_path, self, gui=self._gui)
         # get information from source data
         self._old_data.get_header_info()
         self._old_data.get_data_info(self)
@@ -142,7 +143,7 @@ class Convertor(ManagerFca):
         Before calling this, must be called read_info method !
         """
 
-        self._counter = Counter(self._source_line_count, self)
+        self._counter = Counter(self._source_line_count, self, gui=self._gui)
 
         if self._scaling:
             self._new_data.parse_old_attrs_for_scale(self._old_data.attributes)
@@ -190,7 +191,8 @@ class BgWorker(QtCore.QThread):
 
 class EstimateCounter():
 
-    def __init__(self, data_file, manager):
+    def __init__(self, data_file, manager, gui=True):
+        self.gui = gui
         self.proc_line_count = 0
         self.proc_line_size_sum = 0
         self.base_line_size = sys.getsizeof("")
@@ -214,14 +216,16 @@ class EstimateCounter():
         if self.current_percent == self.one_percent:
             self.current_percent = 0
             self.manager.update_percent()
-            time.sleep(0.02)
+            if self.gui:
+                time.sleep(0.02)
         else:
             self.current_percent += 1
 
 
 class Counter():
 
-    def __init__(self, maximum, manager):
+    def __init__(self, maximum, manager, gui=True):
+        self.gui = gui
         self._current_percent = 0
         self._one_percent = round(maximum / 100)
         self.manager = manager
@@ -230,6 +234,7 @@ class Counter():
         if self._current_percent == self._one_percent:
             self._current_percent = 0
             self.manager.update_percent_converted()
-            time.sleep(0.01)
+            if self.gui:
+                time.sleep(0.01)
         else:
             self._current_percent += 1

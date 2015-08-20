@@ -381,7 +381,7 @@ class GuiSwift(QtGui.QWidget):
                     self.bg_worker.start()
 
             try:
-                convertor = Convertor(s_p, t_p)
+                convertor = Convertor(s_p, t_p, gui=True)
             except:
                 errors = traceback.format_exc()
                 self.show_error_dialog(errors=[errors])
