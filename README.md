@@ -95,13 +95,14 @@ Example:
 "scaled_age=age[n, x<50], 
  scaled_sex=sex[e, woman], 
  scaled_height=height[n, 150<=x<=210],  
- scaled_same=same[],  
+ scaled_same=same[],
+ old_name[n, val>50], 
  scaled_address=address[s, '\w? street[0-9]+'],
  scaled_birthday=birthday[d, date > 1000, '%H:%M:%S %Z']"
 ```
 
 ### C. Others
-e.g separator, classes ...
+e.g separator, classes,  ...
 
 
 ## Requirements
