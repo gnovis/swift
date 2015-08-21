@@ -479,8 +479,7 @@ class DataDat(DataBivalent):
             scaled = attr.scale(self._attributes_temp, values)
             if bool(int(scaled)):  # scaled value can be from Reals or True/False
                 result.append(str(i))
-        if result:
-            self.write_line_to_file(result, target_file, self._separator)
+        self.write_line_to_file(result, target_file, self._separator)
 
     def write_line(self, line, target_file):
         result = []
