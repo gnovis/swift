@@ -223,10 +223,7 @@ class AttrScaleString(AttrScale):
 
     def scale(self, attrs, values):
         old_val = super().scale(attrs, values)
-        if self._regex.search(old_val):
-            return True
-        else:
-            return False
+        return bool(self._regex.search(old_val))
 
     def arff_repr(self, sep, bi_val1='0', bi_val2='1'):
         return AttrType.STR_REPR[self.attr_type]
