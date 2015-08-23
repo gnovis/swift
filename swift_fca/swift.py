@@ -1,6 +1,7 @@
 """Main file of swift - FCA data converter"""
 
 import argparse
+import sys
 from .swift_core.managers_fca import Convertor
 from .swift_core.constants_fca import RunParams
 
@@ -8,11 +9,13 @@ from .swift_core.constants_fca import RunParams
 def run_swift():
 
     SOURCE_ARGS = {"source": RunParams.SOURCE,
+                   "source_format": RunParams.FORMAT,
                    "source_separator": RunParams.SOURCE_SEP,
                    "source_attributes": RunParams.SOURCE_ATTRS,
                    "no_first_line": RunParams.NFL,
                    "none_value": RunParams.NONE_VALUE}
     TARGET_ARGS = {"target": RunParams.TARGET,
+                   "target_format": RunParams.FORMAT,
                    "target_separator": RunParams.TARGET_SEP,
                    "target_attributes": RunParams.TARGET_ATTRS,
                    "target_objects": RunParams.TARGET_OBJECTS,
@@ -22,7 +25,7 @@ def run_swift():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-s", "--source", required=True, help="Name of source file.")
+    parser.add_argument("-s", "--source", nargs="?", type=argparse.FileType('r'), default=sys.stdin, help="Name of source file.")
     parser.add_argument("-ss", "--source_separator",
                         help="Separator whitch is used in source file. Default is ','.")
     parser.add_argument("-sa", "--source_attributes", help="Source file (old) attributes. Used as additional informations.")
@@ -32,13 +35,15 @@ def run_swift():
                         action='store_true',
                         help="Attributes aren't specified on first line in csv data file.")
 
-    parser.add_argument("-t", "--target", required=True, help="Name of target file.")
+    parser.add_argument("-t", "--target", nargs="?", type=argparse.FileType('w'), default=sys.stdout, help="Name of target file.")
     parser.add_argument("-ts", "--target_separator",
                         help="Separator whitch will be used in target file. Default is ','.")
     parser.add_argument("-ta", "--target_attributes", help="Target file (new) attributes. Used for scaling.")
     parser.add_argument("-to", "--target_objects", help="Target file (new) objects. Only for CXT format.")
     parser.add_argument("-rn", "--relation_name", help="New name of relation.")
     parser.add_argument("-cls", "--classes", help="Classes seperated by commas - for C4.5 convert.")
+    parser.add_argument("-sf", "--source_format", help="Format of source file, must to be specified when source is standart input (stdin)")
+    parser.add_argument("-tf", "--target_format", help="Format of target file, must to be specified when target is standart output (stdout)")
 
     args = parser.parse_args()
 

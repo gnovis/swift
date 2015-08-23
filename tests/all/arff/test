@@ -26,3 +26,4 @@ echo $format "-> DAT"
 # -> data
 $app -s $source_file -t arff.data -cls "$classes" -nv "$none_value"
 echo $format "-> DATA"
+

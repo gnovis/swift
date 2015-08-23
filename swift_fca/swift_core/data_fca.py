@@ -2,6 +2,7 @@ from __future__ import print_function
 import re
 import os
 import sys
+import tempfile
 
 from .attributes_fca import (Attribute, AttrScaleEnum)
 from .object_fca import Object
@@ -35,6 +36,10 @@ class Data:
         self._index_data_start = 0
         self._obj_count = 0
         self._attr_count = 0
+
+        self._temp_source = None
+        if not self.source.seekable():
+            self._temp_source = tempfile.TemporaryFile(mode='w+t', dir='./')
 
         self.prepare()
 
@@ -94,20 +99,41 @@ class Data:
 
     def get_data_info(self, manager=None):
         """Get much as possible information about data"""
+        # self._attr_count = len(self._attributes)
+        # with open(self.source, 'r') as f:
+        #     Data.skip_lines(self.index_data_start, f)
+        #     for index, line in enumerate(f):
+        #         str_values = self.prepare_line(line)
+        #         if not str_values:  # current line is comment
+        #             continue
+        #         self._obj_count += 1
+        #         for i, attr in enumerate(self._attributes):
+        #             attr.update(str_values[i], self._none_val)
+        #         if manager:
+        #             if manager.stop:
+        #                 break
+        #             manager.update_counter(line, self.index_data_start)
+
         self._attr_count = len(self._attributes)
-        with open(self.source, 'r') as f:
-            Data.skip_lines(self.index_data_start, f)
-            for index, line in enumerate(f):
-                str_values = self.prepare_line(line)
-                if not str_values:  # current line is comment
-                    continue
-                self._obj_count += 1
-                for i, attr in enumerate(self._attributes):
-                    attr.update(str_values[i], self._none_val)
-                if manager:
-                    if manager.stop:
-                        break
-                    manager.update_counter(line, self.index_data_start)
+        for index, line in enumerate(self.source):
+            str_values = self.prepare_line(line)
+            if not str_values:  # current line is comment
+                continue
+            self._obj_count += 1
+            for i, attr in enumerate(self._attributes):
+                attr.update(str_values[i], self._none_val)
+
+            if self._temp_source:
+                self._temp_source.write(line)
+
+            if manager:
+                if manager.stop:
+                    break
+                manager.update_counter(line, self.index_data_start)
+
+        if self._temp_source:
+            self._source = self._temp_source
+        self._source.seek(0)
 
     def get_data_info_for_browse(self, manager=None):
         pass
@@ -148,11 +174,11 @@ class Data:
         return list(map(lambda x: x.strip(),
                     re.split(r'(?<!\\)' + separator, string, max_split)))
 
-    def get_not_empty_line(self, f, i_ref):
+    def get_not_empty_line(self, f):
+        file_iter = iter(f)
         while True:
-            line = next(f)
-            i_ref[0] = i_ref[0] + 1
-            if line.strip():
+            line = next(file_iter).strip()
+            if line:
                 return line
 
     def print_info(self, out_file=sys.stdout):
@@ -164,8 +190,9 @@ class Data:
             attr.print_self(out_file)
 
     def skip_lines(line_i, f):
+        file_iter = iter(f)
         for i in range(line_i):
-            next(f)
+            next(file_iter)
 
 
 class DataArff(Data):
@@ -236,12 +263,20 @@ class DataArff(Data):
         return self._parser.parse_line(line)
 
     def _get_header_str(self):
-        with open(self.source, 'r') as f:
-            header_to_parse = ''
-            for line in f:
-                header_to_parse += line
-                if line.strip() == '@data':
-                    break
+        # with open(self.source, 'r') as f:
+        #     header_to_parse = ''
+        #     for line in f:
+        #         header_to_parse += line
+        #         if line.strip() == '@data':
+        #             break
+
+        header_to_parse = ''
+        for line in self.source:
+            header_to_parse += line
+            if self._temp_source:
+                self._temp_source.write(line)
+            if line.strip() == '@data':
+                break
         return header_to_parse
 
 
@@ -266,19 +301,25 @@ class DataCsv(Data):
         if not self._no_attrs_first_line:  # attrs are on first line
             self._index_data_start = 1
             if not self._str_attrs:
-                line = self._get_first_line(self.source)
+                line = self._get_first_line()
                 str_values = self.ss_str(line, self.separator)
                 self._attributes = [Attribute(i, name) for i, name in enumerate(str_values)]
+            else:
+                next(self._source)  # skip first line with attributes
         elif not self._str_attrs:  # attrs are not of first line and are not passed as parameter
-            line = self._get_first_line(self.source)
+            line = self._get_first_line(False)
             str_values = self.ss_str(line, self.separator)
             self._attr_count = len(str_values)
             self._attributes = [Attribute(i, 'attr_' + str(i)) for i in range(self._attr_count)]
 
-    def _get_first_line(self, source):
+    def _get_first_line(self, move=True):
         """Return first line from data file"""
-        with open(source, 'r') as f:
-            return next(f)
+        line = next(self._source)
+        if self._temp_source:
+            self._temp_source.write(line)
+        elif not move:
+            self._source.seek(0)
+        return line
 
 
 class DataData(Data):
@@ -318,7 +359,7 @@ class DataData(Data):
 
     def get_header_info(self):
         parser = DataParser()
-        parser.parse(self._get_name_file(self._source))
+        parser.parse(self._get_name_file(self._source.name))
         self._attributes = parser.attributes
 
     def _get_class_occur(self):
@@ -327,9 +368,6 @@ class DataData(Data):
             if c not in occur:
                 occur.append(c)
         return self.separator.join(occur)
-
-    def _devide_two_part(self, line, separator):
-        return self.ss_str(line, separator, 1)
 
     """return file name with suffix .names"""
     def _get_name_file(self, source):
@@ -366,28 +404,26 @@ class DataCxt(DataBivalent):
     vals_sym = {1: 'X', 0: '.'}
 
     def get_header_info(self):
-        with open(self.source) as f:
-            next(f)  # skip B
-            self._relation_name = next(f).strip()
-            index = [2]
+        self.get_not_empty_line(self.source)  # skip B
+        self._relation_name = self.get_not_empty_line(self.source)
 
-            rows = int(self.get_not_empty_line(f, index).strip())
-            columns = int(self.get_not_empty_line(f, index).strip())
+        rows = int(self.get_not_empty_line(self.source))
+        columns = int(self.get_not_empty_line(self.source))
 
-            for i in range(rows):
-                obj_name = self.get_not_empty_line(f, index).strip()
-                self._objects.append(Object(obj_name))
+        for i in range(rows):
+            obj_name = self.get_not_empty_line(self.source)
+            self._objects.append(Object(obj_name))
 
-            for k in range(columns):
-                attr_name = self.get_not_empty_line(f, index).strip()
-                new = AttrScaleEnum(k, attr_name)
-                new.update(DataBivalent.bi_vals['pos'], self._none_val)
-                new.update(DataBivalent.bi_vals['neg'], self._none_val)
-                self._attributes.append(new)
+        for k in range(columns):
+            attr_name = self.get_not_empty_line(self.source)
+            new = AttrScaleEnum(k, attr_name)
+            new.update(DataBivalent.bi_vals['pos'], self._none_val)
+            new.update(DataBivalent.bi_vals['neg'], self._none_val)
+            self._attributes.append(new)
 
-            self._attr_count = columns
-            self._obj_count = rows
-            self._index_data_start = index[0]
+        self._attr_count = columns
+        self._obj_count = rows
+        # no lines shoud be skipped, because skip was done by next() above!
 
     def get_data_info(self, manager=None):
         pass
@@ -438,18 +474,26 @@ class DataDat(DataBivalent):
     def get_data_info(self, manager=None):
         max_val = -1
         line_count = 0
-        with open(self._source, 'r') as f:
-            for i, line in enumerate(f):
-                line_count += 1
-                splitted = super().prepare_line(line)
-                for val in splitted:
-                    int_val = int(val)
-                    if int_val > max_val:
-                        max_val = int_val
-                if manager:
-                    if manager.stop:
-                        break
-                    manager.update_counter(line, self.index_data_start)
+        for i, line in enumerate(self.source):
+            line_count += 1
+            splitted = super().prepare_line(line)
+            for val in splitted:
+                int_val = int(val)
+                if int_val > max_val:
+                    max_val = int_val
+
+            if self._temp_source:
+                self._temp_source.write(line)
+
+            if manager:
+                if manager.stop:
+                    break
+                manager.update_counter(line, self.index_data_start)
+
+        if self._temp_source:
+            self._source = self._temp_source
+        self._source.seek(0)
+
         self._attr_count = max_val + 1
         self._obj_count = line_count
         # These attributes are used only if attrs for new file
