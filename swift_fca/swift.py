@@ -61,11 +61,3 @@ def run_swift():
     convertor = Convertor(old_file_args, new_file_args, **other_args)
     convertor.read_info()
     convertor.convert()
-
-# Uncomment following line to run swift application
-if __name__ == '__main__':
-    run_swift()
-
-# TESTING
-"""
-"""

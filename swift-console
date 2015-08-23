@@ -1,3 +1,5 @@
 #!/usr/bin/python3
 from swift_fca.swift import run_swift
-run_swift()
+
+if __name__ == '__main__':
+    run_swift()
