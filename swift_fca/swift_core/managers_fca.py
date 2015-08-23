@@ -42,7 +42,7 @@ class ManagerFca(QtCore.QObject):
 class Printer(ManagerFca):
     def __init__(self, **kwargs):
         super().__init__()
-        self._file_path = kwargs[RunParams.SOURCE]
+        self._file_path = kwargs[RunParams.SOURCE].name
         self._data = self.get_data_class(self._file_path)(**kwargs)
 
     def read_info(self):
@@ -58,12 +58,11 @@ class Printer(ManagerFca):
 class Browser(ManagerFca):
     def __init__(self, **kwargs):
         super().__init__()
-        self._file_path = kwargs[RunParams.SOURCE]
-        self._data = self.get_data_class(self._file_path)(**kwargs)
-        self._opened_file = open(self._file_path, "r")
+        self._opened_file = kwargs[RunParams.SOURCE]
+        self._data = self.get_data_class(self._opened_file.name)(**kwargs)
 
     def read_info(self):
-        self._counter = EstimateCounter(self._file_path, self)
+        self._counter = EstimateCounter(self._opened_file.name, self)
         self._data.get_header_info()
         self._data.get_data_info_for_browse(self)
         Data.skip_lines(self._data.index_data_start, self._opened_file)
@@ -100,13 +99,6 @@ class Convertor(ManagerFca):
     def __init__(self, old, new, print_info=False, gui=False):
         super().__init__()
         self._gui = gui
-        # self._source_file_path = old['source']
-        # self._source_cls = self.get_data_class(self._source_file_path)
-        # self._target_cls = self.get_data_class(new['source'])
-        # self._old_data = self._source_cls(**old)
-        # self._new_data = self._target_cls(**new)
-        # self._print_info = print_info
-
         self._source_cls = self.get_data_class(old)
         self._target_cls = self.get_data_class(new)
         self._scaling = self.is_scaling()
@@ -163,28 +155,10 @@ class Convertor(ManagerFca):
         if self._scaling:
             self._new_data.parse_old_attrs_for_scale(self._old_data.attributes)
 
-        # target_file = open(self._new_data.source, 'w')
         target_file = self._new_data.source
         source_file = self._old_data.source
         # write header part
         self._new_data.write_header(target_file, old_data=self._old_data)
-        # with open(self._old_data.source, 'r') as f:
-        #     # skip header lines
-        #     Data.skip_lines(self._old_data.index_data_start, f)
-        #     for i, line in enumerate(f):
-        #         prepared_line = self._old_data.prepare_line(line)
-        #         if not prepared_line:  # line is comment
-        #             continue
-        #         if self._scaling:
-        #             self._new_data.write_data_scale(prepared_line,
-        #                                             target_file)
-        #         else:
-        #             self._new_data.write_line(prepared_line,
-        #                                       target_file)
-        #         if self.stop:
-        #             break
-        #         self.update_convert_counter()
-
         Data.skip_lines(self._old_data.index_data_start, source_file)
         for i, line in enumerate(source_file):
             prepared_line = self._old_data.prepare_line(line)

@@ -297,7 +297,7 @@ class GuiSwift(QtGui.QWidget):
                     pbar.cancel()
 
             try:
-                printer = Printer(source=self.source, **self.source_params)
+                printer = Printer(source=open(self.source, 'r'), **self.source_params)
             except:
                 errors = traceback.format_exc()
                 self.show_error_dialog(errors=errors)
@@ -334,9 +334,9 @@ class GuiSwift(QtGui.QWidget):
         if procces:
             # preparing params
             s_p = self.source_params
-            s_p[RunParams.SOURCE] = self.source
+            s_p[RunParams.SOURCE] = open(self.source, 'r')
             t_p = self.target_params
-            t_p[RunParams.TARGET] = self.target
+            t_p[RunParams.TARGET] = open(self.target, 'w')
 
             # conversion
 
@@ -464,7 +464,7 @@ class GuiSwift(QtGui.QWidget):
                                             self.STATUS_MESSAGE_DURRATION)
 
         try:
-            browser = Browser(source=source_file, **params)
+            browser = Browser(source=open(source_file, 'r'), **params)
         except:
             errors = traceback.format_exc()
             self.show_error_dialog(errors=errors)

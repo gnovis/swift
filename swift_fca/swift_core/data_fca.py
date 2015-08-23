@@ -478,9 +478,10 @@ class DataDat(DataBivalent):
             line_count += 1
             splitted = super().prepare_line(line)
             for val in splitted:
-                int_val = int(val)
-                if int_val > max_val:
-                    max_val = int_val
+                if val:
+                    int_val = int(val)
+                    if int_val > max_val:
+                        max_val = int_val
 
             if self._temp_source:
                 self._temp_source.write(line)
@@ -514,7 +515,8 @@ class DataDat(DataBivalent):
         splitted = super().prepare_line(line)
         result = ['0'] * (self._attr_count)
         for val in splitted:
-            result[int(val)] = str(1)
+            if val:
+                result[int(val)] = str(1)
         return result
 
     def write_data_scale(self, values, target_file):
