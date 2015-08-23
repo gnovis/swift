@@ -1,6 +1,6 @@
 # **Swift - FCA Data Converter**
 
-![Alt text](/gnovis/swift/swift_fca/resources/images/swift_icon.svg "Swift FCA")
+![Alt text](/swift_fca/resources/images/swift_icon.svg "Swift FCA")
 
 Converter of data formats used in Formal Concept Analysis and public repositories. Swift provides console application and GUI interface.  
 
