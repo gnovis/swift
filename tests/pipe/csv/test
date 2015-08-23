@@ -1,0 +1,42 @@
+#!/bin/bash
+
+format=CSV
+new_str_attrs="WINDY=windy[e, TRUE], SUNNY=outlook[e, sunny], ORDER=order[], TEMP=temperature[n, x>80], HUM=humidity[n, 70<=x<=80], NOTE=note[s, 'hell|[0-9]'], BIRTHDAY=birthday[d, date=='2001-04-03', '%Y-%m-%d']"  
+new_str_objects="0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13"
+old_str_attrs="note[s], outlook[e], temperature[n], humidity[n], windy[e], play[e], order[e], birthday[d,'%Y-%m-%d']"
+classes="Monday, Friday, Friday, Sunday, Theusday, Theusday, Wednesday, Theusday, Monday, Sunday, Suterday, Wednesday, Monday, Sunday"
+source_file=test.csv
+source_app="cat test.csv"
+swift="../../../swift-console"
+source_format=csv
+
+echo $format
+echo "====="
+
+# -> cxt
+cat test_nfl.csv | $swift -sf "$source_format" -tf cxt -ta "$new_str_attrs" -to "$new_str_objects" -sa "$old_str_attrs" -nfl
+echo
+echo $format "-> CXT"
+echo
+echo "#####################################################################################"
+
+# -> arff
+$source_app | $swift -sf "$source_format" -tf arff -sa "$old_str_attrs" 
+echo
+echo $format "-> ARFF"
+echo
+echo "#####################################################################################"
+
+# -> dat
+$source_app | $swift -sf "$source_format" -tf dat -ta "$new_str_attrs" 
+echo
+echo $format "-> DAT"
+echo
+echo "#####################################################################################"
+
+# -> data
+$source_app | $swift -sf "$source_format" -tf data -cls "$classes" -sa "$old_str_attrs"
+echo
+echo $format "-> DATA"
+echo
+echo "#####################################################################################"

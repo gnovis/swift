@@ -1,0 +1,41 @@
+#!/bin/bash
+
+format=ARFF
+new_str_attrs="WINDY=windy[e, TRUE], SUNNY=outlook[e, sunny], FOG=fog_bival[], TEMP=temperature[n, x>80], HUM=humidity.relative.day[n, 70<=x<=80], NOTE=note[s, 'hell|[0-9]'], BIRTHDAY=day[d, date=='2001-04-03', '%Y-%m-%d']"  
+new_str_objects="0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13"
+classes="Monday, Friday, Friday, Sunday, Theusday, Theusday, Wednesday, Theusday, Monday, Sunday, Suterday, Wednesday, Monday, Sunday"
+none_value="?"
+source_app="cat test.arff"
+swift="../../../swift-console"
+source_format="arff"
+
+echo $format
+echo "====="
+
+# -> cxt
+$source_app | $swift -sf "$source_format" -tf cxt -ta "$new_str_attrs" -to "$new_str_objects" -nv "$none_value"
+echo
+echo $format "-> CXT"
+echo
+echo "#####################################################################################"
+
+# -> csv
+$source_app | $swift -sf "$source_format" -tf csv -nv "$none_value"
+echo
+echo $format "-> CSV"
+echo
+echo "#####################################################################################"
+
+# -> dat
+$source_app | $swift -sf "$source_format" -tf dat -ta "$new_str_attrs" -nv "$none_value"
+echo
+echo $format "-> DAT"
+echo
+echo "#####################################################################################"
+
+# -> data
+$source_app | $swift -sf "$source_format" -tf data -cls "$classes" -nv "$none_value"
+echo
+echo $format "-> DATA"
+echo
+echo "#####################################################################################"
