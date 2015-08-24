@@ -99,20 +99,6 @@ class Data:
 
     def get_data_info(self, manager=None):
         """Get much as possible information about data"""
-        # self._attr_count = len(self._attributes)
-        # with open(self.source, 'r') as f:
-        #     Data.skip_lines(self.index_data_start, f)
-        #     for index, line in enumerate(f):
-        #         str_values = self.prepare_line(line)
-        #         if not str_values:  # current line is comment
-        #             continue
-        #         self._obj_count += 1
-        #         for i, attr in enumerate(self._attributes):
-        #             attr.update(str_values[i], self._none_val)
-        #         if manager:
-        #             if manager.stop:
-        #                 break
-        #             manager.update_counter(line, self.index_data_start)
 
         self._attr_count = len(self._attributes)
         for index, line in enumerate(self.source):
@@ -263,13 +249,6 @@ class DataArff(Data):
         return self._parser.parse_line(line)
 
     def _get_header_str(self):
-        # with open(self.source, 'r') as f:
-        #     header_to_parse = ''
-        #     for line in f:
-        #         header_to_parse += line
-        #         if line.strip() == '@data':
-        #             break
-
         header_to_parse = ''
         for line in self.source:
             header_to_parse += line
