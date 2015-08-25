@@ -75,6 +75,12 @@ class ArgsParser(Parser):
     TYPE = 0
     NEXT_ARGS = 1
 
+    def _parse_int(self, value):
+        try:
+            return int(value)
+        except ValueError:
+            return None
+
     def _create_attribute(self, tokens):
         old_names = tokens[self.OLD_NAME]
         new_names = tokens[self.NEW_NAME]
@@ -85,9 +91,11 @@ class ArgsParser(Parser):
         for old, new in zip(old_names, new_names):
             curr_next_args = next_args.copy()
             curr_next_args['attr_pattern'] = old
-            attribute = cls(self._index, new, **curr_next_args)
+
+            index = self._parse_int(old)
+
+            attribute = cls(index, new, **curr_next_args)
             self._attributes.append(attribute)
-            self._index += 1
 
     def parse(self, str_args):
 

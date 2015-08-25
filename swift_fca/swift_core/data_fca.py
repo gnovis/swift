@@ -101,6 +101,10 @@ class Data:
 
         if not self._attributes:
             self._attributes = self._header_attrs  # reference will be point to the same list, but it should be ok
+        else:
+            for attr in self._attributes:
+                if attr.index is not None and str(attr.index) == attr.name:
+                    attr.name = self._header_attrs[attr.index].name
 
         for attr in self._header_attrs:
             self._template_attrs[str(attr.index)] = attr.index

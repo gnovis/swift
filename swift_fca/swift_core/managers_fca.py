@@ -65,7 +65,6 @@ class Browser(ManagerFca):
         self._counter = EstimateCounter(self._opened_file.name, self)
         self._data.get_attrs_info(self._data.get_header_info)
         self._data.get_data_info_for_browse(self)
-        Data.skip_lines(self._data.index_data_start, self._opened_file)
 
     def __del__(self):
         self._opened_file.close()
@@ -165,7 +164,7 @@ class Convertor(ManagerFca):
             if self.stop:
                 break
             self.update_convert_counter()
-        self._old_data.source.close()
+        self._new_data.source.close()
         source_file.close()
 
 
