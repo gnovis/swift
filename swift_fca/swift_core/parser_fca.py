@@ -76,18 +76,27 @@ class ArgsParser(Parser):
     NEXT_ARGS = 1
 
     def _create_attribute(self, tokens):
-        old_name = tokens[self.OLD_NAME]
-        new_name = tokens[self.NEW_NAME]
+        old_names = tokens[self.OLD_NAME]
+        new_names = tokens[self.NEW_NAME]
         attr_type = tokens[self.ARGS][self.TYPE]
         next_args = tokens[self.ARGS][self.NEXT_ARGS]
-        next_args['attr_pattern'] = old_name
-
         cls = self.ATTR_CLASSES[attr_type]
-        attribute = cls(self._index, new_name, **next_args)
-        self._attributes.append(attribute)
-        self._index += 1
+
+        for old, new in zip(old_names, new_names):
+            curr_next_args = next_args.copy()
+            curr_next_args['attr_pattern'] = old
+            attribute = cls(self._index, new, **curr_next_args)
+            self._attributes.append(attribute)
+            self._index += 1
 
     def parse(self, str_args):
+
+        def expand_interval(tokens):
+            val_from = int(tokens[0])
+            val_to = int(tokens[1]) + 1
+            result = list(map(str, range(val_from, val_to)))
+            return result
+
         # Grammar definition
         QUOTED_STR = quotedString.copy()
         NUMEXPR = boolexpr()
@@ -105,8 +114,13 @@ class ArgsParser(Parser):
         GEN = Empty()
         NO_SCALE = NO_SCALE_NUM | NO_SCALE_DATE | NO_SCALE_ENUM | NO_SCALE_STR
         PARAMS = Or(STR ^ ENUM ^ DATE ^ NUM ^ GEN ^ NO_SCALE)
-        NAME = Word(alphanums + '_-.')
-        VAR_FIRST_PART = Optional(NAME + Suppress('='), default='') + NAME
+
+        NAME = Word(printables, excludeChars="[]-,=")
+        INTERVAL = Word(nums) + Suppress("-") + Word(nums)
+        INTERVAL.setParseAction(expand_interval)
+        ATTR_SEQUENCE = Group(delimitedList((INTERVAL | NAME)))
+        VAR_FIRST_PART = Optional(ATTR_SEQUENCE + Suppress('='), default='') + ATTR_SEQUENCE
+
         VAR_SECOND_PART = Suppress('[') + Group(PARAMS) + Suppress(']')
         VAR = VAR_FIRST_PART + VAR_SECOND_PART
         parser = delimitedList(VAR)
