@@ -12,7 +12,7 @@ echo $format
 echo "====="
 
 # -> cxt
-$app -s $source_file -t arff.cxt -ta "$new_str_attrs" -to "$new_str_objects" -nv "$none_value"
+$app -s $source_file -t arff.cxt -sa "$new_str_attrs" -to "$new_str_objects" -nv "$none_value"
 echo $format "-> CXT"
 
 # -> csv
@@ -20,7 +20,7 @@ $app -s $source_file -t arff.csv -nv "$none_value"
 echo $format "-> CSV"
 
 # -> dat
-$app -s $source_file -t arff.dat -ta "$new_str_attrs" -nv "$none_value"
+$app -s $source_file -t arff.dat -sa "$new_str_attrs" -nv "$none_value"
 echo $format "-> DAT"
 
 # -> data

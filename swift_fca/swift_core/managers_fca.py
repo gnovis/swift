@@ -47,7 +47,7 @@ class Printer(ManagerFca):
 
     def read_info(self):
         self._counter = EstimateCounter(self._file_path, self)
-        self._data.get_header_info()
+        self._data.get_attrs_info(self._old_data.get_header_info)
         self._data.get_data_info(self)
 
     def print_info(self, file_path):
@@ -63,7 +63,7 @@ class Browser(ManagerFca):
 
     def read_info(self):
         self._counter = EstimateCounter(self._opened_file.name, self)
-        self._data.get_header_info()
+        self._data.get_attrs_info(self._old_data.get_header_info)
         self._data.get_data_info_for_browse(self)
         Data.skip_lines(self._data.index_data_start, self._opened_file)
 
@@ -81,7 +81,7 @@ class Browser(ManagerFca):
             if line == END_FILE:
                 break
             else:
-                prepared_line = self._data.prepare_line(line)
+                prepared_line = self._data.prepare_line(line, False)
                 if not prepared_line:  # line is comment
                     continue
                 to_display.append(prepared_line)
@@ -152,28 +152,20 @@ class Convertor(ManagerFca):
 
         self._counter = Counter(self._source_line_count, self, gui=self._gui)
 
-        if self._scaling:
-            self._new_data.parse_old_attrs_for_scale(self._old_data.attributes)
-
-        target_file = self._new_data.source
         source_file = self._old_data.source
         # write header part
-        self._new_data.write_header(target_file, old_data=self._old_data)
+        self._new_data.write_header(self._old_data)
+        # skip header lines
         Data.skip_lines(self._old_data.index_data_start, source_file)
         for i, line in enumerate(source_file):
             prepared_line = self._old_data.prepare_line(line)
             if not prepared_line:  # line is comment
                 continue
-            if self._scaling:
-                self._new_data.write_data_scale(prepared_line,
-                                                target_file)
-            else:
-                self._new_data.write_line(prepared_line,
-                                          target_file)
+            self._new_data.write_line(prepared_line)
             if self.stop:
                 break
             self.update_convert_counter()
-        target_file.close()
+        self._old_data.source.close()
         source_file.close()
 
 

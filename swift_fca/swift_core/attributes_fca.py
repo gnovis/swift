@@ -86,17 +86,18 @@ class AttrScale(Attribute):
         self._expr_pattern = expr_pattern
 
     @property
-    def attr_pattern(self):
-        return self._attr_pattern
+    def key(self):
+        if self._attr_pattern:
+            return self._attr_pattern
+        return self._name
 
-    def scale(self, attrs, values):
-        """
-        Scale value according pattern.
-        attrs - dict with names(keys) and indexes(values)
-        values - values of current procces row
-        """
-        val_index = attrs[self._attr_pattern]
-        return values[val_index]
+    def process(self, value, scale):
+        if self._expr_pattern and scale:
+            return self.scale(value)
+        return value
+
+    def scale(self, value):
+        return value
 
 
 class AttrScaleNumeric(AttrScale):
@@ -114,9 +115,9 @@ class AttrScaleNumeric(AttrScale):
     def min_value(self):
         return self._min_value
 
-    def scale(self, attrs, values):
+    def scale(self, value):
         try:
-            x = int(super().scale(attrs, values))  # NOQA
+            x = int(value)  # NOQA
         except ValueError:
             # if value is not integer(is string or undefined e.g None, "" or ?) =>
             # result of scaling is false
@@ -172,13 +173,9 @@ class AttrScaleDate(AttrScaleNumeric):
         DATEXPR.setParseAction(lambda s, loc, tokens: self.parser.get_time_stamp(removeQuotes(s, loc, tokens)))
         self._expr_pattern = EXPR.parseString(self._expr_pattern)[0]
 
-    def scale(self, attrs, values):
-        val_i = attrs[self._attr_pattern]
-        str_date = values[val_i]
-        time_stamp = self.parser.get_time_stamp(str_date)
-        new_values = values.copy()
-        new_values[val_i] = time_stamp
-        return super().scale(attrs, new_values)
+    def scale(self, value):
+        time_stamp = self.parser.get_time_stamp(value)
+        return super().scale(time_stamp)
 
     def update(self, str_date, none_val):
         if str_date != none_val:
@@ -198,9 +195,8 @@ class AttrScaleEnum(AttrScale):
                          attr_pattern, expr_pattern)
         self._values = []
 
-    def scale(self, attrs, values):
-        old_val = super().scale(attrs, values)
-        return old_val == self._expr_pattern
+    def scale(self, value):
+        return value == self._expr_pattern
 
     def update(self, value, none_val):
         if value not in self._values and value != none_val:
@@ -225,9 +221,8 @@ class AttrScaleString(AttrScale):
         if self._expr_pattern:
             self._regex = re.compile(self._expr_pattern)
 
-    def scale(self, attrs, values):
-        old_val = super().scale(attrs, values)
-        return bool(self._regex.search(old_val))
+    def scale(self, value):
+        return bool(self._regex.search(value))
 
     def arff_repr(self, sep, bi_val1='0', bi_val2='1'):
         return AttrType.STR_REPR[self.attr_type]

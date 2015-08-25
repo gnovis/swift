@@ -17,7 +17,6 @@ def run_swift():
     TARGET_ARGS = {"target": RunParams.TARGET,
                    "target_format": RunParams.FORMAT,
                    "target_separator": RunParams.TARGET_SEP,
-                   "target_attributes": RunParams.TARGET_ATTRS,
                    "target_objects": RunParams.TARGET_OBJECTS,
                    "relation_name": RunParams.RELATION_NAME,
                    "classes": RunParams.CLASSES}
@@ -38,7 +37,6 @@ def run_swift():
     parser.add_argument("-t", "--target", nargs="?", type=argparse.FileType('w'), default=sys.stdout, help="Name of target file.")
     parser.add_argument("-ts", "--target_separator",
                         help="Separator whitch will be used in target file. Default is ','.")
-    parser.add_argument("-ta", "--target_attributes", help="Target file (new) attributes. Used for scaling.")
     parser.add_argument("-to", "--target_objects", help="Target file (new) objects. Only for CXT format.")
     parser.add_argument("-rn", "--relation_name", help="New name of relation.")
     parser.add_argument("-cls", "--classes", help="Classes seperated by commas - for C4.5 convert.")

@@ -14,7 +14,7 @@ echo $format
 echo "====="
 
 # -> cxt
-$app -s $source_file_nfl -t csv.cxt -ta "$new_str_attrs_indexes" -to "$new_str_objects" -nfl
+$app -s $source_file_nfl -t csv.cxt -sa "$new_str_attrs_indexes" -to "$new_str_objects" -nfl
 echo $format "-> CXT"
 
 # -> arff
@@ -22,7 +22,7 @@ $app -s $source_file -t csv.arff -sa "$old_str_attrs"
 echo $format "-> ARFF"
 
 # -> dat
-$app -s $source_file -t csv.dat -ta "$new_str_attrs" 
+$app -s $source_file -t csv.dat -sa "$new_str_attrs" 
 echo $format "-> DAT"
 
 # -> data

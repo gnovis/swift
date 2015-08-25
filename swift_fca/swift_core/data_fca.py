@@ -93,7 +93,7 @@ class Data:
             self._attributes = parser.attributes
 
         if self.str_objects:
-            splitted = self.ss_str(self._str_objects, self.separator)
+            splitted = self.ss_str(self._str_objects, ',')
             self._objects = [Object(name) for name in splitted]
 
     def get_attrs_info(self, fill_header_attrs_func):
@@ -117,7 +117,7 @@ class Data:
 
         self._attr_count = len(self._attributes)
         for index, line in enumerate(self.source):
-            str_values = self.prepare_line(line)
+            str_values = self.prepare_line(line, scale=False)
             if not str_values:  # current line is comment
                 continue
             self._obj_count += 1
@@ -139,7 +139,7 @@ class Data:
     def get_data_info_for_browse(self, manager=None):
         pass
 
-    def prepare_line(self, values):
+    def prepare_line(self, values, scale=True):
         """If return empty list -> line is comment"""
         if not isinstance(values, list):
             values = self.ss_str(values, self.separator)
@@ -147,37 +147,29 @@ class Data:
             return values
         result = []
         for attr in self._attributes:
-            key = attr.name  # TODO add key as attribute parameter, return attr_pattern if possible or name
-            if attr.attr_pattern:
-                key = attr.attr_pattern
-            index = self._template_attrs[key]
-            new_value = values[index]
+            index = self._template_attrs[attr.key]
+            new_value = attr.process(values[index], scale)
             result.append(new_value)
         return result
 
-    def write_line_to_file(self, line, target_file, separator):
+    def write_line_to_file(self, line):
         """
         Aux function for write_line, only add \n to line and
         write complitely prepared line to file"""
-        line = separator.join(line)
+        line = self.separator.join(line)
         line += '\n'
-        target_file.write(line)
+        self._source.write(line)
 
-    def write_line(self, prepered_line, target):
+    def write_line(self, prepered_line):
         """
         Will write data to output in new format
         based on old_values - list of string values
         """
-        self.write_line_to_file(prepered_line, target, self._separator)
+        self.write_line_to_file(prepered_line)
 
-    def write_header(self, target, old_data):
+    def write_header(self, old_data):
         """This method should be rewritten in child class"""
-        # write attributes
-        if self._attributes:  # attributes are passed as parameter
-            attrs_to_write = self._attributes
-        else:
-            attrs_to_write = old_data.attributes  # attributes are readed from source(old) file
-        return attrs_to_write
+        pass
 
     def ss_str(self, string, separator, max_split=0):
         """
@@ -247,23 +239,20 @@ class DataArff(Data):
     RELATION = "@relation"
     DATA = "@data"
 
-    def write_header(self, target, old_data):
-        if not self.relation_name and old_data:
+    def write_header(self, old_data):
+        if not self.relation_name:
             self._relation_name = old_data.relation_name
 
         # write relation name
-        target.write(self.RELATION + ' ' + self.relation_name + '\n\n')
+        self._source.write(self.RELATION + ' ' + self.relation_name + '\n\n')
 
-        attrs_to_write = super().write_header(target, old_data)
-        for attr in attrs_to_write:
+        for attr in old_data.attributes:
             line = (self.ATTRIBUTE + ' ' + str(attr.name) + ' '
-                    + attr.arff_repr(self.separator,
-                                     DataBivalent.bi_vals['neg'],
-                                     DataBivalent.bi_vals['pos']) + '\n')
-            target.write(line)
+                    + attr.arff_repr(self.separator) + '\n')
+            self._source.write(line)
 
         # write data symbol
-        target.write('\n' + self.DATA + '\n')
+        self._source.write('\n' + self.DATA + '\n')
 
     def get_header_info(self):
         header = self._get_header_str()
@@ -272,8 +261,8 @@ class DataArff(Data):
         self._index_data_start = self._parser.data_start
         self._header_attrs = self._parser.attributes
 
-    def prepare_line(self, line):
-        return super().prepare_line(self._parser.parse_line(line))
+    def prepare_line(self, line, scale=True):
+        return super().prepare_line(self._parser.parse_line(line), scale)
 
     def _get_header_str(self):
         header_to_parse = ''
@@ -296,27 +285,11 @@ class DataCsv(Data):
         super().__init__(source, str_attrs, str_objects,
                          separator, relation_name, none_val)
 
-    def write_header(self, target, old_data):
-        attrs_to_write = super().write_header(target, old_data)
+    def write_header(self, old_data):
         attrs_name = []
-        for attr in attrs_to_write:
+        for attr in old_data.attributes:
             attrs_name.append(attr.name)
-        self.write_line_to_file(attrs_name, target, self._separator)
-
-    # def get_header_info(self):
-    #     if not self._no_attrs_first_line:  # attrs are on first line
-    #         self._index_data_start = 1
-    #         if not self._str_attrs:
-    #             line = self._get_first_line()
-    #             str_values = self.ss_str(line, self.separator)
-    #             self._attributes = [Attribute(i, name) for i, name in enumerate(str_values)]
-    #         else:
-    #             next(self._source)  # skip first line with attributes
-    #     elif not self._str_attrs:  # attrs are not of first line and are not passed as parameter
-    #         line = self._get_first_line(False)
-    #         str_values = self.ss_str(line, self.separator)
-    #         self._attr_count = len(str_values)
-    #         self._attributes = [Attribute(i, 'attr_' + str(i)) for i in range(self._attr_count)]
+        self.write_line_to_file(attrs_name)
 
     def get_header_info(self):
         if not self._no_attrs_first_line:  # attributes are specified on first line
@@ -357,22 +330,19 @@ class DataData(Data):
     CONTINUOUS = "continuous"
     CLASS = "class"
 
-    def write_line(self, prepared_line, target):
+    def write_line(self, prepared_line):
         if self._classes:
             prepared_line.append(self._classes.pop())
-        super().write_line(prepared_line, target)
+        super().write_line(prepared_line)
 
-    def write_header(self, target, old_data):
-        attrs_to_write = super().write_header(target, old_data)
-        names_file = self._get_name_file(target.name)
+    def write_header(self, old_data):
+        names_file = self._get_name_file(self._source.name)
 
         with open(names_file, 'w') as f:
             f.write(self._get_class_occur() + ".\n")
-            for attr in attrs_to_write:
+            for attr in old_data.attributes:
                 line = (str(attr.name) + ': '
-                        + attr.data_repr(self.separator,
-                                         DataBivalent.bi_vals['neg'],
-                                         DataBivalent.bi_vals['pos']) + '.\n')
+                        + attr.data_repr(self.separator) + '.\n')
                 f.write(line)
 
     def get_header_info(self):
@@ -394,30 +364,18 @@ class DataData(Data):
 
 class DataBivalent(Data):
     """Data represented only by bivalnet values e.g 1/0"""
-
     bi_vals = {'pos': '1', 'neg': '0'}
-
-    def parse_old_attrs_for_scale(self, old_attrs):
-        """
-        Take dictionary into _attributes_temp,
-        where key are strings and values are indexes
-        of attributes.
-        Call this method to use data object as pattern in scaling.
-        """
-        self._attributes_temp = {attr.name: i for i, attr in enumerate(old_attrs)}
-
-    def write_data_scale(self, values, target_file):
-        """
-        Will write scaled data to output in new format
-        based on old_values - list of string values
-        dict_old_attrs = Dictionary where key is name of
-        attribute and value is index of this attribute.
-        """
-        pass
 
 
 class DataCxt(DataBivalent):
     """Burmeister data format"""
+
+    def __init__(self, source,
+                 str_attrs=None, str_objects=None,
+                 separator='', relation_name='', none_val=Data.NONE_VAL):
+        super().__init__(source, str_attrs, str_objects,
+                         separator, relation_name, none_val)
+
     sym_vals = {'X': 1, '.': 0}
     vals_sym = {1: 'X', 0: '.'}
 
@@ -446,15 +404,16 @@ class DataCxt(DataBivalent):
     def get_data_info(self, manager=None):
         pass
 
-    def prepare_line(self, line):
+    def prepare_line(self, line, scale=True):
         splitted = list(line.strip())
         result = []
         for val in splitted:
             result.append(str(DataCxt.sym_vals[val]))
-        return super().prepare_line(result)
+        return super().prepare_line(result, scale)
 
-    def write_header(self, target, old_data):
-        attrs_to_write = super().write_header(target, old_data)
+    def write_header(self, old_data):
+        target = self._source
+        attrs_to_write = old_data.attributes
 
         target.write('B\n')
         if not self.relation_name:
@@ -467,18 +426,11 @@ class DataCxt(DataBivalent):
         for attr in attrs_to_write:
             target.write(attr.name + '\n')
 
-    def write_data_scale(self, values, target_file):
-        result = []
-        for i, attr in enumerate(self._attributes):
-            scaled = attr.scale(self._attributes_temp, values)
-            result.append(DataCxt.vals_sym[int(scaled)])  # scaled val is converted to 0/1
-        self.write_line_to_file(result, target_file, '')
-
-    def write_line(self, prepared_line, target_file):
+    def write_line(self, prepared_line):
         result = []
         for val in prepared_line:
             result.append(DataCxt.vals_sym[int(val)])
-        self.write_line_to_file(result, target_file, '')
+        self.write_line_to_file(result)
 
 
 class DataDat(DataBivalent):
@@ -524,37 +476,20 @@ class DataDat(DataBivalent):
 
         self.get_attrs_info(fill_header_attrs)
 
-        # if self._attributes:
-        #     names = [attr.name for attr in self._attributes]
-        # else:
-        #     names = [str(i) for i in range(self._attr_count)]
-        # self._attributes = [(AttrScaleEnum(i, name).update(
-        #                     self.bi_vals['pos'], self._none_val)).update(
-        #                         self.bi_vals['neg'], self._none_val)
-        #                     for i, name in enumerate(names)]
-
     def get_data_info_for_browse(self, manager=None):
         self.get_data_info(manager)
 
-    def prepare_line(self, line):
+    def prepare_line(self, line, scale=True):
         splitted = super().ss_str(line, self.separator)
         result = ['0'] * (self._attr_count)
         for val in splitted:
             if val:
                 result[int(val)] = str(1)
-        return super().prepare_line(result)
+        return super().prepare_line(result, scale)
 
-    def write_data_scale(self, values, target_file):
-        result = []
-        for i, attr in enumerate(self._attributes):
-            scaled = attr.scale(self._attributes_temp, values)
-            if bool(int(scaled)):  # scaled value can be from Reals or True/False
-                result.append(str(i))
-        self.write_line_to_file(result, target_file, self._separator)
-
-    def write_line(self, line, target_file):
+    def write_line(self, line):
         result = []
         for i, val in enumerate(line):
             if bool(int(val)):
                 result.append(str(i))
-        self.write_line_to_file(result, target_file, self._separator)
+        self.write_line_to_file(result)
