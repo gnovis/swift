@@ -85,6 +85,10 @@ class AttrScale(Attribute):
         # expression to scaling
         self._expr_pattern = expr_pattern
 
+    @property
+    def attr_pattern(self):
+        return self._attr_pattern
+
     def scale(self, attrs, values):
         """
         Scale value according pattern.

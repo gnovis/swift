@@ -136,7 +136,7 @@ class Convertor(ManagerFca):
     def read_info(self):
         self._counter = EstimateCounter(self._old_data.source.name, self, gui=self._gui)
         # get information from source data
-        self._old_data.get_header_info()
+        self._old_data.get_attrs_info(self._old_data.get_header_info)
         self._old_data.get_data_info(self)
         if self._print_info:
             self._old_data.print_info()

@@ -4,7 +4,7 @@ import os
 import sys
 import tempfile
 
-from .attributes_fca import (Attribute, AttrScaleEnum)
+from .attributes_fca import (AttrScale, AttrScaleEnum)
 from .object_fca import Object
 from .parser_fca import ArgsParser, ArffParser, DataParser
 
@@ -26,7 +26,6 @@ class Data:
         string representation and must be parsed
         """
         self._objects = []
-        self._attributes = []
         self._source = source
         self._str_attrs = str_attrs
         self._str_objects = str_objects
@@ -36,10 +35,16 @@ class Data:
         self._index_data_start = 0
         self._obj_count = 0
         self._attr_count = 0
-
         self._temp_source = None
         if not self.source.seekable():
             self._temp_source = tempfile.TemporaryFile(mode='w+t', dir='./')
+
+        # attributes readed from data header
+        self._header_attrs = []
+        # attributes passed from user (parsed from str_attrs), this list will be iterated in prepare_line()
+        self._attributes = []
+        # dictionary where keys are keys of attribute (name (if possible read them from file) and index) and values are indexes of values in row data
+        self._template_attrs = {}
 
         self.prepare()
 
@@ -91,6 +96,16 @@ class Data:
             splitted = self.ss_str(self._str_objects, self.separator)
             self._objects = [Object(name) for name in splitted]
 
+    def get_attrs_info(self, fill_header_attrs_func):
+        fill_header_attrs_func()
+
+        if not self._attributes:
+            self._attributes = self._header_attrs  # reference will be point to the same list, but it should be ok
+
+        for attr in self._header_attrs:
+            self._template_attrs[str(attr.index)] = attr.index
+            self._template_attrs[attr.name] = attr.index
+
     def get_header_info(self):
         """
         Set attributes, objects, relation name and index_data_start.
@@ -124,9 +139,21 @@ class Data:
     def get_data_info_for_browse(self, manager=None):
         pass
 
-    def prepare_line(self, line):
+    def prepare_line(self, values):
         """If return empty list -> line is comment"""
-        return self.ss_str(line, self.separator)
+        if not isinstance(values, list):
+            values = self.ss_str(values, self.separator)
+        if not values:
+            return values
+        result = []
+        for attr in self._attributes:
+            key = attr.name  # TODO add key as attribute parameter, return attr_pattern if possible or name
+            if attr.attr_pattern:
+                key = attr.attr_pattern
+            index = self._template_attrs[key]
+            new_value = values[index]
+            result.append(new_value)
+        return result
 
     def write_line_to_file(self, line, target_file, separator):
         """
@@ -243,10 +270,10 @@ class DataArff(Data):
         self._parser.parse(header)
         self._relation_name = self._parser.relation_name
         self._index_data_start = self._parser.data_start
-        self._attributes = self._parser.attributes
+        self._header_attrs = self._parser.attributes
 
     def prepare_line(self, line):
-        return self._parser.parse_line(line)
+        return super().prepare_line(self._parser.parse_line(line))
 
     def _get_header_str(self):
         header_to_parse = ''
@@ -276,20 +303,32 @@ class DataCsv(Data):
             attrs_name.append(attr.name)
         self.write_line_to_file(attrs_name, target, self._separator)
 
+    # def get_header_info(self):
+    #     if not self._no_attrs_first_line:  # attrs are on first line
+    #         self._index_data_start = 1
+    #         if not self._str_attrs:
+    #             line = self._get_first_line()
+    #             str_values = self.ss_str(line, self.separator)
+    #             self._attributes = [Attribute(i, name) for i, name in enumerate(str_values)]
+    #         else:
+    #             next(self._source)  # skip first line with attributes
+    #     elif not self._str_attrs:  # attrs are not of first line and are not passed as parameter
+    #         line = self._get_first_line(False)
+    #         str_values = self.ss_str(line, self.separator)
+    #         self._attr_count = len(str_values)
+    #         self._attributes = [Attribute(i, 'attr_' + str(i)) for i in range(self._attr_count)]
+
     def get_header_info(self):
-        if not self._no_attrs_first_line:  # attrs are on first line
+        if not self._no_attrs_first_line:  # attributes are specified on first line
             self._index_data_start = 1
-            if not self._str_attrs:
-                line = self._get_first_line()
-                str_values = self.ss_str(line, self.separator)
-                self._attributes = [Attribute(i, name) for i, name in enumerate(str_values)]
-            else:
-                next(self._source)  # skip first line with attributes
-        elif not self._str_attrs:  # attrs are not of first line and are not passed as parameter
+            line = self._get_first_line()
+            str_values = self.ss_str(line, self.separator)
+            self._header_attrs = [AttrScale(i, name) for i, name in enumerate(str_values)]
+        else:  # attributes aren't specified on first line
             line = self._get_first_line(False)
             str_values = self.ss_str(line, self.separator)
             self._attr_count = len(str_values)
-            self._attributes = [Attribute(i, 'attr_' + str(i)) for i in range(self._attr_count)]
+            self._header_attrs = [AttrScale(i, str(i)) for i in range(self._attr_count)]
 
     def _get_first_line(self, move=True):
         """Return first line from data file"""
@@ -339,7 +378,7 @@ class DataData(Data):
     def get_header_info(self):
         parser = DataParser()
         parser.parse(self._get_name_file(self._source.name))
-        self._attributes = parser.attributes
+        self._header_attrs = parser.attributes
 
     def _get_class_occur(self):
         occur = []
@@ -398,7 +437,7 @@ class DataCxt(DataBivalent):
             new = AttrScaleEnum(k, attr_name)
             new.update(DataBivalent.bi_vals['pos'], self._none_val)
             new.update(DataBivalent.bi_vals['neg'], self._none_val)
-            self._attributes.append(new)
+            self._header_attrs.append(new)
 
         self._attr_count = columns
         self._obj_count = rows
@@ -412,7 +451,7 @@ class DataCxt(DataBivalent):
         result = []
         for val in splitted:
             result.append(str(DataCxt.sym_vals[val]))
-        return result
+        return super().prepare_line(result)
 
     def write_header(self, target, old_data):
         attrs_to_write = super().write_header(target, old_data)
@@ -455,7 +494,7 @@ class DataDat(DataBivalent):
         line_count = 0
         for i, line in enumerate(self.source):
             line_count += 1
-            splitted = super().prepare_line(line)
+            splitted = super().ss_str(line, self.separator)
             for val in splitted:
                 if val:
                     int_val = int(val)
@@ -476,27 +515,34 @@ class DataDat(DataBivalent):
 
         self._attr_count = max_val + 1
         self._obj_count = line_count
-        # These attributes are used only if attrs for new file
-        # are not specified
-        if self._attributes:
-            names = [attr.name for attr in self._attributes]
-        else:
-            names = [str(i) for i in range(self._attr_count)]
-        self._attributes = [(AttrScaleEnum(i, name).update(
-                            self.bi_vals['pos'], self._none_val)).update(
-                                self.bi_vals['neg'], self._none_val)
-                            for i, name in enumerate(names)]
+
+        def fill_header_attrs():
+            self._header_attrs = [(AttrScaleEnum(i, str(i)).update(
+                                  self.bi_vals['pos'], self._none_val)).update(
+                                      self.bi_vals['neg'], self._none_val)
+                                  for i in range(self._attr_count)]
+
+        self.get_attrs_info(fill_header_attrs)
+
+        # if self._attributes:
+        #     names = [attr.name for attr in self._attributes]
+        # else:
+        #     names = [str(i) for i in range(self._attr_count)]
+        # self._attributes = [(AttrScaleEnum(i, name).update(
+        #                     self.bi_vals['pos'], self._none_val)).update(
+        #                         self.bi_vals['neg'], self._none_val)
+        #                     for i, name in enumerate(names)]
 
     def get_data_info_for_browse(self, manager=None):
         self.get_data_info(manager)
 
     def prepare_line(self, line):
-        splitted = super().prepare_line(line)
+        splitted = super().ss_str(line, self.separator)
         result = ['0'] * (self._attr_count)
         for val in splitted:
             if val:
                 result[int(val)] = str(1)
-        return result
+        return super().prepare_line(result)
 
     def write_data_scale(self, values, target_file):
         result = []
