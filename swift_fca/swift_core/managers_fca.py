@@ -47,7 +47,7 @@ class Printer(ManagerFca):
 
     def read_info(self):
         self._counter = EstimateCounter(self._file_path, self)
-        self._data.get_attrs_info(self._old_data.get_header_info)
+        self._data.get_attrs_info(self._data.get_header_info)
         self._data.get_data_info(self)
 
     def print_info(self, file_path):
@@ -63,7 +63,7 @@ class Browser(ManagerFca):
 
     def read_info(self):
         self._counter = EstimateCounter(self._opened_file.name, self)
-        self._data.get_attrs_info(self._old_data.get_header_info)
+        self._data.get_attrs_info(self._data.get_header_info)
         self._data.get_data_info_for_browse(self)
         Data.skip_lines(self._data.index_data_start, self._opened_file)
 

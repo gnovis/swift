@@ -4,20 +4,20 @@ from .constants_fca import (FileType, RunParams)
 
 class ParamValidator:
     SUFFIXES = (FileType.ARFF, FileType.CSV, FileType.CXT, FileType.DAT, FileType.DATA)
-    PARAMS_FILTER = {'.arff.cxt': [[], [RunParams.TARGET_ATTRS, RunParams.TARGET_OBJECTS]],
-                     '.arff.dat': [[], [RunParams.TARGET_ATTRS]],
+    PARAMS_FILTER = {'.arff.cxt': [[RunParams.SOURCE_ATTRS], [RunParams.TARGET_OBJECTS]],
+                     '.arff.dat': [[RunParams.SOURCE_ATTRS], []],
                      '.arff.data': [[], [RunParams.CLASSES]],
                      '.csv.arff': [[RunParams.SOURCE_ATTRS], []],
-                     '.csv.cxt': [[], [RunParams.TARGET_ATTRS, RunParams.TARGET_OBJECTS]],
-                     '.csv.dat': [[], [RunParams.TARGET_ATTRS]],
+                     '.csv.cxt': [[RunParams.SOURCE_ATTRS], [RunParams.TARGET_OBJECTS]],
+                     '.csv.dat': [[RunParams.SOURCE_ATTRS], []],
                      '.csv.data': [[RunParams.SOURCE_ATTRS], [RunParams.CLASSES]],
                      '.cxt.data': [[], [RunParams.CLASSES]],
                      '.dat.arff': [[RunParams.SOURCE_ATTRS], []],
                      '.dat.csv': [[RunParams.SOURCE_ATTRS], []],
                      '.dat.cxt': [[RunParams.SOURCE_ATTRS], [RunParams.TARGET_OBJECTS]],
                      '.dat.data': [[RunParams.SOURCE_ATTRS], [RunParams.CLASSES]],
-                     '.data.dat': [[], [RunParams.TARGET_ATTRS]],
-                     '.data.cxt': [[], [RunParams.TARGET_ATTRS, RunParams.TARGET_OBJECTS]]}
+                     '.data.dat': [[RunParams.SOURCE_ATTRS], []],
+                     '.data.cxt': [[RunParams.SOURCE_ATTRS], [RunParams.TARGET_OBJECTS]]}
 
     SOURCE_ARGS_DISPLAY = {RunParams.SOURCE: "Source file",
                            RunParams.SOURCE_SEP: "Source separator",
@@ -25,7 +25,6 @@ class ParamValidator:
                            RunParams.NFL: "Attributes on first line"}
     TARGET_ARGS_DISPLAY = {RunParams.TARGET: "Target file",
                            RunParams.TARGET_SEP: "Target separator",
-                           RunParams.TARGET_ATTRS: "Target attributes",
                            RunParams.TARGET_OBJECTS: "Target objects",
                            RunParams.RELATION_NAME: "Relation name",
                            RunParams.CLASSES: "Classes"}

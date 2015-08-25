@@ -194,6 +194,7 @@ class Data:
         for attr in self._attributes:
             attr.print_self(out_file)
 
+    @staticmethod
     def skip_lines(line_i, f):
         file_iter = iter(f)
         for i in range(line_i):

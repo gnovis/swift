@@ -525,6 +525,9 @@ class SwiftTableModel(QtCore.QAbstractTableModel):
 
 
 class ParamsDialog(QtGui.QDialog):
+
+    NO_PARAMS = 'no_params'
+
     def __init__(self, parent):
         super().__init__(parent)
         self.widgets = collections.OrderedDict()
@@ -574,12 +577,11 @@ class ParamsDialog(QtGui.QDialog):
 
 class SourceParamsDialog(ParamsDialog):
 
-    NO_PARAMS = 'no_params'
-    format_poss_args = {FileType.ARFF: (RunParams.SOURCE_SEP),
+    format_poss_args = {FileType.ARFF: (RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP),
                         FileType.CSV: (RunParams.SOURCE_SEP, RunParams.NFL, RunParams.SOURCE_ATTRS),
-                        FileType.CXT: (NO_PARAMS),
+                        FileType.CXT: (RunParams.SOURCE_ATTRS),
                         FileType.DAT: (RunParams.SOURCE_ATTRS),
-                        FileType.DATA: (RunParams.SOURCE_SEP)}
+                        FileType.DATA: (RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP)}
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -587,7 +589,6 @@ class SourceParamsDialog(ParamsDialog):
         # form lines
         self.line_separator = FormLine("Separator", default_val=',')
         self.line_str_attrs = FormLine("Attributes")
-        self.line_str_attrs.setPlaceholderText("str_attr[s], enum_attr[e], date_attr[d, '%Y-%m-%d'], num_attr[n], no_type_attr[]")
         # check box
         self.cb_nfl = FormCheckBox('Attributes on first line')
 
@@ -595,7 +596,6 @@ class SourceParamsDialog(ParamsDialog):
         self.widgets[RunParams.NFL] = self.cb_nfl
         self.widgets[RunParams.SOURCE_ATTRS] = self.line_str_attrs
         self.widgets[RunParams.SOURCE_SEP] = self.line_separator
-        self.widgets[self.NO_PARAMS] = FormLabel("No arguments can be set.")
 
         suffix = os.path.splitext(parent.source)[1]  # source file must be set!
         self.fill_layout(suffix)
@@ -606,8 +606,8 @@ class TargetParamsDialog(ParamsDialog):
 
     format_poss_args = {FileType.ARFF: (RunParams.TARGET_SEP),
                         FileType.CSV: (RunParams.TARGET_SEP),
-                        FileType.CXT: (RunParams.TARGET_ATTRS, RunParams.TARGET_OBJECTS),
-                        FileType.DAT: (RunParams.TARGET_ATTRS),
+                        FileType.CXT: (RunParams.TARGET_OBJECTS),
+                        FileType.DAT: (ParamsDialog.NO_PARAMS),
                         FileType.DATA: (RunParams.CLASSES, RunParams.TARGET_SEP)}
 
     def __init__(self, parent):
@@ -615,22 +615,18 @@ class TargetParamsDialog(ParamsDialog):
         self.params = parent.target_params
         # form lines
         self.line_separator = FormLine("Separator", default_val=',')
-        self.line_str_attrs = FormLine("Scale Attributes")
         self.line_str_objects = FormLine("Objects")
         self.line_rel_name = FormLine("Relation Name")
         self.line_classes = FormLine("Classes")
         # placeholders
-        placeholder = ("new_str=old_str[s, 'moon[1-9]'], new_date=old_date[d, date>2015, '%Y']," +
-                       " new_num=old_num[n, age>45], same_name_enum[e, True]")
-        self.line_str_attrs.setPlaceholderText(placeholder)
         self.line_str_objects.setPlaceholderText("obj1_name, obj2_name, obj3_name")
         self.line_classes.setPlaceholderText("cls1_name, cls2_name, cls3_name")
         # layout
         self.widgets[RunParams.CLASSES] = self.line_classes
         self.widgets[RunParams.TARGET_SEP] = self.line_separator
         self.widgets[RunParams.TARGET_OBJECTS] = self.line_str_objects
-        self.widgets[RunParams.TARGET_ATTRS] = self.line_str_attrs
         self.widgets[RunParams.RELATION_NAME] = self.line_rel_name
+        self.widgets[self.NO_PARAMS] = FormLabel("No arguments can be set.")
         suffix = os.path.splitext(parent.target)[1]
         self.fill_layout(suffix)
         self.setWindowTitle('Arguments for target file')
