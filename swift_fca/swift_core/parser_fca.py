@@ -97,7 +97,7 @@ class ArgsParser(Parser):
             attribute = cls(index, new, **curr_next_args)
             self._attributes.append(attribute)
 
-    def parse(self, str_args):
+    def parse(self, str_args, max_attrs_i):
 
         def expand_interval(tokens):
             val_from = int(tokens[0])
@@ -124,7 +124,7 @@ class ArgsParser(Parser):
         PARAMS = Or(STR ^ ENUM ^ DATE ^ NUM ^ GEN ^ NO_SCALE)
 
         NAME = Word(printables, excludeChars="[]-,=")
-        INTERVAL = Word(nums) + Suppress("-") + Word(nums)
+        INTERVAL = Optional(Word(nums), default=0) + Suppress("-") + Optional(Word(nums), default=max_attrs_i)
         INTERVAL.setParseAction(expand_interval)
         ATTR_SEQUENCE = Group(delimitedList((INTERVAL | NAME)))
         VAR_FIRST_PART = Optional(ATTR_SEQUENCE + Suppress('='), default='') + ATTR_SEQUENCE

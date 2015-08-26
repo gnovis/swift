@@ -46,7 +46,9 @@ class Data:
         # dictionary where keys are keys of attribute (name (if possible read them from file) and index) and values are indexes of values in row data
         self._template_attrs = {}
 
-        self.prepare()
+        if self.str_objects:
+            splitted = self.ss_str(self._str_objects, ',')
+            self._objects = [Object(name) for name in splitted]
 
     @property
     def source(self):
@@ -86,26 +88,27 @@ class Data:
         """Does not depends on attributes property"""
         return self._attr_count
 
-    def prepare(self):
+    def get_attrs_info(self, fill_header_attrs_func):
+
+        # create header attributes and fill _header_attrs slot
+        fill_header_attrs_func()
+
+        # create attributes from argument entered by the user, fill _attributes
         if self.str_attrs:
             parser = ArgsParser()
-            parser.parse(self.str_attrs)
+            parser.parse(self.str_attrs, (len(self._header_attrs)-1))
             self._attributes = parser.attributes
-
-        if self.str_objects:
-            splitted = self.ss_str(self._str_objects, ',')
-            self._objects = [Object(name) for name in splitted]
-
-    def get_attrs_info(self, fill_header_attrs_func):
-        fill_header_attrs_func()
 
         if not self._attributes:
             self._attributes = self._header_attrs  # reference will be point to the same list, but it should be ok
         else:
+            # rename attributes to string names if has index names
             for attr in self._attributes:
                 if attr.index is not None and str(attr.index) == attr.name:
                     attr.name = self._header_attrs[attr.index].name
 
+        # fill dictionary which is used for filtering attributes in prepare_line function,
+        # keys are indexes and names of all attributes (given from header), values are indexes of attributes in line (object)
         for attr in self._header_attrs:
             self._template_attrs[str(attr.index)] = attr.index
             self._template_attrs[attr.name] = attr.index
