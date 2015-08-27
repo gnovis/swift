@@ -1,39 +1,26 @@
 #!/bin/bash
 
-format=CXT
-source_file=test.cxt
-classes="Monday, Friday, Friday, Sunday, Theusday, Theusday, Wednesday, Theusday, Monday, Sunday, Suterday, Wednesday, Monday, Sunday"
+source ../../test_config
 
-echo $format
-echo "====="
-swift="../../../swift-console"
+format=$CXT
+source_file=test.cxt
 source_app="cat test.cxt"
 source_format=cxt
 
+print_header $format
+
 # -> csv
-$source_app | $swift -sf "$source_format" -tf csv
-echo
-echo $format "-> CSV"
-echo
-echo "#####################################################################################"
+$source_app | $app -sf "$source_format" -tf csv
+print_test_info $format $CSV
 
 # -> arff
-$source_app | $swift -sf "$source_format" -tf arff
-echo
-echo $format "-> ARFF"
-echo
-echo "#####################################################################################"
+$source_app | $app -sf "$source_format" -tf arff
+print_test_info $format $ARFF
 
 # -> dat
-$source_app | $swift -sf "$source_format" -tf dat
-echo
-echo $format "-> DAT"
-echo
-echo "#####################################################################################"
+$source_app | $app -sf "$source_format" -tf dat
+print_test_info $format $DAT
 
 # -> data
-$source_app | $swift -sf "$source_format" -tf data -cls "$classes"
-echo
-echo $format "-> DATA"
-echo
-echo "#####################################################################################"
+$source_app | $app -sf "$source_format" -tf data -cls "$classes"
+print_test_info $format $DATA

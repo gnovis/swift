@@ -1,39 +1,27 @@
 #!/bin/bash
 
-format=DATA
+source ../../test_config
+
+format=$DATA
 new_str_attrs="SEX=class[e,woman], WORK=work[e, true], AGE=age[n, 20<x<50], HEIGHT=height[n, y>165], WEIGHT=weight[n, x<90], JOB1=job[e, doctor], JOB2=job[e, student]"
 new_str_objects="0, 1, 2, 3"
 source_app="cat test.data"
-swift="../../../swift-console"
-source_format="data"
+source_format=data
 
-echo $format
-echo "====="
+print_header $format
 
 # -> cxt
-$source_app | $swift -sf $source_format -tf cxt -ta "$new_str_attrs" -to "$new_str_objects"
-echo
-echo $format "-> CXT"
-echo
-echo "#####################################################################################"
+$source_app | $app -sf $source_format -tf cxt -sa "$new_str_attrs" -to "$new_str_objects"
+print_test_info $format $CXT
 
 # -> csv
-$source_app | $swift -sf $source_format -tf csv
-echo
-echo $format "-> CSV"
-echo
-echo "#####################################################################################"
+$source_app | $app -sf $source_format -tf csv
+print_test_info $format $CSV
 
 # -> arff
-$source_app | $swift -sf $source_format -tf arff
-echo
-echo $format "-> ARFF"
-echo
-echo "#####################################################################################"
+$source_app | $app -sf $source_format -tf arff
+print_test_info $format $ARFF
 
 # -> dat
-$source_app | $swift -sf $source_format -tf dat -ta "$new_str_attrs"
-echo
-echo $format "-> DAT"
-echo
-echo "#####################################################################################"
+$source_app | $app -sf $source_format -tf dat -sa "$new_str_attrs"
+print_test_info $format $DAT

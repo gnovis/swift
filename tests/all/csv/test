@@ -1,30 +1,27 @@
 #!/bin/bash
 
-format=CSV
+source ../../test_config
+
+format=$CSV
 new_str_attrs="WINDY=windy[e, TRUE], SUNNY=outlook[e, sunny], ORDER=order[], TEMP=temperature[n, x>80], HUM=humidity[n, 70<=x<=80], NOTE=note[s, 'hell|[0-9]'], BIRTHDAY=birthday[d, date=='2001-04-03', '%Y-%m-%d']"  
-new_str_attrs_indexes="WINDY=4[e, TRUE], SUNNY=1[e, sunny], ORDER=6[], TEMP=2[n, x>80], HUM=3[n, 70<=x<=80], NOTE=0[s, 'hell|[0-9]'], BIRTHDAY=7[d, date=='2001-04-03', '%Y-%m-%d']"  
-new_str_objects="0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13"
 old_str_attrs="note[s], outlook[e], temperature[n], humidity[n], windy[e], play[e], order[e], birthday[d,'%Y-%m-%d']"
-classes="Monday, Friday, Friday, Sunday, Theusday, Theusday, Wednesday, Theusday, Monday, Sunday, Suterday, Wednesday, Monday, Sunday"
 source_file=test.csv
 source_file_nfl=test_nfl.csv
-app="../../../swift-console"
 
-echo $format
-echo "====="
+print_header $format
 
 # -> cxt
 $app -s $source_file_nfl -t csv.cxt -sa "$new_str_attrs_indexes" -to "$new_str_objects" -nfl
-echo $format "-> CXT"
+print_test_info $format $CXT
 
 # -> arff
 $app -s $source_file -t csv.arff -sa "$old_str_attrs" 
-echo $format "-> ARFF"
+print_test_info $format $ARFF
 
 # -> dat
 $app -s $source_file -t csv.dat -sa "$new_str_attrs" 
-echo $format "-> DAT"
+print_test_info $format $DAT
 
 # -> data
 $app -s $source_file -t csv.data -cls "$classes" -sa "$old_str_attrs"
-echo $format "-> DATA"
+print_test_info $format $DATA

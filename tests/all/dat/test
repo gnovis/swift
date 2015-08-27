@@ -1,28 +1,25 @@
 #!/bin/bash
 
-format=DAT
+source ../../test_config
+
+format=$DAT
 source_file=test.dat
-
-new_str_objects="0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13"
-classes="Monday, Friday, Friday, Sunday, Theusday, Theusday, Wednesday, Theusday, Monday, Sunday, Suterday, Wednesday, Monday, Sunday"
 new_str_attrs="note=0[], outlook=1[], temperature=2[], humidity=3[], windy=4[], play=5[]"
-app="../../../swift-console"
 
-echo $format
-echo "====="
+print_header $format
 
 # -> csv
 $app -s $source_file -t dat.csv -sa "$new_str_attrs"
-echo $format "-> CSV"
+print_test_info $format $CSV
 
 # -> arff
 $app -s $source_file -t dat.arff -sa "$new_str_attrs"
-echo $format "-> ARFF"
+print_test_info $format $ARFF
 
 # -> cxt
 $app -s $source_file -t dat.cxt -sa "$new_str_attrs" -to "$new_str_objects"
-echo $format "-> CXT"
+print_test_info $format $CXT
 
 # -> data
 $app -s $source_file -t dat.data -sa "$new_str_attrs" -cls "$classes"
-echo $format "-> DATA"
+print_test_info $format $DATA

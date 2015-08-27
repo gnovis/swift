@@ -1,7 +1,7 @@
 Sunday,Monday,Wednesday,Suterday,Theusday,Friday.
-note: 1,0.
-outlook: 1,0.
-temperature: 1,0.
-humidity: 1,0.
-windy: 1,0.
-play: 1,0.
+note: 0,1.
+outlook: 0,1.
+temperature: 0,1.
+humidity: 0,1.
+windy: 0,1.
+play: 0,1.
