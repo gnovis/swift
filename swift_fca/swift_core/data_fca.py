@@ -389,7 +389,7 @@ class DataCxt(DataBivalent):
 
     def get_header_info(self):
         self.get_not_empty_line(self.source)  # skip B
-        self._relation_name = self.get_not_empty_line(self.source)
+        self._relation_name = next(self.source)
 
         rows = int(self.get_not_empty_line(self.source))
         columns = int(self.get_not_empty_line(self.source))
@@ -422,6 +422,8 @@ class DataCxt(DataBivalent):
     def write_header(self, old_data):
         target = self._source
         attrs_to_write = old_data.attributes
+        if not self._objects:
+            self._objects = [Object(str(i)) for i in range(old_data.obj_count)]
 
         target.write('B\n')
         if not self.relation_name:

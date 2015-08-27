@@ -100,7 +100,6 @@ class Convertor(ManagerFca):
         self._gui = gui
         self._source_cls = self.get_data_class(old)
         self._target_cls = self.get_data_class(new)
-        self._scaling = self.is_scaling()
         self._old_data = self._source_cls(**old)
         self._new_data = self._target_cls(**new)
         self._print_info = print_info
@@ -123,14 +122,6 @@ class Convertor(ManagerFca):
 
     def update_percent_converted(self):
         self.next_percent_converted.emit()
-
-    def is_scaling(self):
-        if (self._source_cls == DataCsv or
-            self._source_cls == DataArff or
-            self._source_cls == DataData) and (self._target_cls == DataDat or
-                                               self._target_cls == DataCxt):
-            return True
-        return False
 
     def read_info(self):
         self._counter = EstimateCounter(self._old_data.source.name, self, gui=self._gui)
