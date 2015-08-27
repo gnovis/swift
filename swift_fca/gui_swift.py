@@ -91,6 +91,9 @@ class GuiSwift(QtGui.QWidget):
         self.btn_convert = QtGui.QPushButton("Convert")
         self.btn_browse = QtGui.QPushButton("Browse")
         self.btn_export_info = QtGui.QPushButton("Export Info")
+        self.btn_s_orig_data = QtGui.QPushButton("Original data")
+        self.btn_t_orig_data = QtGui.QPushButton("Original data")
+
         self.file_filter = "FCA files (*.arff *.cxt *.data *.dat *.csv);;All(*)"
 
         # Buttons tool-tip
@@ -111,10 +114,14 @@ class GuiSwift(QtGui.QWidget):
         self.btn_browse.setEnabled(False)
         self.btn_export_info.setEnabled(False)
         self.btn_convert.setEnabled(False)
+        self.btn_s_orig_data.setEnabled(False)
+        self.btn_t_orig_data.setEnabled(False)
         btn_s_select.clicked.connect(self.select_source)
         btn_t_select.clicked.connect(self.select_target)
         self.btn_browse.clicked.connect(self.browse_source)
         self.btn_convert.clicked.connect(self.convert)
+        self.btn_s_orig_data.clicked.connect(lambda: OriginalDataDialog(self._source).exec_())
+        self.btn_t_orig_data.clicked.connect(lambda: OriginalDataDialog(self._target).exec_())
 
         # Checkbox
         self.chb_browse_convert = QtGui.QCheckBox("Browse data after convert")
@@ -141,8 +148,10 @@ class GuiSwift(QtGui.QWidget):
         hbox_s_btn_set.addWidget(self.btn_convert)
         hbox_s_btn_set.addWidget(self.btn_export_info)
         hbox_s_btn_set.addWidget(self.btn_browse)
+        hbox_s_btn_set.addWidget(self.btn_s_orig_data)
         hbox_s_btn_set.addWidget(self.btn_s_params)
         hbox_t_btn_set.addWidget(self.chb_browse_convert)
+        hbox_t_btn_set.addWidget(self.btn_t_orig_data)
         hbox_t_btn_set.addWidget(self.btn_t_params)
 
         grid = QtGui.QGridLayout()
@@ -202,12 +211,14 @@ class GuiSwift(QtGui.QWidget):
             self.btn_s_params.setEnabled(True)
             self.btn_browse.setEnabled(True)
             self.btn_export_info.setEnabled(True)
+            self.btn_s_orig_data.setEnabled(True)
             self._source = sender.text()
         else:
             color = self.Colors.RED
             self.btn_s_params.setEnabled(False)
             self.btn_browse.setEnabled(False)
             self.btn_export_info.setEnabled(False)
+            self.btn_s_orig_data.setEnabled(False)
             self.browser_source = None
             self.clear_table(self.table_view_source)
             self._source = None
@@ -228,10 +239,15 @@ class GuiSwift(QtGui.QWidget):
             self.clear_table(self.table_view_target)
             self._target_params.clear()
             self.btn_t_params.setEnabled(True)
+            if os.path.isfile(sender.text()):
+                self.btn_t_orig_data.setEnabled(True)
+            else:
+                self.btn_t_orig_data.setEnabled(False)
             self._target = sender.text()
         else:
             color = self.Colors.RED
             self.btn_t_params.setEnabled(False)
+            self.btn_t_orig_data.setEnabled(False)
             self.browser_target = None
             self.clear_table(self.table_view_target)
             self._target = None
@@ -573,6 +589,51 @@ class ParamsDialog(QtGui.QDialog):
 
     def showEvent(self, event):
         self.fill_widgets()
+
+
+class OriginalDataDialog(QtGui.QDialog):
+
+    def __init__(self, source_path, parent=None):
+        super().__init__(parent)
+        self.source_path = source_path
+        self.load_count = 50
+
+        self.init_ui()
+
+        self.source = source_path
+        self.source = open(source_path, 'r')
+        self.data_view.setPlainText(self.load_next(self.load_count))
+
+    def init_ui(self):
+        hbox = QtGui.QVBoxLayout(self)
+        self.data_view = QtGui.QPlainTextEdit()
+        self.data_view.setReadOnly(True)
+        self.data_view.verticalScrollBar().valueChanged.connect(self.fill_next)
+        hbox.addWidget(self.data_view)
+        buttons = QtGui.QDialogButtonBox(
+            QtGui.QDialogButtonBox.Close, QtCore.Qt.Horizontal, self)
+        buttons.rejected.connect(self.reject)
+        hbox.addWidget(buttons)
+        self.resize(700, 400)
+        self.setWindowTitle(self.source_path)
+
+    def reject(self):
+        self.source.close()
+        super().reject()
+
+    def fill_next(self, value):
+        if self.data_view.verticalScrollBar().maximum() == value:
+            new_rows = self.load_next(self.load_count)
+            self.data_view.moveCursor(QtGui.QTextCursor.End)
+            self.data_view.insertPlainText(new_rows)
+
+    def load_next(self, count):
+        new_rows = ""
+        for i, line in enumerate(self.source):
+            new_rows += line
+            if i == count:
+                break
+        return new_rows
 
 
 class SourceParamsDialog(ParamsDialog):
