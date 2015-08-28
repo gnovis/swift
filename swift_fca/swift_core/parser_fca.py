@@ -200,6 +200,9 @@ class ArffParser(Parser):
     def data_start(self):
         return self._data_start
 
+    def get_values(self, t):
+        return {'values': t[0].asList()}
+
     def parse(self, header):
         comment = self._comment()
         quoted = quotedString.copy().setParseAction(removeQuotes)
@@ -207,8 +210,11 @@ class ArffParser(Parser):
         relation = (Suppress(CaselessLiteral("@relation")) +
                     Optional(restOfLine, default='default_name')('rel_name').setParseAction(lambda t: t.rel_name.strip()))
         relation_part = ZeroOrMore(comment) + relation + ZeroOrMore(comment)
-        nominal = (Suppress(Literal("{")) +
-                   Group(delimitedList(string, delim=self._separator)) + Suppress(Literal("}"))).setParseAction(lambda t: self.ENUM)
+        nominal = (Empty().copy().setParseAction(lambda t: self.ENUM) +
+                   Suppress(Literal("{")) +
+                   Group(delimitedList(string, delim=self._separator))("next_arg").setParseAction(self.get_values) +
+                   Suppress(Literal("}")))
+
         date = CaselessLiteral("date") + Optional(CharsNotIn("{},\n"))("next_arg").setParseAction(self._adapt_date_format)
         attributes_part = Forward()
         relational = CaselessLiteral("relational") + attributes_part + Suppress(CaselessLiteral("@end")) + string
@@ -250,9 +256,9 @@ class ArffParser(Parser):
         return attr
 
     def _adapt_date_format(self, tokens):
-        date_format = tokens.date_format.strip()
+        date_format = tokens.next_arg.strip()
         if not date_format:
-            date_format = '%Y-%m-%d'
+            date_format = DateParser.ISO_FORMAT
         return {'date_format': date_format}
 
     def _linearize_attrs(self, attrs, parent_name=""):
@@ -335,7 +341,8 @@ class DataParser(Parser):
     def _create_attribute(self, tokens):
         if tokens.type == "ignore":
             return
-        attr = self.ATTR_CLASSES[tokens.type](self._index, tokens.name)
+        kwargs = tokens.get('next_arg', defaultValue={})
+        attr = self.ATTR_CLASSES[tokens.type](self._index, tokens.name, **kwargs)
         self._attributes.append(attr)
         self._index += 1
 
@@ -352,7 +359,8 @@ class DataParser(Parser):
         string = Word(printables, excludeChars="|?,:").setParseAction(self._remove_dots)
         comment = "|" + restOfLine
         delimiter = Suppress(".") | LineEnd()
-        enum = Group(delimitedList(string)).setParseAction(lambda t: self.ENUM)
+        enum = (Empty().copy().setParseAction(lambda t: self.ENUM) +
+                Group(delimitedList(string))("next_arg").setParseAction(lambda t: {'values': t.next_arg.asList()}))
         discrete = Literal("discrete") + Suppress(Word(nums))
         attr_type = (Literal("continuous") | Literal("ignore") | discrete | enum)("type")
         attribute = string("name") + Suppress(":") + attr_type

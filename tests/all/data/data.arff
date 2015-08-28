@@ -1,10 +1,10 @@
 @relation 
 
 @attribute age numeric
-@attribute eye-color { green,blue,red }
+@attribute eye-color { blue,red,green,brown }
 @attribute height numeric
 @attribute weight numeric
-@attribute job { pilot,doctor,teacher,student }
+@attribute job { doctor,teacher,pilot,student }
 @attribute vegan { false }
 @attribute work { true,false }
 @attribute class { man,woman }

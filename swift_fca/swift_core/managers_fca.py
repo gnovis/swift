@@ -8,11 +8,25 @@ from .constants_fca import (FileType, RunParams)
 
 
 class ManagerFca(QtCore.QObject):
-    EXTENSIONS = {FileType.CSV: DataCsv,
-                  FileType.ARFF: DataArff,
-                  FileType.DAT: DataDat,
-                  FileType.CXT: DataCxt,
-                  FileType.DATA: DataData}
+    CSV = FileType.CSV
+    ARFF = FileType.ARFF
+    DAT = FileType.DAT
+    CXT = FileType.CXT
+    DATA = FileType.DATA
+
+    EXTENSIONS = {CSV: DataCsv,
+                  ARFF: DataArff,
+                  DAT: DataDat,
+                  CXT: DataCxt,
+                  DATA: DataData}
+
+    # source+target -> read / don't read
+    READ_DATA = {CSV+CSV: False, CSV+ARFF: True, CSV+DAT: False, CSV+CXT: True, CSV+DATA: True,
+                 ARFF+ARFF: False, ARFF+DAT: False, ARFF+CXT: True, ARFF+DATA: False, ARFF+CSV: False,
+                 DAT+DAT: True, DAT+CXT: True, DAT+DATA: True, DAT+CSV: True, DAT+ARFF: True,
+                 CXT+CXT: False, CXT+DATA: False, CXT+CSV: False, CXT+ARFF: False, CXT+DAT: False,
+                 DATA+DATA: False, DATA+CSV: False, DATA+ARFF: True, DATA+DAT: False, DATA+CXT: True}
+
     # Signals
     next_percent = QtCore.pyqtSignal()
 
@@ -98,24 +112,30 @@ class Convertor(ManagerFca):
     def __init__(self, old, new, print_info=False, gui=False):
         super().__init__()
         self._gui = gui
-        self._source_cls = self.get_data_class(old)
-        self._target_cls = self.get_data_class(new)
+        self._source_ext = self.get_extension(old)
+        self._target_ext = self.get_extension(new)
+
+        self._source_cls = self.get_data_class(self._source_ext)
+        self._target_cls = self.get_data_class(self._target_ext)
         self._old_data = self._source_cls(**old)
         self._new_data = self._target_cls(**new)
         self._print_info = print_info
 
-    def get_data_class(self, args):
-        f = args['source']
-        if not f.seekable():
-            suff = '.' + args['format']
-            del args['format']
-        else:
-            suff = os.path.splitext(f.name)[1]
-        return self.EXTENSIONS[suff]
-
     @property
     def source_line_count(self):
         return self._source_line_count
+
+    def get_extension(self, args):
+        f = args['source']
+        if not f.seekable():
+            ext = '.' + args['format']
+            del args['format']
+        else:
+            ext = os.path.splitext(f.name)[1]
+        return ext
+
+    def get_data_class(self, ext):
+        return self.EXTENSIONS[ext]
 
     def update_convert_counter(self):
         self._counter.update()
@@ -127,7 +147,8 @@ class Convertor(ManagerFca):
         self._counter = EstimateCounter(self._old_data.source.name, self, gui=self._gui)
         # get information from source data
         self._old_data.get_attrs_info(self._old_data.get_header_info)
-        self._old_data.get_data_info(self)
+        read_data = self.READ_DATA[self._source_ext + self._target_ext]
+        self._old_data.get_data_info(self, read=read_data)
         if self._print_info:
             self._old_data.print_info()
         # this is for progress bar

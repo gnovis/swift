@@ -190,10 +190,10 @@ class AttrScaleDate(AttrScaleNumeric):
 
 
 class AttrScaleEnum(AttrScale):
-    def __init__(self, index, name, attr_pattern=None, expr_pattern=None):
+    def __init__(self, index, name, attr_pattern=None, expr_pattern=None, values=[]):
         super().__init__(index, name, AttrType.NOMINAL,
                          attr_pattern, expr_pattern)
-        self._values = []
+        self._values = values.copy()
 
     def scale(self, value):
         return value == self._expr_pattern

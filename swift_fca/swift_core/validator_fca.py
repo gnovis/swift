@@ -4,20 +4,17 @@ from .constants_fca import (FileType, RunParams)
 
 class ParamValidator:
     SUFFIXES = (FileType.ARFF, FileType.CSV, FileType.CXT, FileType.DAT, FileType.DATA)
-    PARAMS_FILTER = {'.arff.cxt': [[RunParams.SOURCE_ATTRS], [RunParams.TARGET_OBJECTS]],
+    PARAMS_FILTER = {'.arff.cxt': [[RunParams.SOURCE_ATTRS], []],
                      '.arff.dat': [[RunParams.SOURCE_ATTRS], []],
                      '.arff.data': [[], [RunParams.CLASSES]],
                      '.csv.arff': [[RunParams.SOURCE_ATTRS], []],
-                     '.csv.cxt': [[RunParams.SOURCE_ATTRS], [RunParams.TARGET_OBJECTS]],
+                     '.csv.cxt': [[RunParams.SOURCE_ATTRS], []],
                      '.csv.dat': [[RunParams.SOURCE_ATTRS], []],
                      '.csv.data': [[RunParams.SOURCE_ATTRS], [RunParams.CLASSES]],
                      '.cxt.data': [[], [RunParams.CLASSES]],
-                     '.dat.arff': [[RunParams.SOURCE_ATTRS], []],
-                     '.dat.csv': [[RunParams.SOURCE_ATTRS], []],
-                     '.dat.cxt': [[RunParams.SOURCE_ATTRS], [RunParams.TARGET_OBJECTS]],
-                     '.dat.data': [[RunParams.SOURCE_ATTRS], [RunParams.CLASSES]],
+                     '.dat.data': [[], [RunParams.CLASSES]],
                      '.data.dat': [[RunParams.SOURCE_ATTRS], []],
-                     '.data.cxt': [[RunParams.SOURCE_ATTRS], [RunParams.TARGET_OBJECTS]]}
+                     '.data.cxt': [[RunParams.SOURCE_ATTRS], []]}
 
     SOURCE_ARGS_DISPLAY = {RunParams.SOURCE: "Source file",
                            RunParams.SOURCE_SEP: "Source separator",
