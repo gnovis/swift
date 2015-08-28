@@ -665,9 +665,9 @@ class SourceParamsDialog(ParamsDialog):
 
 class TargetParamsDialog(ParamsDialog):
 
-    format_poss_args = {FileType.ARFF: (RunParams.TARGET_SEP),
+    format_poss_args = {FileType.ARFF: (RunParams.TARGET_SEP, RunParams.RELATION_NAME),
                         FileType.CSV: (RunParams.TARGET_SEP),
-                        FileType.CXT: (RunParams.TARGET_OBJECTS),
+                        FileType.CXT: (RunParams.TARGET_OBJECTS, RunParams.RELATION_NAME),
                         FileType.DAT: (ParamsDialog.NO_PARAMS),
                         FileType.DATA: (RunParams.CLASSES, RunParams.TARGET_SEP)}
 
