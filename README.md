@@ -22,9 +22,10 @@ Example: `"obj1, obj2, obj3, ... "`
 ```
 <formula_list> ::= <formula> | <formula> <comma> <formula_list>
 <formula> ::= <formula_first_part> <formula_second_part>
-<formula_first_part> ::= (<name> "=")? <name>
+<formula_first_part> ::= (<names> "=")? <names>
 <formula_second_part> ::= "[" <args>? "]"
-<name> ::= \w+
+<key> ::= \w+ | \d? "-" \d?
+<names> ::= <key> | <key> <comma> <names>
 <args> ::= <num_arg> | <enum_arg> | <str_arg> | <date_arg> | <no_scale_arg>
 <num_arg> ::= "n" <comma> <num_expr>
 <enum_arg> ::= "e" <comma> "'" \w+ "'"
