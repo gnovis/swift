@@ -20,3 +20,4 @@ class FileType:
     DAT = ".dat"
     CXT = ".cxt"
     DATA = ".data"
+    NAMES = ".names"

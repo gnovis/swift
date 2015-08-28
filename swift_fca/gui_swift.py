@@ -63,7 +63,7 @@ class GuiSwift(QtGui.QWidget):
         self.line_source.setObjectName('line_source')
         self.line_target = QtGui.QLineEdit()
         self.line_target.setObjectName('line_target')
-        regexp = QtCore.QRegExp('^.+\.(arff|data|dat|cxt|csv)$')
+        regexp = QtCore.QRegExp('^.+\.(arff|data|names|dat|cxt|csv)$')
         line_validator = QtGui.QRegExpValidator(regexp)
         self.set_line_prop(self.line_source, line_validator)
         self.set_line_prop(self.line_target, line_validator)
@@ -94,7 +94,7 @@ class GuiSwift(QtGui.QWidget):
         self.btn_s_orig_data = QtGui.QPushButton("Original data")
         self.btn_t_orig_data = QtGui.QPushButton("Original data")
 
-        self.file_filter = "FCA files (*.arff *.cxt *.data *.dat *.csv);;All(*)"
+        self.file_filter = "FCA files (*.arff *.cxt *.data *.names *.dat *.csv);;All(*)"
 
         # Buttons tool-tip
         btn_s_select.setToolTip("Select existing data file in one of the format: ARFF, DATA, CSV, DAT, CXT")
@@ -313,7 +313,7 @@ class GuiSwift(QtGui.QWidget):
                     pbar.cancel()
 
             try:
-                printer = Printer(source=open(self.source, 'r'), **self.source_params)
+                printer = Printer(source=open(self.subst_ext(self.source), 'r'), **self.source_params)
             except:
                 errors = traceback.format_exc()
                 self.show_error_dialog(errors=errors)
@@ -350,9 +350,9 @@ class GuiSwift(QtGui.QWidget):
         if procces:
             # preparing params
             s_p = self.source_params
-            s_p[RunParams.SOURCE] = open(self.source, 'r')
+            s_p[RunParams.SOURCE] = open(self.subst_ext(self.source), 'r')
             t_p = self.target_params
-            t_p[RunParams.TARGET] = open(self.target, 'w')
+            t_p[RunParams.TARGET] = open(self.subst_ext(self.target), 'w')
 
             # conversion
 
@@ -419,6 +419,13 @@ class GuiSwift(QtGui.QWidget):
     " OTHERS
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+    @staticmethod
+    def subst_ext(path):
+        root, ext = os.path.splitext(path)
+        if ext == FileType.NAMES:
+            path = root + FileType.DATA
+        return path
+
     def get_prepare_pbar(self, convertor):
         return PBarDialog(self, convertor, title="Prepare Data", label_text="Preparing data, please wait.")
 
@@ -480,7 +487,7 @@ class GuiSwift(QtGui.QWidget):
                                             self.STATUS_MESSAGE_DURRATION)
 
         try:
-            browser = Browser(source=open(source_file, 'r'), **params)
+            browser = Browser(source=open(self.subst_ext(source_file), 'r'), **params)
         except:
             errors = traceback.format_exc()
             self.show_error_dialog(errors=errors)

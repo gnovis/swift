@@ -3,7 +3,7 @@ from .constants_fca import (FileType, RunParams)
 
 
 class ParamValidator:
-    SUFFIXES = (FileType.ARFF, FileType.CSV, FileType.CXT, FileType.DAT, FileType.DATA)
+    SUFFIXES = (FileType.ARFF, FileType.CSV, FileType.CXT, FileType.DAT, FileType.DATA, FileType.NAMES)
     PARAMS_FILTER = {'.arff.cxt': [[RunParams.SOURCE_ATTRS], []],
                      '.arff.dat': [[RunParams.SOURCE_ATTRS], []],
                      '.arff.data': [[], [RunParams.CLASSES]],
