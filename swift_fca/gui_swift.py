@@ -384,7 +384,8 @@ class GuiSwift(QtGui.QWidget):
                     self.status_bar.showMessage("Data were successfully prepared for conversion.",
                                                 self.STATUS_MESSAGE_DURRATION)
                     pbar_convert = PBarDialog(self, convertor, title="Convert Data", label_text="Converting, please wait.")
-                    convertor.next_percent_converted.connect(pbar_convert.update)
+                    convertor.next_percent.disconnect()
+                    convertor.next_percent.connect(pbar_convert.update)
 
                     # function which will be run on background
                     def bg_func(worker):

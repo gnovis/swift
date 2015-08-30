@@ -14,8 +14,6 @@ class Data:
 
     """Class data"""
 
-    LEFT_BRACKET = '['
-    RIGHT_BRACKET = ']'
     NONE_VAL = "?"
 
     def __init__(self, source,

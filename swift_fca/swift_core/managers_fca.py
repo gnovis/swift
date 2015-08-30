@@ -107,8 +107,6 @@ class Browser(ManagerFca):
 class Convertor(ManagerFca):
     """Manage data conversion"""
 
-    next_percent_converted = QtCore.pyqtSignal()
-
     def __init__(self, old, new, print_info=False, gui=False):
         super().__init__()
         self._gui = gui
@@ -137,12 +135,6 @@ class Convertor(ManagerFca):
     def get_data_class(self, ext):
         return self.EXTENSIONS[ext]
 
-    def update_convert_counter(self):
-        self._counter.update()
-
-    def update_percent_converted(self):
-        self.next_percent_converted.emit()
-
     def read_info(self):
         self._counter = EstimateCounter(self._old_data.source.name, self, gui=self._gui)
         # get information from source data
@@ -153,15 +145,16 @@ class Convertor(ManagerFca):
             self._old_data.print_info()
         # this is for progress bar
         self._source_line_count = self._old_data.obj_count
-        # check if should scale
 
     def convert(self):
         """
         Method for converting data.
         Before calling this, must be called read_info method !
         """
-
-        self._counter = Counter(self._source_line_count, self, gui=self._gui)
+        if self.source_line_count == 0:
+            self._counter = EstimateCounter(self._old_data.source.name, self, gui=self._gui)
+        else:
+            self._counter = Counter(self._source_line_count, self, gui=self._gui)
 
         source_file = self._old_data.source
         # write header part
@@ -175,7 +168,7 @@ class Convertor(ManagerFca):
             self._new_data.write_line(prepared_line)
             if self.stop:
                 break
-            self.update_convert_counter()
+            self._counter.update(line, self._old_data.index_data_start)
         self._new_data.source.close()
         source_file.close()
 
@@ -214,16 +207,17 @@ class EstimateCounter():
 
     def update(self, line, index_data_start):
         self.proc_line_count += 1
-        curr_line_size = sys.getsizeof(line) - self.base_line_size
-        self.proc_line_size_sum += curr_line_size
-        average_line_size = self.proc_line_size_sum / self.proc_line_count
+        if self.proc_line_count < 10:
+            curr_line_size = sys.getsizeof(line) - self.base_line_size
+            self.proc_line_size_sum += curr_line_size
+            average_line_size = self.proc_line_size_sum / self.proc_line_count
 
-        # becuase of header lines
-        if self.proc_line_count == 1:
-            self.data_size = self.data_size - (index_data_start * average_line_size)
+            # becuase of header lines
+            if self.proc_line_count == 1:
+                self.data_size = self.data_size - (index_data_start * average_line_size)
 
-        average_line_count = self.data_size / average_line_size
-        self.one_percent = round(average_line_count / 100)
+            average_line_count = self.data_size / average_line_size
+            self.one_percent = round(average_line_count / 100)
 
         if self.current_percent == self.one_percent:
             self.current_percent = 0
@@ -242,10 +236,10 @@ class Counter():
         self._one_percent = round(maximum / 100)
         self.manager = manager
 
-    def update(self):
+    def update(self, line=None, index_data_start=None):
         if self._current_percent == self._one_percent:
             self._current_percent = 0
-            self.manager.update_percent_converted()
+            self.manager.update_percent()
             if self.gui:
                 time.sleep(0.01)
         else:
