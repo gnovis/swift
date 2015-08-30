@@ -22,16 +22,15 @@ class AttrType:
 
 
 class Attribute:
+
+    TRUE = '1'
+    FALSE = '0'
+
     def __init__(self, index, name, attr_type=AttrType.NOT_SPECIFIED):
         self._name = name
         self._index = index
         self._attr_type = attr_type
         self._children = []
-
-    types = {'n': AttrType.NUMERIC,
-             'e': AttrType.NOMINAL,
-             's': AttrType.STRING,
-             'd': AttrType.DATE}
 
     @property
     def name(self):
@@ -68,11 +67,11 @@ class Attribute:
     def update(self, value, none_val):
         pass
 
-    def arff_repr(self, sep, bi_val1='0', bi_val2='1'):
-        return '{ ' + bi_val1 + sep + bi_val2 + ' }'
+    def arff_repr(self, sep):
+        return '{ ' + self.FALSE + sep + self.TRUE + ' }'
 
-    def data_repr(self, sep, bi_val1='0', bi_val2='1'):
-        return bi_val1 + sep + bi_val2
+    def data_repr(self, sep):
+        return self.FALSE + sep + self.TRUE
 
 
 class AttrScale(Attribute):
@@ -144,10 +143,10 @@ class AttrScaleNumeric(AttrScale):
         print("max value: {}\nmin value: {}".format(
               self.max_value, self.min_value), file=out)
 
-    def arff_repr(self, sep, bi_val1='0', bi_val2='1'):
+    def arff_repr(self, sep):
         return AttrType.STR_REPR[self.attr_type]
 
-    def data_repr(self, sep, bi_val1='0', bi_val2='1'):
+    def data_repr(self, sep):
         return "continuous"
 
 
@@ -182,10 +181,10 @@ class AttrScaleDate(AttrScaleNumeric):
             time_stamp = self.parser.get_time_stamp(str_date)
             super().update(time_stamp, none_val)
 
-    def arff_repr(self, sep, bi_val1='0', bi_val2='1'):
+    def arff_repr(self, sep):
         return "{} {}".format(AttrType.STR_REPR[self.attr_type], self.parser.get_format())
 
-    def data_repr(self, sep, bi_val1='0', bi_val2='1'):
+    def data_repr(self, sep):
         return "discrete n"
 
 
@@ -207,10 +206,10 @@ class AttrScaleEnum(AttrScale):
         super().print_self(out)
         print(', '.join(self._values), file=out)
 
-    def arff_repr(self, sep, bi_val1='0', bi_val2='1'):
+    def arff_repr(self, sep):
         return '{ ' + sep.join(self._values) + ' }'
 
-    def data_repr(self, sep, bi_val1='0', bi_val2='1'):
+    def data_repr(self, sep):
         return sep.join(self._values)
 
 
@@ -224,8 +223,8 @@ class AttrScaleString(AttrScale):
     def scale(self, value):
         return bool(self._regex.search(value))
 
-    def arff_repr(self, sep, bi_val1='0', bi_val2='1'):
+    def arff_repr(self, sep):
         return AttrType.STR_REPR[self.attr_type]
 
-    def data_repr(self, sep, bi_val1='0', bi_val2='1'):
+    def data_repr(self, sep):
         return "discrete n"

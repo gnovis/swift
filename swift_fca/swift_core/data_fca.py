@@ -386,12 +386,7 @@ class DataData(Data):
         return ".".join([os.path.splitext(source)[0], "names"])
 
 
-class DataBivalent(Data):
-    """Data represented only by bivalnet values e.g 1/0"""
-    bi_vals = {'pos': '1', 'neg': '0'}
-
-
-class DataCxt(DataBivalent):
+class DataCxt(Data):
     """Burmeister data format"""
 
     def __init__(self, source,
@@ -417,8 +412,8 @@ class DataCxt(DataBivalent):
         for k in range(columns):
             attr_name = self.get_not_empty_line(self.source)
             new = AttrScaleEnum(k, attr_name)
-            new.update(DataBivalent.bi_vals['pos'], self._none_val)
-            new.update(DataBivalent.bi_vals['neg'], self._none_val)
+            new.update(AttrScale.TRUE, self._none_val)
+            new.update(AttrScale.FALSE, self._none_val)
             self._header_attrs.append(new)
 
         self._attr_count = columns
@@ -459,7 +454,7 @@ class DataCxt(DataBivalent):
         self.write_line_to_file(result)
 
 
-class DataDat(DataBivalent):
+class DataDat(Data):
     """Data format for FCALGS"""
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
@@ -495,8 +490,8 @@ class DataDat(DataBivalent):
         self._obj_count = line_count
 
         self._header_attrs = [(AttrScaleEnum(i, str(i)).update(
-                              self.bi_vals['pos'], self._none_val)).update(
-                                  self.bi_vals['neg'], self._none_val)
+                              AttrScale.TRUE, self._none_val)).update(
+                                  AttrScale.FALSE, self._none_val)
                               for i in range(self._attr_count)]
 
     def get_header_info(self, manager=None):
