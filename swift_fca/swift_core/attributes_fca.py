@@ -89,7 +89,7 @@ class AttrScale(Attribute):
     def key(self):
         if self._attr_pattern:
             return self._attr_pattern
-        return self._name
+        return str(self.index)
 
     def process(self, value, scale):
         if self._expr_pattern and scale:

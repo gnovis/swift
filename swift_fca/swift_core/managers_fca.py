@@ -61,7 +61,7 @@ class Printer(ManagerFca):
 
     def read_info(self):
         self._counter = EstimateCounter(self._file_path, self)
-        self._data.get_attrs_info(self._data.get_header_info)
+        self._data.get_attrs_info(self)
         self._data.get_data_info(self)
 
     def print_info(self, file_path):
@@ -77,7 +77,7 @@ class Browser(ManagerFca):
 
     def read_info(self):
         self._counter = EstimateCounter(self._opened_file.name, self)
-        self._data.get_attrs_info(self._data.get_header_info)
+        self._data.get_attrs_info(self)
         self._data.get_data_info_for_browse(self)
 
     def __del__(self):
@@ -138,7 +138,7 @@ class Convertor(ManagerFca):
     def read_info(self):
         self._counter = EstimateCounter(self._old_data.source.name, self, gui=self._gui)
         # get information from source data
-        self._old_data.get_attrs_info(self._old_data.get_header_info)
+        self._old_data.get_attrs_info(self)
         read_data = self.READ_DATA[self._source_ext + self._target_ext]
         self._old_data.get_data_info(self, read=read_data)
         if self._print_info:

@@ -37,38 +37,6 @@ class Parser():
 
 class ArgsParser(Parser):
 
-    """
-    Swift Arguments Grammar
-    =======================
-
-    <formula_list> ::= <formula> | <formula> <comma> <formula_list>
-    <formula> ::= <formula_first_part> <formula_second_part>
-    <formula_first_part> ::= (<name> "=")? <name>
-    <formula_second_part> ::= "[" <args>? "]"
-    <name> ::= \w+
-    <args> ::= <num_arg> | <enum_arg> | <str_arg> | <date_arg> | <no_scale_arg>
-    <num_arg> ::= "n" <comma> <num_expr>
-    <enum_arg> ::= "e" <comma> "'" \w+ "'"
-    <str_arg> ::= "s" <comma> "'" .+ "'"
-    <date_arg> ::= "d" <comma> <date_expr> (<comma> "'" .+ "'")?
-    <expr_var> ::= [a-zA-Z_]
-    <num_val> ::= "-"? \d
-    <num_expr> ::= <expr_var> <op> <num_val> |
-                   <num_val> <op> <expr_var> |
-                   <num_val> <op> <expr_var> <op> <num_val>
-    <date_val> ::= "'" .+ "'"
-    <date_expr> ::= <expr_var> <op> <date_val> |
-                    <date_val> <op> <expr_var> |
-                    <date_val> <op> <expr_var> <op> <date_val>
-    <op> ::= "<" | ">" | "<=" | ">=" | "=="
-    <no_scale_arg> ::= <no_scale_num> | <no_scale_enum> | <no_scale_str> | <no_scale_date>
-    <no_scale_num> ::= "n"
-    <no_scale_enum> ::= "e"
-    <no_scale_str> ::= "s"
-    <no_scale_date> ::= "d" <comma> (<comma> "'" .+ "'")?
-    <comma> ::= ","
-    """
-
     NEW_NAME = 0
     OLD_NAME = 1
     ARGS = 2

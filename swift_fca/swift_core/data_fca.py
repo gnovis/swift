@@ -3,6 +3,7 @@ import re
 import os
 import sys
 import tempfile
+import copy
 
 from .attributes_fca import (AttrScale, AttrScaleEnum)
 from .object_fca import Object
@@ -86,24 +87,10 @@ class Data:
         """Does not depends on attributes property"""
         return self._attr_count
 
-    def get_attrs_info(self, fill_header_attrs_func):
+    def get_attrs_info(self, manager):
 
         # create header attributes and fill _header_attrs slot
-        fill_header_attrs_func()
-
-        # create attributes from argument entered by the user, fill _attributes
-        if self.str_attrs:
-            parser = ArgsParser()
-            parser.parse(self.str_attrs, (len(self._header_attrs)-1))
-            self._attributes = parser.attributes
-
-        if not self._attributes:
-            self._attributes = self._header_attrs  # reference will be point to the same list, but it should be ok
-        else:
-            # rename attributes to string names if has index names
-            for attr in self._attributes:
-                if attr.index is not None and str(attr.index) == attr.name:
-                    attr.name = self._header_attrs[attr.index].name
+        self.get_header_info(manager)
 
         # fill dictionary which is used for filtering attributes in prepare_line function,
         # keys are indexes and names of all attributes (given from header), values are indexes of attributes in line (object)
@@ -111,7 +98,35 @@ class Data:
             self._template_attrs[str(attr.index)] = attr.index
             self._template_attrs[attr.name] = attr.index
 
-    def get_header_info(self):
+        # create attributes from argument entered by the user, fill _attributes
+        if self.str_attrs:
+            parser = ArgsParser()
+            parser.parse(self.str_attrs, (len(self._header_attrs)-1))
+            self._attributes = parser.attributes
+
+        # attributes argument is not set -> only infomations from header will be used
+        if not self._attributes:
+            self._attributes = self._header_attrs
+        # merge header attributes with attributes from user
+        else:
+            merged = []
+            for attr in self._attributes:
+
+                header_attr_index = self._template_attrs[attr.key]
+                header_attr = copy.copy(self._header_attrs[header_attr_index])
+
+                # rename attributes to string names if has index names
+                if attr.index is not None and str(attr.index) == attr.name:
+                    attr.name = header_attr.name
+
+                if type(attr) is AttrScale:
+                    header_attr.name = attr.name
+                    merged.append(header_attr)
+                else:
+                    merged.append(attr)
+            self._attributes = merged
+
+    def get_header_info(self, manager=None):
         """
         Set attributes, objects, relation name and index_data_start.
         """
@@ -263,7 +278,7 @@ class DataArff(Data):
         # write data symbol
         self._source.write('\n' + self.DATA + '\n')
 
-    def get_header_info(self):
+    def get_header_info(self, manager=None):
         header = self._get_header_str()
         self._parser.parse(header)
         self._relation_name = self._parser.relation_name
@@ -300,7 +315,7 @@ class DataCsv(Data):
             attrs_name.append(attr.name)
         self.write_line_to_file(attrs_name)
 
-    def get_header_info(self):
+    def get_header_info(self, manager=None):
         if not self._no_attrs_first_line:  # attributes are specified on first line
             self._index_data_start = 1
             line = self._get_first_line()
@@ -354,7 +369,7 @@ class DataData(Data):
                         + attr.data_repr(self.separator) + '.\n')
                 f.write(line)
 
-    def get_header_info(self):
+    def get_header_info(self, manager=None):
         parser = DataParser()
         parser.parse(self._get_name_file(self._source.name))
         self._header_attrs = parser.attributes
@@ -388,7 +403,7 @@ class DataCxt(DataBivalent):
     sym_vals = {'X': 1, '.': 0}
     vals_sym = {1: 'X', 0: '.'}
 
-    def get_header_info(self):
+    def get_header_info(self, manager=None):
         self.get_not_empty_line(self.source)  # skip B
         self._relation_name = next(self.source)
 
@@ -452,7 +467,7 @@ class DataDat(DataBivalent):
         super().__init__(source, str_attrs, str_objects,
                          ' ', relation_name)
 
-    def get_data_info(self, manager=None, read=False):
+    def get_data_header_info(self, manager=None):
         max_val = -1
         line_count = 0
         for i, line in enumerate(self.source):
@@ -479,16 +494,19 @@ class DataDat(DataBivalent):
         self._attr_count = max_val + 1
         self._obj_count = line_count
 
-        def fill_header_attrs():
-            self._header_attrs = [(AttrScaleEnum(i, str(i)).update(
-                                  self.bi_vals['pos'], self._none_val)).update(
-                                      self.bi_vals['neg'], self._none_val)
-                                  for i in range(self._attr_count)]
+        self._header_attrs = [(AttrScaleEnum(i, str(i)).update(
+                              self.bi_vals['pos'], self._none_val)).update(
+                                  self.bi_vals['neg'], self._none_val)
+                              for i in range(self._attr_count)]
 
-        self.get_attrs_info(fill_header_attrs)
+    def get_header_info(self, manager=None):
+        self.get_data_header_info(manager)
+
+    def get_data_info(self, manager=None, read=False):
+        pass
 
     def get_data_info_for_browse(self, manager=None):
-        self.get_data_info(manager)
+        self.get_data_header_info(manager)
 
     def prepare_line(self, line, scale=True):
         splitted = super().ss_str(line, self.separator)
