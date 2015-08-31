@@ -2,7 +2,7 @@
 
 import argparse
 import sys
-from .swift_core.managers_fca import Convertor, Browser
+from .swift_core.managers_fca import Convertor, Browser, Printer
 from .swift_core.constants_fca import RunParams
 
 
@@ -50,8 +50,10 @@ def browse(*args):
     browser.close_file()
 
 
-def export():
-    print("export")
+def export(*args):
+    printer = Printer(**args[SOURCE])
+    printer.read_info()
+    printer.print_info(args[TARGET][RunParams.TARGET])
 
 
 def run_swift():

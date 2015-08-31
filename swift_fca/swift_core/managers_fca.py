@@ -62,11 +62,11 @@ class Printer(ManagerFca):
     def read_info(self):
         self._counter = EstimateCounter(self._file_path, self)
         self._data.get_attrs_info(self)
-        self._data.get_data_info(self)
+        self._data.get_data_info(self, read=True)
 
-    def print_info(self, file_path):
-        with open(file_path, "w") as f:
-            self._data.print_info(out_file=f)
+    def print_info(self, f):
+        self._data.print_info(out_file=f)
+        f.close()
 
 
 class Browser(ManagerFca):

@@ -309,7 +309,7 @@ class GuiSwift(QtGui.QWidget):
                 if not printer.stop:
                     self.status_bar.showMessage("Informations about source data were successfully exported to {}".format(file_name),
                                                 self.STATUS_MESSAGE_DURRATION)
-                    printer.print_info(file_name)
+                    printer.print_info(open(file_name, 'w'))
                     pbar.cancel()
 
             try:
