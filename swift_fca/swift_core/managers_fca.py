@@ -30,10 +30,11 @@ class ManagerFca(QtCore.QObject):
     # Signals
     next_percent = QtCore.pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, line_count=float("inf")):
         super().__init__()
         self._stop = False
         self._counter = None
+        self._line_count = line_count - 1
 
     @property
     def stop(self):
@@ -42,6 +43,10 @@ class ManagerFca(QtCore.QObject):
     @stop.setter
     def stop(self, value):
         self._stop = value
+
+    @property
+    def line_count(self):
+        return self._line_count
 
     def get_data_class(self, file_path):
         return self.EXTENSIONS[os.path.splitext(file_path)[1]]
@@ -54,8 +59,8 @@ class ManagerFca(QtCore.QObject):
 
 
 class Printer(ManagerFca):
-    def __init__(self, **kwargs):
-        super().__init__()
+    def __init__(self, kwargs, line_count=float("inf")):
+        super().__init__(line_count)
         self._file_path = kwargs[RunParams.SOURCE].name
         self._data = self.get_data_class(self._file_path)(**kwargs)
 
@@ -107,8 +112,8 @@ class Browser(ManagerFca):
 class Convertor(ManagerFca):
     """Manage data conversion"""
 
-    def __init__(self, old, new, print_info=False, gui=False):
-        super().__init__()
+    def __init__(self, old, new, print_info=False, gui=False, line_count=float("inf")):
+        super().__init__(line_count)
         self._gui = gui
         self._source_ext = self.get_extension(old)
         self._target_ext = self.get_extension(new)
@@ -166,7 +171,7 @@ class Convertor(ManagerFca):
             if not prepared_line:  # line is comment
                 continue
             self._new_data.write_line(prepared_line)
-            if self.stop:
+            if self.stop or self.line_count <= i:
                 break
             self._counter.update(line, self._old_data.index_data_start)
         self._new_data.source.close()

@@ -132,7 +132,7 @@ class Data:
         """
         pass
 
-    def get_data_info(self, manager=None, read=False):
+    def get_data_info(self, manager, read=False):
         """Get much as possible information about data"""
 
         self._attr_count = len(self._attributes)
@@ -148,10 +148,9 @@ class Data:
                 if self._temp_source:
                     self._temp_source.write(line)
 
-                if manager:
-                    if manager.stop:
-                        break
-                    manager.update_counter(line, self.index_data_start)
+                if manager.stop or manager.line_count <= index:
+                    break
+                manager.update_counter(line, self.index_data_start)
 
             if self._temp_source:
                 self._source = self._temp_source
@@ -159,7 +158,7 @@ class Data:
         else:
             self._index_data_start = 0  # Lines shouldn't be skipped in converter
 
-    def get_data_info_for_browse(self, manager=None):
+    def get_data_info_for_browse(self, manager):
         pass
 
     def prepare_line(self, values, scale=True):
@@ -420,7 +419,7 @@ class DataCxt(Data):
         self._obj_count = rows
         # no lines shoud be skipped, because skip was done by next() above!
 
-    def get_data_info(self, manager=None, read=False):
+    def get_data_info(self, manager, read=False):
         pass
 
     def prepare_line(self, line, scale=True):
@@ -462,7 +461,7 @@ class DataDat(Data):
         super().__init__(source, str_attrs, str_objects,
                          ' ', relation_name)
 
-    def get_data_header_info(self, manager=None):
+    def get_data_header_info(self, manager):
         max_val = -1
         line_count = 0
         for i, line in enumerate(self.source):
@@ -477,10 +476,9 @@ class DataDat(Data):
             if self._temp_source:
                 self._temp_source.write(line)
 
-            if manager:
-                if manager.stop:
-                    break
-                manager.update_counter(line, self.index_data_start)
+            if manager.stop or manager.line_count <= i:
+                break
+            manager.update_counter(line, self.index_data_start)
 
         if self._temp_source:
             self._source = self._temp_source
@@ -497,10 +495,10 @@ class DataDat(Data):
     def get_header_info(self, manager=None):
         self.get_data_header_info(manager)
 
-    def get_data_info(self, manager=None, read=False):
+    def get_data_info(self, manager, read=False):
         pass
 
-    def get_data_info_for_browse(self, manager=None):
+    def get_data_info_for_browse(self, manager):
         self.get_data_header_info(manager)
 
     def prepare_line(self, line, scale=True):

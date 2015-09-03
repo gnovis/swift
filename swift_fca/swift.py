@@ -51,7 +51,7 @@ def browse(*args):
 
 
 def export(*args):
-    printer = Printer(**args[SOURCE])
+    printer = Printer(args[SOURCE], **(args[OTHERS]))
     printer.read_info()
     printer.print_info(args[TARGET][RunParams.TARGET])
 
@@ -76,7 +76,8 @@ def run_swift():
                    "target_objects": RunParams.TARGET_OBJECTS,
                    "relation_name": RunParams.RELATION_NAME,
                    "classes": RunParams.CLASSES}
-    OTHER_ARGS = {"source_info": RunParams.SOURCE_INFO}
+    OTHER_ARGS = {"source_info": RunParams.SOURCE_INFO,
+                  "line_count": RunParams.LINE_COUNT}
 
     parser = argparse.ArgumentParser()
 
@@ -99,6 +100,7 @@ def run_swift():
     parser.add_argument("-sf", "--source_format", help="Format of source file, must to be specified when source is standart input (stdin)")
     parser.add_argument("-tf", "--target_format", help="Format of target file, must to be specified when target is standart output (stdout)")
     parser.add_argument("-a", "--action", default=CONVERT, choices=ACTIONS.keys())
+    parser.add_argument("-lc", "--line_count", type=float)
 
     args = parser.parse_args()
 

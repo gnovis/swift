@@ -313,7 +313,9 @@ class GuiSwift(QtGui.QWidget):
                     pbar.cancel()
 
             try:
-                printer = Printer(source=open(self.subst_ext(self.source), 'r'), **self.source_params)
+                main_args = self.source_params
+                main_args[RunParams.SOURCE] = open(self.subst_ext(self.source), 'r')
+                printer = Printer(main_args)
             except:
                 errors = traceback.format_exc()
                 self.show_error_dialog(errors=errors)

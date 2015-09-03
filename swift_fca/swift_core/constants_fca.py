@@ -12,6 +12,7 @@ class RunParams:
     SOURCE_INFO = 'print_info'
     NONE_VALUE = 'none_val'
     FORMAT = 'format'
+    LINE_COUNT = 'line_count'
 
 
 class FileType:
