@@ -16,7 +16,6 @@ import swift_fca.resources.resources_rc  # NOQA Resources file
 
 class GuiSwift(QtGui.QWidget):
 
-    SCROLL_COUNT = 50
     STATUS_MESSAGE_DURRATION = 5000
 
     class Colors():
@@ -53,6 +52,18 @@ class GuiSwift(QtGui.QWidget):
     def target_params(self):
         return self._target_params.copy()
 
+    def line_count(self):
+        value = self.line_line_count.text()
+        if value:
+            return int(value)
+        return float("inf")
+
+    def scroll_count(self):
+        value = self.line_line_count.text()
+        if value:
+            return int(value)
+        return 50
+
     def initUI(self):
 
         # Widgets
@@ -67,6 +78,13 @@ class GuiSwift(QtGui.QWidget):
         line_validator = QtGui.QRegExpValidator(regexp)
         self.set_line_prop(self.line_source, line_validator)
         self.set_line_prop(self.line_target, line_validator)
+
+        self.line_line_count = QtGui.QLineEdit()
+        self.line_line_count.setPlaceholderText("Line Count")
+        numregex = QtCore.QRegExp('^\d+$')
+        num_validator = QtGui.QRegExpValidator(numregex)
+        self.line_line_count.setMaximumWidth(85)
+        self.set_line_prop(self.line_line_count, num_validator, min_w=85)
 
         self.line_source.textChanged.connect(self.check_state_source)
         self.line_target.textChanged.connect(self.check_state_target)
@@ -120,8 +138,8 @@ class GuiSwift(QtGui.QWidget):
         btn_t_select.clicked.connect(self.select_target)
         self.btn_browse.clicked.connect(self.browse_source)
         self.btn_convert.clicked.connect(self.convert)
-        self.btn_s_orig_data.clicked.connect(lambda: OriginalDataDialog(self._source).exec_())
-        self.btn_t_orig_data.clicked.connect(lambda: OriginalDataDialog(self._target).exec_())
+        self.btn_s_orig_data.clicked.connect(lambda: OriginalDataDialog(self._source, self).exec_())
+        self.btn_t_orig_data.clicked.connect(lambda: OriginalDataDialog(self._target, self).exec_())
 
         # Checkbox
         self.chb_browse_convert = QtGui.QCheckBox("Browse data after convert")
@@ -144,6 +162,7 @@ class GuiSwift(QtGui.QWidget):
         hbox_target.addWidget(self.line_target)
         hbox_target.addWidget(btn_t_select)
         hbox_t_btn_set.addStretch(0)
+        hbox_s_btn_set.addWidget(self.line_line_count)
         hbox_s_btn_set.addStretch(0)
         hbox_s_btn_set.addWidget(self.btn_convert)
         hbox_s_btn_set.addWidget(self.btn_export_info)
@@ -315,7 +334,7 @@ class GuiSwift(QtGui.QWidget):
             try:
                 main_args = self.source_params
                 main_args[RunParams.SOURCE] = open(self.subst_ext(self.source), 'r')
-                printer = Printer(main_args)
+                printer = Printer(main_args, line_count=self.line_count())
             except:
                 errors = traceback.format_exc()
                 self.show_error_dialog(errors=errors)
@@ -400,7 +419,7 @@ class GuiSwift(QtGui.QWidget):
                     self.bg_worker.start()
 
             try:
-                convertor = Convertor(s_p, t_p, gui=True)
+                convertor = Convertor(s_p, t_p, gui=True, line_count=self.line_count())
             except:
                 errors = traceback.format_exc()
                 self.show_error_dialog(errors=[errors])
@@ -444,8 +463,8 @@ class GuiSwift(QtGui.QWidget):
         msgBox.setIcon(QtGui.QMessageBox.Critical)
         msgBox.exec_()
 
-    def set_line_prop(self, line, validator):
-        line.setMinimumWidth(200)
+    def set_line_prop(self, line, validator, min_w=200):
+        line.setMinimumWidth(min_w)
         self.set_line_bg(line, '#ffffff')
         line.setValidator(validator)
 
@@ -453,7 +472,7 @@ class GuiSwift(QtGui.QWidget):
         line.setStyleSheet('QLineEdit { background-color: %s }' % color)
 
     def browse_data(self, browser, table_view):
-        data = browser.get_display_data(self.SCROLL_COUNT)
+        data = browser.get_display_data(self.scroll_count())
         table_view.model().table.extend(data)
         table_view.model().layoutChanged.emit()
 
@@ -603,10 +622,10 @@ class ParamsDialog(QtGui.QDialog):
 
 class OriginalDataDialog(QtGui.QDialog):
 
-    def __init__(self, source_path, parent=None):
+    def __init__(self, source_path, parent):
         super().__init__(parent)
         self.source_path = source_path
-        self.load_count = 50
+        self.load_count = parent.scroll_count()
 
         self.init_ui()
 
