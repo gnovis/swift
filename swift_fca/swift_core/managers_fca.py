@@ -83,7 +83,6 @@ class Browser(ManagerFca):
     def read_info(self):
         self._counter = EstimateCounter(self._opened_file.name, self)
         self._data.get_attrs_info(self)
-        self._data.get_data_info_for_browse(self)
 
     def __del__(self):
         self._opened_file.close()

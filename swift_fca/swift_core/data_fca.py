@@ -158,9 +158,6 @@ class Data:
         else:
             self._index_data_start = 0  # Lines shouldn't be skipped in converter
 
-    def get_data_info_for_browse(self, manager):
-        pass
-
     def prepare_line(self, values, scale=True):
         """If return empty list -> line is comment"""
         if not isinstance(values, list):
@@ -497,9 +494,6 @@ class DataDat(Data):
 
     def get_data_info(self, manager, read=False):
         pass
-
-    def get_data_info_for_browse(self, manager):
-        self.get_data_header_info(manager)
 
     def prepare_line(self, line, scale=True):
         splitted = super().ss_str(line, self.separator)
