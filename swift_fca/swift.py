@@ -18,12 +18,14 @@ def convert(*args):
 
 
 def browse(*args):
-
-    def get_line_count():
+    def get_line_count(count):
         try:
-            count = int(input('Enter the nubmer of rows to display: '))
+            command = input('Enter the nubmer of rows (defualt=20) or (q/quit) for exit: ')
+            if command == 'q' or command == 'quit':
+                return None
+            count = int(command)
         except ValueError:
-            count = None
+            pass
         return count
 
     browser = Browser(**args[SOURCE])
@@ -31,7 +33,7 @@ def browse(*args):
     header = browser.get_header()
     line_format = " ".join(["{:10}"] * (len(header) + 1))
 
-    count = get_line_count()
+    count = get_line_count(20)
     print(line_format.format("", *header))
     print()
 
@@ -46,7 +48,7 @@ def browse(*args):
         for line in lines:
             print(line_format.format(str(index), *line))
             index += 1
-        count = get_line_count()
+        count = get_line_count(count)
     browser.close_file()
 
 
@@ -99,7 +101,9 @@ def run_swift():
     parser.add_argument("-cls", "--classes", help="Classes seperated by commas - for C4.5 convert.")
     parser.add_argument("-sf", "--source_format", help="Format of source file, must to be specified when source is standart input (stdin)")
     parser.add_argument("-tf", "--target_format", help="Format of target file, must to be specified when target is standart output (stdout)")
-    parser.add_argument("-a", "--action", default=CONVERT, choices=ACTIONS.keys())
+    parser.add_argument("-{}".format(CONVERT[0]), "--{}".format(CONVERT), action='store_true')
+    parser.add_argument("-{}".format(BROWSE[0]), "--{}".format(BROWSE), action='store_true')
+    parser.add_argument("-{}".format(EXPORT[0]), "--{}".format(EXPORT), action='store_true')
     parser.add_argument("-lc", "--line_count", type=float)
 
     args = parser.parse_args()
@@ -107,7 +111,7 @@ def run_swift():
     source_args = {}
     target_args = {}
     other_args = {}
-    action = None
+    action = ACTIONS[CONVERT]
 
     for key, val in vars(args).items():
         if val:
@@ -121,6 +125,6 @@ def run_swift():
                 new_key = OTHER_ARGS[key]
                 other_args[new_key] = val
             else:
-                action = ACTIONS[val]
+                action = ACTIONS[key]
 
     action(source_args, target_args, other_args)
