@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 import re
+from collections import OrderedDict
 from pyparsing import quotedString, removeQuotes
 from .date_parser_fca import DateParser
 from .grammars_fca import boolexpr
@@ -22,7 +23,6 @@ class AttrType:
 
 
 class Attribute:
-
     TRUE = '1'
     FALSE = '0'
 
@@ -36,6 +36,9 @@ class Attribute:
         self._index = index
         self._attr_type = attr_type
         self._children = []
+        self._values_rate = {}
+        self._none_val = None
+        self._none_val_count = 0
 
     @property
     def key(self):
@@ -82,9 +85,28 @@ class Attribute:
         print("\nname: {}\nindex: {}\ntype: {}".format(
             self.name,
             self.index, AttrType.STR_REPR[self.attr_type]), file=out)
+        print(self.get_formated_rate(), file=out)
 
     def update(self, value, none_val):
-        pass
+        if value != none_val:
+            if value in self._values_rate:
+                self._values_rate[value] += 1
+            else:
+                self._values_rate[value] = 1
+        else:
+            self._none_val_count += 1
+            self._none_val = none_val
+
+    def get_formated_rate(self, aux_func=str):
+        rate_sum = sum(self._values_rate.values()) + self._none_val_count
+        rate_row = "    {}: {}/{} = {:.2%} {}\n"
+        result = "values appearance:\n"
+        if self._none_val_count:
+            result += rate_row.format(self._none_val, self._none_val_count, rate_sum, self._none_val_count/rate_sum, "(none value)")
+        sorted_rate = OrderedDict(sorted(self._values_rate.items(), key=lambda t: t[1]))
+        for key, value in sorted_rate.items():
+            result += rate_row.format(aux_func(key), value, rate_sum, value/rate_sum, "")
+        return result.strip()
 
     def arff_repr(self, sep):
         return '{ ' + self.FALSE + sep + self.TRUE + ' }'
@@ -97,16 +119,6 @@ class AttrNumeric(Attribute):
     def __init__(self, index, name, attr_type=AttrType.NUMERIC, attr_pattern=None, expr_pattern=None):
         super().__init__(index, name, attr_type,
                          attr_pattern, expr_pattern)
-        self._max_value = None
-        self._min_value = None
-
-    @property
-    def max_value(self):
-        return self._max_value
-
-    @property
-    def min_value(self):
-        return self._min_value
 
     def scale(self, value):
         try:
@@ -118,24 +130,17 @@ class AttrNumeric(Attribute):
         replaced = re.sub(r"[^<>=0-9\s.]+", "x", self._expr_pattern)
         return eval(replaced)
 
-    def update(self, str_value, none_val):
-        if str_value != none_val:
-            value = float(str_value)
-            if not self._max_value:
-                self._max_value = value
-                return
-            if not self._min_value:
-                self._min_value = value
-                return
-            if value > self._max_value:
-                self._max_value = value
-            if value < self._min_value:
-                self._min_value = value
+    def update(self, value, none_val):
+        if value != none_val:
+            value = float(value)
+        super().update(value, none_val)
 
-    def print_self(self, out):
-        super().print_self(out)
-        print("max value: {}\nmin value: {}".format(
-              self.max_value, self.min_value), file=out)
+    def get_formated_rate(self, aux_func=str):
+        max_val = max(self._values_rate.keys())
+        min_val = min(self._values_rate.keys())
+        result = "max: {}, min: {}\n".format(aux_func(max_val), aux_func(min_val))
+        result += super().get_formated_rate(aux_func)
+        return result
 
     def arff_repr(self, sep):
         return AttrType.STR_REPR[self.attr_type]
@@ -175,6 +180,9 @@ class AttrDate(AttrNumeric):
             time_stamp = self.parser.get_time_stamp(str_date)
             super().update(time_stamp, none_val)
 
+    def get_formated_rate(self, aux_func=str):
+        return super().get_formated_rate(aux_func=self.parser.time_stamp_to_str)
+
     def arff_repr(self, sep):
         return "{} {}".format(AttrType.STR_REPR[self.attr_type], self.parser.get_format())
 
@@ -194,11 +202,8 @@ class AttrEnum(Attribute):
     def update(self, value, none_val):
         if value not in self._values and value != none_val:
             self._values.append(value)
+        super().update(value, none_val)
         return self
-
-    def print_self(self, out):
-        super().print_self(out)
-        print(', '.join(self._values), file=out)
 
     def arff_repr(self, sep):
         return '{ ' + sep.join(self._values) + ' }'
