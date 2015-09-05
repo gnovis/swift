@@ -5,7 +5,7 @@ import sys
 import tempfile
 import copy
 
-from .attributes_fca import (AttrScale, AttrScaleEnum)
+from .attributes_fca import (Attribute, AttrEnum)
 from .object_fca import Object
 from .parser_fca import ArgsParser, ArffParser, DataParser
 
@@ -119,7 +119,7 @@ class Data:
                 if attr.index is not None and str(attr.index) == attr.name:
                     attr.name = header_attr.name
 
-                if type(attr) is AttrScale:
+                if type(attr) is Attribute:
                     header_attr.name = attr.name
                     merged.append(header_attr)
                 else:
@@ -316,12 +316,12 @@ class DataCsv(Data):
             self._index_data_start = 1
             line = self._get_first_line()
             str_values = self.ss_str(line, self.separator)
-            self._header_attrs = [AttrScale(i, name) for i, name in enumerate(str_values)]
+            self._header_attrs = [Attribute(i, name) for i, name in enumerate(str_values)]
         else:  # attributes aren't specified on first line
             line = self._get_first_line(False)
             str_values = self.ss_str(line, self.separator)
             self._attr_count = len(str_values)
-            self._header_attrs = [AttrScale(i, str(i)) for i in range(self._attr_count)]
+            self._header_attrs = [Attribute(i, str(i)) for i in range(self._attr_count)]
 
     def _get_first_line(self, move=True):
         """Return first line from data file"""
@@ -407,9 +407,9 @@ class DataCxt(Data):
 
         for k in range(columns):
             attr_name = self.get_not_empty_line(self.source)
-            new = AttrScaleEnum(k, attr_name)
-            new.update(AttrScale.TRUE, self._none_val)
-            new.update(AttrScale.FALSE, self._none_val)
+            new = AttrEnum(k, attr_name)
+            new.update(Attribute.TRUE, self._none_val)
+            new.update(Attribute.FALSE, self._none_val)
             self._header_attrs.append(new)
 
         self._attr_count = columns
@@ -484,9 +484,9 @@ class DataDat(Data):
         self._attr_count = max_val + 1
         self._obj_count = line_count
 
-        self._header_attrs = [(AttrScaleEnum(i, str(i)).update(
-                              AttrScale.TRUE, self._none_val)).update(
-                                  AttrScale.FALSE, self._none_val)
+        self._header_attrs = [(AttrEnum(i, str(i)).update(
+                              Attribute.TRUE, self._none_val)).update(
+                                  Attribute.FALSE, self._none_val)
                               for i in range(self._attr_count)]
 
     def get_header_info(self, manager=None):

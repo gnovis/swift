@@ -26,11 +26,22 @@ class Attribute:
     TRUE = '1'
     FALSE = '0'
 
-    def __init__(self, index, name, attr_type=AttrType.NOT_SPECIFIED):
+    def __init__(self, index, name, attr_type=AttrType.NOT_SPECIFIED,
+                 attr_pattern=None, expr_pattern=None):
+        # name of atrribute, it is pattern to scaling
+        self._attr_pattern = attr_pattern
+        # expression to scaling
+        self._expr_pattern = expr_pattern
         self._name = name
         self._index = index
         self._attr_type = attr_type
         self._children = []
+
+    @property
+    def key(self):
+        if self._attr_pattern:
+            return self._attr_pattern
+        return str(self.index)
 
     @property
     def name(self):
@@ -56,6 +67,14 @@ class Attribute:
     def children(self, children):
         self._children = children
 
+    def process(self, value, scale):
+        if self._expr_pattern and scale:
+            return self.scale(value)
+        return value
+
+    def scale(self, value):
+        return value
+
     def has_children(self):
         return bool(self._children)
 
@@ -74,32 +93,7 @@ class Attribute:
         return self.FALSE + sep + self.TRUE
 
 
-class AttrScale(Attribute):
-    def __init__(self, index, name, attr_type=AttrType.NOT_SPECIFIED,
-                 attr_pattern=None, expr_pattern=None):
-        super().__init__(index, name, attr_type)
-
-        # name of atrribute, it is pattern to scaling
-        self._attr_pattern = attr_pattern
-        # expression to scaling
-        self._expr_pattern = expr_pattern
-
-    @property
-    def key(self):
-        if self._attr_pattern:
-            return self._attr_pattern
-        return str(self.index)
-
-    def process(self, value, scale):
-        if self._expr_pattern and scale:
-            return self.scale(value)
-        return value
-
-    def scale(self, value):
-        return value
-
-
-class AttrScaleNumeric(AttrScale):
+class AttrNumeric(Attribute):
     def __init__(self, index, name, attr_type=AttrType.NUMERIC, attr_pattern=None, expr_pattern=None):
         super().__init__(index, name, attr_type,
                          attr_pattern, expr_pattern)
@@ -150,7 +144,7 @@ class AttrScaleNumeric(AttrScale):
         return "continuous"
 
 
-class AttrScaleDate(AttrScaleNumeric):
+class AttrDate(AttrNumeric):
     def __init__(self, index, name, date_format=DateParser.ISO_FORMAT,
                  attr_type=AttrType.DATE, attr_pattern=None, expr_pattern=None):
         super().__init__(index, name, attr_type, attr_pattern, expr_pattern)
@@ -188,7 +182,7 @@ class AttrScaleDate(AttrScaleNumeric):
         return "discrete n"
 
 
-class AttrScaleEnum(AttrScale):
+class AttrEnum(Attribute):
     def __init__(self, index, name, attr_pattern=None, expr_pattern=None, values=[]):
         super().__init__(index, name, AttrType.NOMINAL,
                          attr_pattern, expr_pattern)
@@ -213,7 +207,7 @@ class AttrScaleEnum(AttrScale):
         return sep.join(self._values)
 
 
-class AttrScaleString(AttrScale):
+class AttrString(Attribute):
     def __init__(self, index, name, attr_pattern=None, expr_pattern=None):
         super().__init__(index, name, AttrType.STRING,
                          attr_pattern, expr_pattern)

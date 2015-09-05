@@ -3,8 +3,8 @@ from pyparsing import (alphanums, Or, Empty, CharsNotIn, ZeroOrMore, nums, LineE
                        Optional, delimitedList, printables, OneOrMore, Forward,
                        Suppress, Word, quotedString, CaselessLiteral)
 
-from .attributes_fca import (AttrScale, AttrScaleNumeric, AttrScaleDate,
-                             AttrScaleEnum, AttrScaleString)
+from .attributes_fca import (Attribute, AttrNumeric, AttrDate,
+                             AttrEnum, AttrString)
 from .date_parser_fca import DateParser
 from .grammars_fca import boolexpr
 
@@ -13,18 +13,18 @@ class Parser():
 
     GENERAL_TYPE = 'g'
     ENUM = 'e'
-    ATTR_CLASSES = {'n': AttrScaleNumeric,
-                    'numeric': AttrScaleNumeric,
-                    'continuous': AttrScaleNumeric,
-                    ENUM: AttrScaleEnum,
-                    'nominal': AttrScaleEnum,
-                    'discrete': AttrScaleEnum,
-                    's': AttrScaleString,
-                    'string': AttrScaleString,
-                    'd': AttrScaleDate,
-                    'date': AttrScaleDate,
-                    GENERAL_TYPE: AttrScale,
-                    'relational': AttrScale}
+    ATTR_CLASSES = {'n': AttrNumeric,
+                    'numeric': AttrNumeric,
+                    'continuous': AttrNumeric,
+                    ENUM: AttrEnum,
+                    'nominal': AttrEnum,
+                    'discrete': AttrEnum,
+                    's': AttrString,
+                    'string': AttrString,
+                    'd': AttrDate,
+                    'date': AttrDate,
+                    GENERAL_TYPE: Attribute,
+                    'relational': Attribute}
 
     def __init__(self):
         self._index = 0
@@ -299,7 +299,7 @@ class DataParser(Parser):
 
     @property
     def attributes(self):
-        self._attributes.append(AttrScaleEnum(self._index, "class"))
+        self._attributes.append(AttrEnum(self._index, "class"))
         return self._attributes.copy()
 
     @property
