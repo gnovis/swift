@@ -21,5 +21,19 @@ class SwiftException(Exception):
 
 
 class SwiftParseException(SwiftException):
-    def __init__(self, header, line, lineno, message):
-        super().__init__(header, "Syntax Error in line {}: {}".format(lineno, line), message)
+    def __init__(self, header, line, linei, message):
+        super().__init__(header, "Syntax Error in line {}: {}".format(linei+1, line), message)
+
+
+class SwiftLineException(SwiftException):
+    def __init__(self, header, line, linei, message, attr="Unknown", attri=-1):
+        if attri == -1:
+            attri = "Unknown"
+        else:
+            attri += 1
+        super().__init__(header, "Invalid value in attribute {}: {}, on line {}: {}".format(attri, attr, linei+1, line.strip()), message)
+
+
+class SwiftAttributeException(SwiftException):
+    def __init__(self, message):
+        self._message = message

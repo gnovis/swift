@@ -98,7 +98,7 @@ class Browser(ManagerFca):
             if line == END_FILE:
                 break
             else:
-                prepared_line = self._data.prepare_line(line, False)
+                prepared_line = self._data.prepare_line(line, i, False)
                 if not prepared_line:  # line is comment
                     continue
                 to_display.append(prepared_line)
@@ -166,7 +166,7 @@ class Convertor(ManagerFca):
         # skip header lines
         Data.skip_lines(self._old_data.index_data_start, source_file)
         for i, line in enumerate(source_file):
-            prepared_line = self._old_data.prepare_line(line)
+            prepared_line = self._old_data.prepare_line(line, i)
             if not prepared_line:  # line is comment
                 continue
             self._new_data.write_line(prepared_line)

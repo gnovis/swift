@@ -3,9 +3,10 @@
 from __future__ import print_function
 import re
 from collections import OrderedDict
-from pyparsing import quotedString, removeQuotes
+from pyparsing import quotedString, removeQuotes, ParseException
 from .date_parser_fca import DateParser
 from .grammars_fca import boolexpr
+from .exceptions_fca import SwiftAttributeException, SwiftParseException, SwiftException
 
 
 class AttrType:
@@ -70,9 +71,13 @@ class Attribute:
     def children(self, children):
         self._children = children
 
-    def process(self, value, scale):
+    def process(self, value, none_val, scale, update):
         if self._expr_pattern and scale:
+            if value == none_val:  # result of scaling none value is False
+                return False
             return self.scale(value)
+        if update:
+            self.update(value, none_val)
         return value
 
     def scale(self, value):
@@ -116,23 +121,28 @@ class Attribute:
 
 
 class AttrNumeric(Attribute):
+
+    EXCEPTION_MSG = "Value must be numeric (integer or real)"
+
     def __init__(self, index, name, attr_type=AttrType.NUMERIC, attr_pattern=None, expr_pattern=None):
         super().__init__(index, name, attr_type,
                          attr_pattern, expr_pattern)
 
     def scale(self, value):
         try:
-            x = int(value)  # NOQA
+            x = float(value)  # NOQA
         except ValueError:
-            # if value is not integer(is string or undefined e.g None, "" or ?) =>
-            # result of scaling is false
-            return False
+            raise SwiftAttributeException(self.EXCEPTION_MSG)
         replaced = re.sub(r"[^<>=0-9\s.]+", "x", self._expr_pattern)
         return eval(replaced)
 
     def update(self, value, none_val):
         if value != none_val:
-            value = float(value)
+            try:
+                value = float(value)
+            except ValueError:
+                raise SwiftAttributeException(self.EXCEPTION_MSG)
+
         super().update(value, none_val)
 
     def get_formated_rate(self, aux_func=str):
@@ -166,18 +176,33 @@ class AttrDate(AttrNumeric):
         return self.parser.time_stamp_to_str(self._min_value)
 
     def substitute_date(self):
+        def action(s, loc, tokens):
+            try:
+                return self.parser.get_time_stamp(removeQuotes(s, loc, tokens))
+            except ValueError as e:
+                raise SwiftException("Date Format/Value", "Value doesn't match format.", e)
+
         DATEXPR = quotedString.copy()
         EXPR = boolexpr(VAL=DATEXPR)
-        DATEXPR.setParseAction(lambda s, loc, tokens: self.parser.get_time_stamp(removeQuotes(s, loc, tokens)))
-        self._expr_pattern = EXPR.parseString(self._expr_pattern)[0]
+        DATEXPR.setParseAction(action)
+        try:
+            self._expr_pattern = EXPR.parseString(self._expr_pattern, parseAll=True)[0]
+        except ParseException as e:
+            raise SwiftParseException("Parse Date Expression", e.line, 0, e)
 
     def scale(self, value):
-        time_stamp = self.parser.get_time_stamp(value)
+        try:
+            time_stamp = self.parser.get_time_stamp(value)
+        except ValueError as e:
+            raise SwiftAttributeException(e)
         return super().scale(time_stamp)
 
     def update(self, str_date, none_val):
         if str_date != none_val:
-            time_stamp = self.parser.get_time_stamp(str_date)
+            try:
+                time_stamp = self.parser.get_time_stamp(str_date)
+            except ValueError as e:
+                raise SwiftAttributeException(e)
             super().update(time_stamp, none_val)
 
     def get_formated_rate(self, aux_func=str):
@@ -217,7 +242,10 @@ class AttrString(Attribute):
         super().__init__(index, name, AttrType.STRING,
                          attr_pattern, expr_pattern)
         if self._expr_pattern:
-            self._regex = re.compile(self._expr_pattern)
+            try:
+                self._regex = re.compile(self._expr_pattern)
+            except re.error as e:
+                raise SwiftException("Regular Expression", "Invalid regular expression: {}".format(self._expr_pattern), e)
 
     def scale(self, value):
         return bool(self._regex.search(value))

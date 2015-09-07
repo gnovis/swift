@@ -8,7 +8,7 @@ import copy
 from .attributes_fca import (Attribute, AttrEnum)
 from .object_fca import Object
 from .parser_fca import FormulaParser, ArffParser, DataParser
-from .exceptions_fca import SwiftParseException
+from .exceptions_fca import SwiftLineException, SwiftParseException, SwiftException, SwiftAttributeException
 
 
 class Data:
@@ -113,7 +113,11 @@ class Data:
             merged = []
             for attr in self._attributes:
 
-                header_attr_index = self._template_attrs[attr.key]
+                try:
+                    header_attr_index = self._template_attrs[attr.key]
+                except KeyError:
+                    raise SwiftException("Attribute Key", "Attribute key: {} doesn't exist.".format(attr.key),
+                                         "Old name or index of attribute used as key doesn't exist.")
                 header_attr = copy.copy(self._header_attrs[header_attr_index])
 
                 # rename attributes to string names if has index names
@@ -139,12 +143,10 @@ class Data:
         self._attr_count = len(self._attributes)
         if read:
             for index, line in enumerate(self.source):
-                str_values = self.prepare_line(line, scale=False)
+                str_values = self.prepare_line(line, index, scale=False, update=True)
                 if not str_values:  # current line is comment
                     continue
                 self._obj_count += 1
-                for i, attr in enumerate(self._attributes):
-                    attr.update(str_values[i], self._none_val)
 
                 if self._temp_source:
                     self._temp_source.write(line)
@@ -159,7 +161,7 @@ class Data:
         else:
             self._index_data_start = 0  # Lines shouldn't be skipped in converter
 
-    def prepare_line(self, values, scale=True):
+    def prepare_line(self, values, line_i, scale=True, update=False):
         """If return empty list -> line is comment"""
         if not isinstance(values, list):
             values = self.ss_str(values, self.separator)
@@ -168,7 +170,15 @@ class Data:
         result = []
         for attr in self._attributes:
             index = self._template_attrs[attr.key]
-            new_value = attr.process(values[index], scale)
+
+            try:
+                new_value = attr.process(values[index], self._none_val, scale, update)
+            except IndexError:
+                raise SwiftLineException("Missing Attribute", ",".join(values), line_i,
+                                         "Some of attribute is missing.", attri=index)
+            except SwiftAttributeException as e:
+                raise SwiftLineException("Invalid Value", ",".join(values), line_i, e.message, values[index], index)
+
             result.append(new_value)
         return result
 
@@ -275,8 +285,8 @@ class DataArff(Data):
         self._index_data_start = self._parser.data_start
         self._header_attrs = self._parser.attributes
 
-    def prepare_line(self, line, scale=True):
-        return super().prepare_line(self._parser.parse_line(line), scale)
+    def prepare_line(self, line, index, scale=True, update=False):
+        return super().prepare_line(self._parser.parse_line(line), index,  scale, update)
 
     def _get_header_str(self):
         header_to_parse = ''
@@ -389,7 +399,7 @@ class DataCxt(Data):
     vals_sym = {1: 'X', 0: '.'}
 
     def get_header_info(self, manager=None):
-        self.current_line = 0  # it is needed for Error message, is incremented in get_not_empty_line()
+        self.current_line = -1  # it is needed for Error message, is incremented in get_not_empty_line()
         self.get_not_empty_line()  # skip B
         value = self.get_not_empty_line()
 
@@ -428,12 +438,15 @@ class DataCxt(Data):
     def get_data_info(self, manager, read=False):
         pass
 
-    def prepare_line(self, line, scale=True):
+    def prepare_line(self, line, index, scale=True, update=False):
         splitted = list(line.strip())
         result = []
-        for val in splitted:
-            result.append(str(DataCxt.sym_vals[val]))
-        return super().prepare_line(result, scale)
+        for val_i, val in enumerate(splitted):
+            try:
+                result.append(str(DataCxt.sym_vals[val]))
+            except KeyError:
+                raise SwiftLineException("Cxt Line", line, index, "Value must be X (True) or . (False)", val, val_i)
+        return super().prepare_line(result, index, scale, update)
 
     def write_header(self, old_data):
         target = self._source
@@ -469,6 +482,10 @@ class DataCxt(Data):
 
 class DataDat(Data):
     """Data format for FCALGS"""
+
+    EXCEPTION_HEADER = "DAT Value"
+    EXCEPTION_DESCRIPTION = "Value must be integer."
+
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
                  separator=',', relation_name=''):
@@ -483,7 +500,10 @@ class DataDat(Data):
             splitted = super().ss_str(line, self.separator)
             for val in splitted:
                 if val:
-                    int_val = int(val)
+                    try:
+                        int_val = int(val)
+                    except ValueError:
+                        raise SwiftLineException(self.EXCEPTION_HEADER, line, i, self.EXCEPTION_DESCRIPTION, val)
                     if int_val > max_val:
                         max_val = int_val
 
@@ -512,13 +532,16 @@ class DataDat(Data):
     def get_data_info(self, manager, read=False):
         pass
 
-    def prepare_line(self, line, scale=True):
+    def prepare_line(self, line, index, scale=True, update=False):
         splitted = super().ss_str(line, self.separator)
         result = ['0'] * (self._attr_count)
         for val in splitted:
             if val:
-                result[int(val)] = str(1)
-        return super().prepare_line(result, scale)
+                try:
+                    result[int(val)] = str(1)
+                except ValueError:
+                    raise SwiftLineException(self.EXCEPTION_HEADER, line, index, self.EXCEPTION_DESCRIPTION, val)
+        return super().prepare_line(result, index, scale, update)
 
     def write_line(self, line):
         result = []

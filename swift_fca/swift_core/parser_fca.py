@@ -131,7 +131,7 @@ class FormulaParser(Parser):
         try:
             parser.parseString(str_args)
         except ParseException as e:
-            raise SwiftParseException("Formula Syntax", e.line, e.lineno, e)
+            raise SwiftParseException("Formula Syntax", e.line, e.lineno-1, e)
 
 
 class ArffParser(Parser):
@@ -206,7 +206,7 @@ class ArffParser(Parser):
         try:
             result = arff_header.parseString(header, parseAll=True)
         except ParseException as e:
-            raise SwiftParseException("Arff Header Syntax", e.line, e.lineno, e)
+            raise SwiftParseException("Arff Header Syntax", e.line, e.lineno-1, e)
 
         self._relation_name = result.rel_name
         self._find_relational(result.children)
@@ -219,7 +219,7 @@ class ArffParser(Parser):
         try:
             result = self._rel_delim_list_parser.parseString(line, parseAll=True).asList()
         except ParseException as e:
-            raise SwiftParseException("Arff Line Syntax", e.line, e.lineno, e)
+            raise SwiftParseException("Arff Line Syntax", e.line, e.lineno-1, e)
         return result
 
     def show_result(self):
@@ -359,4 +359,4 @@ class DataParser(Parser):
         try:
             parser.parseFile(file_path, parseAll=True)
         except ParseException as e:
-            raise SwiftParseException("C4.5 (names) Syntax", e.line, e.lineno, e)
+            raise SwiftParseException("C4.5 (names) Syntax", e.line, e.lineno-1, e)
