@@ -21,5 +21,5 @@ class SwiftException(Exception):
 
 
 class SwiftParseException(SwiftException):
-    def __init__(self, header, line, message):
-        super().__init__(header, "Syntax Error in line: {}".format(line), message)
+    def __init__(self, header, line, lineno, message):
+        super().__init__(header, "Syntax Error in line {}: {}".format(lineno, line), message)

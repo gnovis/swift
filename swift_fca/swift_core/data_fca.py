@@ -8,6 +8,7 @@ import copy
 from .attributes_fca import (Attribute, AttrEnum)
 from .object_fca import Object
 from .parser_fca import FormulaParser, ArffParser, DataParser
+from .exceptions_fca import SwiftParseException
 
 
 class Data:
@@ -197,13 +198,6 @@ class Data:
         """
         return list(map(lambda x: x.strip(),
                     re.split(r'(?<!\\)' + separator, string, max_split)))
-
-    def get_not_empty_line(self, f):
-        file_iter = iter(f)
-        while True:
-            line = next(file_iter).strip()
-            if line:
-                return line
 
     def print_info(self, out_file=sys.stdout):
         print("Relation name: {}".format(self.relation_name), file=out_file)
@@ -395,18 +389,33 @@ class DataCxt(Data):
     vals_sym = {1: 'X', 0: '.'}
 
     def get_header_info(self, manager=None):
-        self.get_not_empty_line(self.source)  # skip B
-        self._relation_name = next(self.source)
+        self.current_line = 0  # it is needed for Error message, is incremented in get_not_empty_line()
+        self.get_not_empty_line()  # skip B
+        value = self.get_not_empty_line()
 
-        rows = int(self.get_not_empty_line(self.source))
-        columns = int(self.get_not_empty_line(self.source))
+        exception_header = "Cxt Header Syntax"
+        try:
+            rows = int(value)
+        except ValueError:
+            self._relation_name = value
+            try:
+                str_rows = self.get_not_empty_line()
+                rows = int(str_rows)
+            except ValueError:
+                raise SwiftParseException(exception_header, str_rows, self.current_line, "After realation name must be specified count of objects.")
+
+        try:
+            str_columns = self.get_not_empty_line()
+            columns = int(str_columns)
+        except ValueError:
+            raise SwiftParseException(exception_header, str_columns, self.current_line, "After objects count must be specified count of attributes.")
 
         for i in range(rows):
-            obj_name = self.get_not_empty_line(self.source)
+            obj_name = self.get_not_empty_line()
             self._objects.append(Object(obj_name))
 
         for k in range(columns):
-            attr_name = self.get_not_empty_line(self.source)
+            attr_name = self.get_not_empty_line()
             new = AttrEnum(k, attr_name)
             new.update(Attribute.TRUE, self._none_val)
             new.update(Attribute.FALSE, self._none_val)
@@ -448,6 +457,14 @@ class DataCxt(Data):
         for val in prepared_line:
             result.append(DataCxt.vals_sym[int(val)])
         self.write_line_to_file(result)
+
+    def get_not_empty_line(self):
+        file_iter = iter(self.source)
+        while True:
+            line = next(file_iter).strip()
+            self.current_line += 1
+            if line:
+                return line
 
 
 class DataDat(Data):

@@ -131,7 +131,7 @@ class FormulaParser(Parser):
         try:
             parser.parseString(str_args)
         except ParseException as e:
-            raise SwiftParseException("Formula Syntax", e.line, e)
+            raise SwiftParseException("Formula Syntax", e.line, e.lineno, e)
 
 
 class ArffParser(Parser):
@@ -202,7 +202,11 @@ class ArffParser(Parser):
         data_part = (CaselessLiteral("@data"))("data_start").setParseAction(lambda s, p, k: (lineno(p, s)))
         arff_header = relation_part + attributes_part + data_part
         attribute.setParseAction(self._create_attribute)
-        result = arff_header.parseString(header)
+
+        try:
+            result = arff_header.parseString(header, parseAll=True)
+        except ParseException as e:
+            raise SwiftParseException("Arff Header Syntax", e.line, e.lineno, e)
 
         self._relation_name = result.rel_name
         self._find_relational(result.children)
@@ -212,7 +216,11 @@ class ArffParser(Parser):
 
     def parse_line(self, line):
         self._index = 0
-        return self._rel_delim_list_parser.parseString(line).asList()
+        try:
+            result = self._rel_delim_list_parser.parseString(line, parseAll=True).asList()
+        except ParseException as e:
+            raise SwiftParseException("Arff Line Syntax", e.line, e.lineno, e)
+        return result
 
     def show_result(self):
         """Method only for testing"""
@@ -348,4 +356,7 @@ class DataParser(Parser):
         attribute.setParseAction(self._create_attribute)
         parser = OneOrMore(entry + Optional(delimiter))
         parser.ignore(comment)
-        parser.parseFile(file_path, parseAll=True)
+        try:
+            parser.parseFile(file_path, parseAll=True)
+        except ParseException as e:
+            raise SwiftParseException("C4.5 (names) Syntax", e.line, e.lineno, e)
