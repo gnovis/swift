@@ -4,6 +4,7 @@ import argparse
 import sys
 from .swift_core.managers_fca import Convertor, Browser, Printer
 from .swift_core.constants_fca import RunParams
+from .swift_core.exceptions_fca import SwiftException
 
 
 SOURCE = 0
@@ -58,8 +59,7 @@ def export(*args):
     printer.print_info(args[TARGET][RunParams.TARGET])
 
 
-def run_swift():
-
+def get_args():
     CONVERT = 'convert'
     BROWSE = 'browse'
     EXPORT = 'export'
@@ -128,3 +128,10 @@ def run_swift():
                 action = ACTIONS[key]
 
     action(source_args, target_args, other_args)
+
+
+def main():
+    try:
+        get_args()
+    except SwiftException as e:
+        print(e)

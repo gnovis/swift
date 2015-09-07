@@ -1,5 +1,5 @@
 from pyparsing import (alphanums, Or, Empty, CharsNotIn, ZeroOrMore, nums, LineEnd,
-                       Group, removeQuotes, Literal, restOfLine, lineno,
+                       Group, removeQuotes, Literal, restOfLine, lineno, ParseException,
                        Optional, delimitedList, printables, OneOrMore, Forward,
                        Suppress, Word, quotedString, CaselessLiteral)
 
@@ -7,6 +7,7 @@ from .attributes_fca import (Attribute, AttrNumeric, AttrDate,
                              AttrEnum, AttrString)
 from .date_parser_fca import DateParser
 from .grammars_fca import boolexpr
+from .exceptions_fca import SwiftException, SwiftParseException
 
 
 class Parser():
@@ -35,7 +36,7 @@ class Parser():
         return self._attributes.copy()
 
 
-class ArgsParser(Parser):
+class FormulaParser(Parser):
 
     NEW_NAME = 0
     OLD_NAME = 1
@@ -55,6 +56,11 @@ class ArgsParser(Parser):
         attr_type = tokens[self.ARGS][self.TYPE]
         next_args = tokens[self.ARGS][self.NEXT_ARGS]
         cls = self.ATTR_CLASSES[attr_type]
+
+        if len(old_names) != len(new_names):
+            raise SwiftException("Names Count",
+                                 "Bad count of names.",
+                                 "Count of new names (before =) and old names (after =) must be the same.")
 
         for old, new in zip(old_names, new_names):
             curr_next_args = next_args.copy()
@@ -122,7 +128,10 @@ class ArgsParser(Parser):
         VAR.setParseAction(self._create_attribute)
 
         # Run parser
-        parser.parseString(str_args)
+        try:
+            parser.parseString(str_args)
+        except ParseException as e:
+            raise SwiftParseException("Formula Syntax", e.line, e)
 
 
 class ArffParser(Parser):

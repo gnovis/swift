@@ -7,7 +7,7 @@ import copy
 
 from .attributes_fca import (Attribute, AttrEnum)
 from .object_fca import Object
-from .parser_fca import ArgsParser, ArffParser, DataParser
+from .parser_fca import FormulaParser, ArffParser, DataParser
 
 
 class Data:
@@ -100,7 +100,7 @@ class Data:
 
         # create attributes from argument entered by the user, fill _attributes
         if self.str_attrs:
-            parser = ArgsParser()
+            parser = FormulaParser()
             parser.parse(self.str_attrs, (len(self._header_attrs)-1))
             self._attributes = parser.attributes
 
