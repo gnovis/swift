@@ -2,8 +2,9 @@
 
 import argparse
 import sys
+import traceback
 from .swift_core.managers_fca import Convertor, Browser, Printer
-from .swift_core.constants_fca import RunParams
+from .swift_core.constants_fca import RunParams, ErrorMessage
 from .swift_core.exceptions_fca import SwiftException
 
 
@@ -29,16 +30,29 @@ def browse(*args):
             pass
         return count
 
-    browser = Browser(**args[SOURCE])
+    def display_lines(lines, i):
+        index = i
+        for line in lines:
+            print(line_format.format(str(index), *line))
+            index += 1
+        return index
+
+    browser = Browser(args[SOURCE], **(args[OTHERS]))
     browser.read_info()
     header = browser.get_header()
     line_format = " ".join(["{:10}"] * (len(header) + 1))
+    formated_header = line_format.format("i", *header)
+
+    if browser.source_from_stdin:
+        print("{} lines displayed. Use {} argument for changing it.\n".format(browser.line_count, RunParams.LINE_COUNT))
+        print(formated_header)
+        lines = browser.get_display_data(browser.line_count)
+        display_lines(lines, 0)
+        return
 
     count = get_line_count(20)
-    print(line_format.format("", *header))
-    print()
-
     index = 0
+    print(formated_header)
     while True:
         if count is None:
             break
@@ -46,9 +60,7 @@ def browse(*args):
         if not lines and count != 0:
             print("End of file.")
             break
-        for line in lines:
-            print(line_format.format(str(index), *line))
-            index += 1
+        index = display_lines(lines, index)
         count = get_line_count(count)
     browser.close_file()
 
@@ -86,7 +98,7 @@ def get_args():
     parser.add_argument("-s", "--source", nargs="?", type=argparse.FileType('r'), default=sys.stdin, help="Name of source file.")
     parser.add_argument("-ss", "--source_separator",
                         help="Separator which is used in source file. Default is ','.")
-    parser.add_argument("-sa", "--source_attributes", help="Source file (old) attributes. Used as additional informations.")
+    parser.add_argument("-sa", "--source_attributes", help="Attributes Formula used for filtering, reordering and converting attributes.")
     parser.add_argument("-si", "--source_info", action='store_true', help="Print information about source file data.")
     parser.add_argument("-nv", "--none_value", help="Character which is used in data as value for non-specified attribute.")
     parser.add_argument("-nfl", "--no_first_line",
@@ -101,10 +113,13 @@ def get_args():
     parser.add_argument("-cls", "--classes", help="Classes seperated by commas - for C4.5 convert.")
     parser.add_argument("-sf", "--source_format", help="Format of source file, must to be specified when source is standart input (stdin)")
     parser.add_argument("-tf", "--target_format", help="Format of target file, must to be specified when target is standart output (stdout)")
-    parser.add_argument("-{}".format(CONVERT[0]), "--{}".format(CONVERT), action='store_true')
-    parser.add_argument("-{}".format(BROWSE[0]), "--{}".format(BROWSE), action='store_true')
-    parser.add_argument("-{}".format(EXPORT[0]), "--{}".format(EXPORT), action='store_true')
-    parser.add_argument("-lc", "--line_count", type=float)
+    parser.add_argument("-{}".format(CONVERT[0]), "--{}".format(CONVERT), action='store_true',
+                        help="Source file will be converted to target file, this is default option.")
+    parser.add_argument("-{}".format(BROWSE[0]), "--{}".format(BROWSE), action='store_true',
+                        help="Desired count of lines from source file will be displayed.")
+    parser.add_argument("-{}".format(EXPORT[0]), "--{}".format(EXPORT), action='store_true',
+                        help="Desired count of lines from source file will be scanned and informations about data will be exported to target file.")
+    parser.add_argument("-lc", "--line_count", type=float, help="Count of lines which will be processed in any action.")
 
     args = parser.parse_args()
 
@@ -127,11 +142,15 @@ def get_args():
             else:
                 action = ACTIONS[key]
 
-    action(source_args, target_args, other_args)
+    return action, source_args, target_args, other_args
 
 
 def main():
+    action, source_args, target_args, other_args = get_args()
     try:
-        get_args()
+        action(source_args, target_args, other_args)
     except SwiftException as e:
         print(e)
+    except:
+        msg = ErrorMessage.UNKNOWN_ERROR + traceback.format_exc()
+        print(msg)

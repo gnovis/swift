@@ -4,7 +4,8 @@ import sys
 import time
 from PyQt4 import QtCore
 from .data_fca import (Data, DataCsv, DataArff, DataDat, DataCxt, DataData)
-from .constants_fca import (FileType, RunParams)
+from .constants_fca import FileType, RunParams, ErrorMessage
+from .exceptions_fca import SwiftException
 
 
 class ManagerFca(QtCore.QObject):
@@ -30,11 +31,12 @@ class ManagerFca(QtCore.QObject):
     # Signals
     next_percent = QtCore.pyqtSignal()
 
-    def __init__(self, line_count=float("inf")):
+    def __init__(self, source, line_count=float("inf")):
         super().__init__()
         self._stop = False
         self._counter = None
-        self._line_count = line_count - 1
+        self._line_count = int(line_count)
+        self._source_from_stdin = not source.seekable()
 
     @property
     def stop(self):
@@ -48,8 +50,9 @@ class ManagerFca(QtCore.QObject):
     def line_count(self):
         return self._line_count
 
-    def get_data_class(self, file_path):
-        return self.EXTENSIONS[os.path.splitext(file_path)[1]]
+    @property
+    def source_from_stdin(self):
+        return self._source_from_stdin
 
     def update_percent(self):
         self.next_percent.emit()
@@ -57,12 +60,24 @@ class ManagerFca(QtCore.QObject):
     def update_counter(self, line, index):
         self._counter.update(line, index)
 
+    def get_extension(self, args):
+        f = args[RunParams.SOURCE]
+        if self.source_from_stdin:
+            ext = '.' + args[RunParams.FORMAT]
+            del args[RunParams.FORMAT]
+        else:
+            ext = os.path.splitext(f.name)[1]
+        return ext
+
+    def get_data_class(self, args):
+        return self.EXTENSIONS[self.get_extension(args)]
+
 
 class Printer(ManagerFca):
     def __init__(self, kwargs, line_count=float("inf")):
-        super().__init__(line_count)
+        super().__init__(kwargs[RunParams.SOURCE], line_count)
         self._file_path = kwargs[RunParams.SOURCE].name
-        self._data = self.get_data_class(self._file_path)(**kwargs)
+        self._data = self.get_data_class(kwargs)(**kwargs)
 
     def read_info(self):
         self._counter = EstimateCounter(self._file_path, self)
@@ -75,10 +90,10 @@ class Printer(ManagerFca):
 
 
 class Browser(ManagerFca):
-    def __init__(self, **kwargs):
-        super().__init__()
+    def __init__(self, kwargs, line_count=20):
+        super().__init__(kwargs[RunParams.SOURCE], line_count)
         self._opened_file = kwargs[RunParams.SOURCE]
-        self._data = self.get_data_class(self._opened_file.name)(**kwargs)
+        self._data = self.get_data_class(kwargs)(**kwargs)
 
     def read_info(self):
         self._counter = EstimateCounter(self._opened_file.name, self)
@@ -112,13 +127,13 @@ class Convertor(ManagerFca):
     """Manage data conversion"""
 
     def __init__(self, old, new, print_info=False, gui=False, line_count=float("inf")):
-        super().__init__(line_count)
+        super().__init__(old[RunParams.SOURCE], line_count)
         self._gui = gui
         self._source_ext = self.get_extension(old)
         self._target_ext = self.get_extension(new)
 
-        self._source_cls = self.get_data_class(self._source_ext)
-        self._target_cls = self.get_data_class(self._target_ext)
+        self._source_cls = self.EXTENSIONS[self._source_ext]
+        self._target_cls = self.EXTENSIONS[self._target_ext]
         self._old_data = self._source_cls(**old)
         self._new_data = self._target_cls(**new)
         self._print_info = print_info
@@ -126,18 +141,6 @@ class Convertor(ManagerFca):
     @property
     def source_line_count(self):
         return self._source_line_count
-
-    def get_extension(self, args):
-        f = args['source']
-        if not f.seekable():
-            ext = '.' + args['format']
-            del args['format']
-        else:
-            ext = os.path.splitext(f.name)[1]
-        return ext
-
-    def get_data_class(self, ext):
-        return self.EXTENSIONS[ext]
 
     def read_info(self):
         self._counter = EstimateCounter(self._old_data.source.name, self, gui=self._gui)
@@ -192,12 +195,14 @@ class BgWorker(QtCore.QThread):
     def run(self):
         try:
             self.function(self)
+        except SwiftException as e:
+            self.push_error(str(e))
         except:
-            self.push_error(traceback.format_exc())
+            msg = ErrorMessage.UNKNOWN_ERROR + traceback.format_exc()
+            self.push_error(msg)
 
 
 class EstimateCounter():
-
     def __init__(self, data_file, manager, gui=True):
         self.gui = gui
         self.proc_line_count = 0
@@ -233,7 +238,6 @@ class EstimateCounter():
 
 
 class Counter():
-
     def __init__(self, maximum, manager, gui=True):
         self.gui = gui
         self._current_percent = 0

@@ -22,3 +22,7 @@ class FileType:
     CXT = ".cxt"
     DATA = ".data"
     NAMES = ".names"
+
+
+class ErrorMessage:
+    UNKNOWN_ERROR = "\nSwift Unknown Error\nPlease report this bug with details below. Thank you.\n\n"

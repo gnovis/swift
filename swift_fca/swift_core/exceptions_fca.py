@@ -36,4 +36,4 @@ class SwiftLineException(SwiftException):
 
 class SwiftAttributeException(SwiftException):
     def __init__(self, message):
-        self._message = message
+        super().__init__("", message, "")
