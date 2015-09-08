@@ -35,7 +35,7 @@ class ManagerFca(QtCore.QObject):
         super().__init__()
         self._stop = False
         self._counter = None
-        self._line_count = int(line_count)
+        self._line_count = line_count
         self._source_from_stdin = not source.seekable()
 
     @property
@@ -106,6 +106,7 @@ class Browser(ManagerFca):
         return list(map(lambda x: x.name, self._data.attributes))
 
     def get_display_data(self, count):
+        count = int(count)
         END_FILE = -1
         to_display = []
         for i in range(count):

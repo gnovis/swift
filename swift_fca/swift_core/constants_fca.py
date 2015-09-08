@@ -22,6 +22,7 @@ class FileType:
     CXT = ".cxt"
     DATA = ".data"
     NAMES = ".names"
+    ALL = [CSV, ARFF, DAT, DATA, NAMES, CXT]
 
 
 class ErrorMessage:

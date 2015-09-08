@@ -4,7 +4,7 @@ import argparse
 import sys
 import traceback
 from .swift_core.managers_fca import Convertor, Browser, Printer
-from .swift_core.constants_fca import RunParams, ErrorMessage
+from .swift_core.constants_fca import RunParams, ErrorMessage, FileType
 from .swift_core.exceptions_fca import SwiftException
 
 
@@ -44,7 +44,7 @@ def browse(*args):
     formated_header = line_format.format("i", *header)
 
     if browser.source_from_stdin:
-        print("{} lines displayed. Use {} argument for changing it.\n".format(browser.line_count, RunParams.LINE_COUNT))
+        print("Max {} lines displayed. Use {} argument for changing it.\n".format(browser.line_count, RunParams.LINE_COUNT))
         print(formated_header)
         lines = browser.get_display_data(browser.line_count)
         display_lines(lines, 0)
@@ -111,8 +111,10 @@ def get_args():
     parser.add_argument("-to", "--target_objects", help="Target file (new) objects. Only for CXT format.")
     parser.add_argument("-rn", "--relation_name", help="New name of relation.")
     parser.add_argument("-cls", "--classes", help="Classes seperated by commas - for C4.5 convert.")
-    parser.add_argument("-sf", "--source_format", help="Format of source file, must to be specified when source is standart input (stdin)")
-    parser.add_argument("-tf", "--target_format", help="Format of target file, must to be specified when target is standart output (stdout)")
+    parser.add_argument("-sf", "--source_format", type=str.lower, choices=list(map(lambda val: val[1:], FileType.ALL)),
+                        help="Format of source file, must to be specified when source is standart input (stdin)")
+    parser.add_argument("-tf", "--target_format", type=str.lower, choices=list(map(lambda val: val[1:], FileType.ALL)),
+                        help="Format of target file, must to be specified when target is standart output (stdout)")
     parser.add_argument("-{}".format(CONVERT[0]), "--{}".format(CONVERT), action='store_true',
                         help="Source file will be converted to target file, this is default option.")
     parser.add_argument("-{}".format(BROWSE[0]), "--{}".format(BROWSE), action='store_true',
