@@ -6,7 +6,7 @@ from pyparsing import (alphanums, Or, Empty, CharsNotIn, ZeroOrMore, nums, LineE
 from .attributes_fca import (Attribute, AttrNumeric, AttrDate,
                              AttrEnum, AttrString)
 from .date_parser_fca import DateParser
-from .grammars_fca import boolexpr
+from .grammars_fca import boolexpr, interval
 from .exceptions_fca import SwiftException, SwiftParseException
 
 
@@ -73,12 +73,6 @@ class FormulaParser(Parser):
 
     def parse(self, str_args, max_attrs_i):
 
-        def expand_interval(tokens):
-            val_from = int(tokens[0])
-            val_to = int(tokens[1]) + 1
-            result = list(map(str, range(val_from, val_to)))
-            return result
-
         # Grammar definition
         QUOTED_STR = quotedString.copy()
         NUMEXPR = boolexpr()
@@ -98,8 +92,11 @@ class FormulaParser(Parser):
         PARAMS = Or(STR ^ ENUM ^ DATE ^ NUM ^ GEN ^ NO_SCALE)
 
         NAME = Word(printables, excludeChars="[]-,=")
-        INTERVAL = Optional(Word(nums), default=0) + Suppress("-") + Optional(Word(nums), default=max_attrs_i)
-        INTERVAL.setParseAction(expand_interval)
+
+        # INTERVAL = Optional(Word(nums), default=0) + Suppress("-") + Optional(Word(nums), default=max_attrs_i)
+        # INTERVAL.setParseAction(expand_interval)
+        INTERVAL = interval(max_attrs_i)
+
         ATTR_SEQUENCE = Group(delimitedList((INTERVAL | NAME)))
         VAR_FIRST_PART = Optional(ATTR_SEQUENCE + Suppress('='), default='') + ATTR_SEQUENCE
 

@@ -1,4 +1,4 @@
-from pyparsing import Literal, Combine, Optional, Or, Word, alphas, nums, CaselessLiteral
+from pyparsing import Literal, Combine, Optional, Or, Word, alphas, nums, CaselessLiteral, Suppress
 
 
 def numeric():
@@ -23,3 +23,14 @@ def boolexpr(VAL=numeric()):
               Combine(VAL + OP + VAR, adjacent=False) ^
               Combine(VAL + OP + VAR + OP + VAL, adjacent=False))
     return EXPR
+
+
+def interval(end):
+    def expand_interval(tokens):
+        val_from = int(tokens[0])
+        val_to = int(tokens[1]) + 1
+        result = list(map(str, range(val_from, val_to)))
+        return result
+    INTERVAL = Optional(Word(nums), default=0) + Suppress("-") + Optional(Word(nums), default=end)
+    INTERVAL.setParseAction(expand_interval)
+    return INTERVAL

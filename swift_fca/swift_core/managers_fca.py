@@ -250,6 +250,6 @@ class Counter():
             self._current_percent = 0
             self.manager.update_percent()
             if self.gui:
-                time.sleep(0.01)
+                time.sleep(0.02)
         else:
             self._current_percent += 1

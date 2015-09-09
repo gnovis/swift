@@ -96,7 +96,6 @@ class GuiSwift(QtGui.QWidget):
         table_model_target = SwiftTableModel(self)
         self.table_view_source.setModel(table_model_source)
         self.table_view_target.setModel(table_model_target)
-
         self.table_view_source.verticalScrollBar().valueChanged.connect(self.browse_next_source)
         self.table_view_target.verticalScrollBar().valueChanged.connect(self.browse_next_target)
 
@@ -225,7 +224,7 @@ class GuiSwift(QtGui.QWidget):
         if state == QtGui.QValidator.Acceptable and os.path.isfile(sender.text()):
             color = self.Colors.GREEN
             self.browser_source = None
-            self.clear_table(self.table_view_source)
+            self.reset_table(self.table_view_source)
             self._source_params.clear()
             self.btn_s_params.setEnabled(True)
             self.btn_browse.setEnabled(True)
@@ -239,7 +238,7 @@ class GuiSwift(QtGui.QWidget):
             self.btn_export_info.setEnabled(False)
             self.btn_s_orig_data.setEnabled(False)
             self.browser_source = None
-            self.clear_table(self.table_view_source)
+            self.reset_table(self.table_view_source)
             self._source = None
             self._source_params.clear()
         if sender.text() == "":
@@ -255,7 +254,7 @@ class GuiSwift(QtGui.QWidget):
         if state == QtGui.QValidator.Acceptable:
             color = self.Colors.GREEN
             self.browser_target = None
-            self.clear_table(self.table_view_target)
+            self.reset_table(self.table_view_target)
             self._target_params.clear()
             self.btn_t_params.setEnabled(True)
             if os.path.isfile(sender.text()):
@@ -268,7 +267,7 @@ class GuiSwift(QtGui.QWidget):
             self.btn_t_params.setEnabled(False)
             self.btn_t_orig_data.setEnabled(False)
             self.browser_target = None
-            self.clear_table(self.table_view_target)
+            self.reset_table(self.table_view_target)
             self._target = None
             self._target_params.clear()
         if sender.text() == "":
@@ -337,7 +336,7 @@ class GuiSwift(QtGui.QWidget):
                 printer = Printer(main_args, line_count=self.line_count())
             except:
                 errors = traceback.format_exc()
-                self.show_error_dialog(errors=errors)
+                self.show_error_dialog(errors=[errors])
             else:
                 pbar = self.get_prepare_pbar(printer)
                 printer.next_percent.connect(pbar.update)
@@ -476,14 +475,13 @@ class GuiSwift(QtGui.QWidget):
         table_view.model().table.extend(data)
         table_view.model().layoutChanged.emit()
 
-    def clear_table(self, table):
-        table.model().table.clear()
-        table.model().header.clear()
-        table.model().layoutChanged.emit()
+    def reset_table(self, table):
+        table_model = SwiftTableModel(self)
+        table.setModel(table_model)
 
     def browse_first_data(self, table_view, browser, source_file, params):
         # clear old data
-        self.clear_table(table_view)
+        self.reset_table(table_view)
         if browser:
             browser.close_file()
 
@@ -501,7 +499,7 @@ class GuiSwift(QtGui.QWidget):
             errors = worker.get_errors()
             if len(errors) > 0:
                 pbar.cancel()
-                self.clear_table(table_view)
+                self.reset_table(table_view)
                 self.show_error_dialog("Browse Error",
                                        "Wasn't possible to browse data, please check syntax in browsing file and separator used.",
                                        errors)
@@ -509,10 +507,12 @@ class GuiSwift(QtGui.QWidget):
                                             self.STATUS_MESSAGE_DURRATION)
 
         try:
-            browser = Browser(source=open(self.subst_ext(source_file), 'r'), **params)
+            main_args = self.source_params
+            main_args[RunParams.SOURCE] = open(self.subst_ext(self.source), 'r')
+            browser = Browser(main_args, line_count=self.line_count())
         except:
             errors = traceback.format_exc()
-            self.show_error_dialog(errors=errors)
+            self.show_error_dialog(errors=[errors])
         else:
             pbar = self.get_prepare_pbar(browser)
             browser.next_percent.connect(pbar.update)
