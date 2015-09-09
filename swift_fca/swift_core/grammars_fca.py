@@ -25,11 +25,11 @@ def boolexpr(VAL=numeric()):
     return EXPR
 
 
-def interval(end):
+def interval(end=0):
     def expand_interval(tokens):
         val_from = int(tokens[0])
         val_to = int(tokens[1]) + 1
-        result = list(map(str, range(val_from, val_to)))
+        result = list(range(val_from, val_to))
         return result
     INTERVAL = Optional(Word(nums), default=0) + Suppress("-") + Optional(Word(nums), default=end)
     INTERVAL.setParseAction(expand_interval)

@@ -143,6 +143,8 @@ class Data:
         self._attr_count = len(self._attributes)
         if read:
             for index, line in enumerate(self.source):
+                if manager.ignore_line(index):
+                    continue
                 str_values = self.prepare_line(line, index, scale=False, update=True)
                 if not str_values:  # current line is comment
                     continue
@@ -492,6 +494,8 @@ class DataDat(Data):
         max_val = -1
         line_count = 0
         for i, line in enumerate(self.source):
+            if manager.ignore_line(i):
+                continue
             line_count += 1
             splitted = super().ss_str(line, self.separator)
             for val in splitted:

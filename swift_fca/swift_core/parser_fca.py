@@ -63,6 +63,8 @@ class FormulaParser(Parser):
                                  "Count of new names (before =) and old names (after =) must be the same.")
 
         for old, new in zip(old_names, new_names):
+            old = str(old)
+            new = str(new)
             curr_next_args = next_args.copy()
             curr_next_args['attr_pattern'] = old
 
@@ -357,3 +359,13 @@ class DataParser(Parser):
             parser.parseFile(file_path, parseAll=True)
         except ParseException as e:
             raise SwiftParseException("C4.5 (names) Syntax", e.line, e.lineno-1, e)
+
+
+def parse_sequence(string):
+    if not string:
+        return []
+    seq = delimitedList(interval() | Word(nums)("num").setParseAction(lambda t: int(t.num)))
+    try:
+        return seq.parseString(string, parseAll=True).asList()
+    except ParseException as e:
+        raise SwiftParseException("Formula Syntax", e.line, e.lineno-1, e)

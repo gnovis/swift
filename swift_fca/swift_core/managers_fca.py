@@ -6,6 +6,7 @@ from PyQt4 import QtCore
 from .data_fca import (Data, DataCsv, DataArff, DataDat, DataCxt, DataData)
 from .constants_fca import FileType, RunParams, ErrorMessage
 from .exceptions_fca import SwiftException
+from .parser_fca import parse_sequence
 
 
 class ManagerFca(QtCore.QObject):
@@ -31,12 +32,13 @@ class ManagerFca(QtCore.QObject):
     # Signals
     next_percent = QtCore.pyqtSignal()
 
-    def __init__(self, source, line_count=float("inf")):
+    def __init__(self, source, line_count=float("inf"), ignored_lines=None):
         super().__init__()
         self._stop = False
         self._counter = None
         self._line_count = line_count
         self._source_from_stdin = not source.seekable()
+        self._ignored_lines = parse_sequence(ignored_lines)
 
     @property
     def stop(self):
@@ -53,6 +55,9 @@ class ManagerFca(QtCore.QObject):
     @property
     def source_from_stdin(self):
         return self._source_from_stdin
+
+    def ignore_line(self, i):
+        return bool(i in self._ignored_lines)
 
     def update_percent(self):
         self.next_percent.emit()
@@ -74,8 +79,8 @@ class ManagerFca(QtCore.QObject):
 
 
 class Printer(ManagerFca):
-    def __init__(self, kwargs, line_count=float("inf")):
-        super().__init__(kwargs[RunParams.SOURCE], line_count)
+    def __init__(self, kwargs, line_count=float("inf"), ignored_lines=None):
+        super().__init__(kwargs[RunParams.SOURCE], line_count, ignored_lines)
         self._file_path = kwargs[RunParams.SOURCE].name
         self._data = self.get_data_class(kwargs)(**kwargs)
 
@@ -90,8 +95,8 @@ class Printer(ManagerFca):
 
 
 class Browser(ManagerFca):
-    def __init__(self, kwargs, line_count=20):
-        super().__init__(kwargs[RunParams.SOURCE], line_count)
+    def __init__(self, kwargs, line_count=20, ignored_lines=None):
+        super().__init__(kwargs[RunParams.SOURCE], line_count, ignored_lines)
         self._opened_file = kwargs[RunParams.SOURCE]
         self._data = self.get_data_class(kwargs)(**kwargs)
 
@@ -127,8 +132,9 @@ class Browser(ManagerFca):
 class Convertor(ManagerFca):
     """Manage data conversion"""
 
-    def __init__(self, old, new, print_info=False, gui=False, line_count=float("inf")):
-        super().__init__(old[RunParams.SOURCE], line_count)
+    def __init__(self, old, new, print_info=False, gui=False,
+                 line_count=float("inf"), ignored_lines=None):
+        super().__init__(old[RunParams.SOURCE], line_count, ignored_lines)
         self._gui = gui
         self._source_ext = self.get_extension(old)
         self._target_ext = self.get_extension(new)
@@ -170,6 +176,8 @@ class Convertor(ManagerFca):
         # skip header lines
         Data.skip_lines(self._old_data.index_data_start, source_file)
         for i, line in enumerate(source_file):
+            if self.ignore_line(i):
+                continue
             prepared_line = self._old_data.prepare_line(line, i)
             if not prepared_line:  # line is comment
                 continue

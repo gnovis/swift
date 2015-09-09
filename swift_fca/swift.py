@@ -8,7 +8,6 @@ from .swift_core.constants_fca import RunParams, ErrorMessage, FileType
 from .swift_core.exceptions_fca import SwiftException
 from .swift_core.validator_fca import ConvertValidator
 
-
 SOURCE = 0
 TARGET = 1
 OTHERS = 2
@@ -100,7 +99,8 @@ def get_args():
                    "relation_name": RunParams.RELATION_NAME,
                    "classes": RunParams.CLASSES}
     OTHER_ARGS = {"source_info": RunParams.SOURCE_INFO,
-                  "line_count": RunParams.LINE_COUNT}
+                  "line_count": RunParams.LINE_COUNT,
+                  "ignored_lines": RunParams.IGNORED_LINES}
 
     parser = argparse.ArgumentParser()
 
@@ -131,6 +131,7 @@ def get_args():
     parser.add_argument("-{}".format(EXPORT[0]), "--{}".format(EXPORT), action='store_true',
                         help="Desired count of lines from source file will be scanned and informations about data will be exported to target file.")
     parser.add_argument("-lc", "--line_count", type=float, help="Count of lines which will be processed in any action.")
+    parser.add_argument("-il", "--ignored_lines", help="Indexes of lines which will be ignored in any operation.")
 
     args = parser.parse_args()
 
