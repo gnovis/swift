@@ -62,7 +62,7 @@ class ManagerFca(QtCore.QObject):
 
     def get_extension(self, args):
         f = args[RunParams.SOURCE]
-        if self.source_from_stdin:
+        if not f.seekable():
             ext = '.' + args[RunParams.FORMAT]
             del args[RunParams.FORMAT]
         else:
@@ -114,7 +114,7 @@ class Browser(ManagerFca):
             if line == END_FILE:
                 break
             else:
-                prepared_line = self._data.prepare_line(line, i, False)
+                prepared_line = self._data.prepare_line(line.strip(), i, False)
                 if not prepared_line:  # line is comment
                     continue
                 to_display.append(prepared_line)

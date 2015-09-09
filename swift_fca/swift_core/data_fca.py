@@ -206,8 +206,11 @@ class Data:
         Strip and split string by separator. Ignore escaped separators.
         Return list of values.
         """
-        return list(map(lambda x: x.strip(),
-                    re.split(r'(?<!\\)' + separator, string, max_split)))
+        result = list(map(lambda x: x.strip(),
+                          re.split(r'(?<!\\)' + separator, string, max_split)))
+        if len(result) == 1 and not result[0]:
+            return []
+        return result
 
     def print_info(self, out_file=sys.stdout):
         print("Relation name: {}".format(self.relation_name), file=out_file)
@@ -346,13 +349,6 @@ class DataData(Data):
         super().__init__(source, str_attrs, str_objects,
                          separator, relation_name, none_val)
         self._classes = list(reversed(self.ss_str(classes, self._separator)))
-
-    COMMENT_SYM = "\|"
-    ATTR_SEP = ":"
-    LINE_SEP = "\."
-    IGNORE = "ignore"
-    CONTINUOUS = "continuous"
-    CLASS = "class"
 
     def write_line(self, prepared_line):
         if self._classes:
@@ -499,13 +495,12 @@ class DataDat(Data):
             line_count += 1
             splitted = super().ss_str(line, self.separator)
             for val in splitted:
-                if val:
-                    try:
-                        int_val = int(val)
-                    except ValueError:
-                        raise SwiftLineException(self.EXCEPTION_HEADER, line, i, self.EXCEPTION_DESCRIPTION, val)
-                    if int_val > max_val:
-                        max_val = int_val
+                try:
+                    int_val = int(val)
+                except ValueError:
+                    raise SwiftLineException(self.EXCEPTION_HEADER, line, i, self.EXCEPTION_DESCRIPTION, val)
+                if int_val > max_val:
+                    max_val = int_val
 
             if self._temp_source:
                 self._temp_source.write(line)
@@ -536,11 +531,10 @@ class DataDat(Data):
         splitted = super().ss_str(line, self.separator)
         result = ['0'] * (self._attr_count)
         for val in splitted:
-            if val:
-                try:
-                    result[int(val)] = str(1)
-                except ValueError:
-                    raise SwiftLineException(self.EXCEPTION_HEADER, line, index, self.EXCEPTION_DESCRIPTION, val)
+            try:
+                result[int(val)] = str(1)
+            except ValueError:
+                raise SwiftLineException(self.EXCEPTION_HEADER, line, index, self.EXCEPTION_DESCRIPTION, val)
         return super().prepare_line(result, index, scale, update)
 
     def write_line(self, line):

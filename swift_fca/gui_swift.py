@@ -8,9 +8,9 @@ import os.path
 import traceback
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import SIGNAL
-from .swift_core.managers_fca import (Browser, Convertor, Printer, BgWorker)
-from .swift_core.constants_fca import (RunParams, FileType)
-from .swift_core.validator_fca import ParamValidator
+from .swift_core.managers_fca import Browser, Convertor, Printer, BgWorker
+from .swift_core.constants_fca import RunParams, FileType, ErrorMessage
+from .swift_core.validator_fca import ConvertValidator
 import swift_fca.resources.resources_rc  # NOQA Resources file
 
 
@@ -354,14 +354,14 @@ class GuiSwift(QtGui.QWidget):
 
     def convert(self):
         """Slot for btn_convert"""
-        validator = ParamValidator(self.source, self.target, self.source_params, self.target_params)
+        validator = ConvertValidator(self.source, self.target, self.source_params, self.target_params)
         warnings = validator.warnings
 
         procces = True
         if len(warnings) > 0:
             msgBox = QtGui.QMessageBox()
             msgBox.setWindowTitle("Arguments Warning")
-            msgBox.setText("Some of required arguments weren't specified correctly, conversion may crash. Do you want to continue?")
+            msgBox.setText("{} Do you want to continue?".format(ErrorMessage.MISSING_ARGS_ERROR))
             msgBox.setInformativeText("Warnings: \n" + "\n".join(warnings))
             msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
             msgBox.setDefaultButton(QtGui.QMessageBox.No)

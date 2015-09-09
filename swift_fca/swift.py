@@ -6,6 +6,7 @@ import traceback
 from .swift_core.managers_fca import Convertor, Browser, Printer
 from .swift_core.constants_fca import RunParams, ErrorMessage, FileType
 from .swift_core.exceptions_fca import SwiftException
+from .swift_core.validator_fca import ConvertValidator
 
 
 SOURCE = 0
@@ -14,6 +15,14 @@ OTHERS = 2
 
 
 def convert(*args):
+    validator = ConvertValidator(args[SOURCE][RunParams.SOURCE].name,
+                                 args[TARGET][RunParams.SOURCE].name,
+                                 args[SOURCE], args[TARGET])
+    warnings = validator.warnings
+    if len(warnings) > 0:
+        raise SwiftException("Arguments",
+                             ErrorMessage.MISSING_ARGS_ERROR,
+                             "\n".join(warnings))
     convertor = Convertor(args[SOURCE], args[TARGET], **(args[OTHERS]))
     convertor.read_info()
     convertor.convert()
