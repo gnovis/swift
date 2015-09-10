@@ -68,7 +68,13 @@ class ManagerFca(QtCore.QObject):
     def get_extension(self, args):
         f = args[RunParams.SOURCE]
         if not f.seekable():
-            ext = '.' + args[RunParams.FORMAT]
+            try:
+                ext = ".{}".format(args[RunParams.FORMAT])
+            except KeyError:
+                # same exception is raised in validator, it should be implemented only on one place
+                raise SwiftException("Format Argument",
+                                     "Format argument is missing.",
+                                     "If you are using standart input/output as source/target, argument source/target format must be set.")
             del args[RunParams.FORMAT]
         else:
             ext = os.path.splitext(f.name)[1]
@@ -189,7 +195,7 @@ class Convertor(ManagerFca):
             if not prepared_line:  # line is comment
                 continue
             self._new_data.write_line(prepared_line)
-            if self.stop or self.line_count <= i:
+            if self.stop or (self.line_count-1) <= i:
                 break
             self._counter.update(line, self._old_data.index_data_start)
         self._new_data.source.close()

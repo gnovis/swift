@@ -153,7 +153,7 @@ class Data:
                 if self._temp_source:
                     self._temp_source.write(line)
 
-                if manager.stop or manager.line_count <= index:
+                if manager.stop or (manager.line_count-1) <= index:
                     break
                 manager.update_counter(line, self.index_data_start)
 
@@ -509,7 +509,7 @@ class DataDat(Data):
             if self._temp_source:
                 self._temp_source.write(line)
 
-            if manager.stop or manager.line_count <= i:
+            if manager.stop or (manager.line_count-1) <= i:
                 break
             manager.update_counter(line, self.index_data_start)
 
