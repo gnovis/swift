@@ -14,7 +14,7 @@ options = {
 
 executables = [
     Executable('swift', base=base, icon='swift_fca/resources/images/swift_icon.ico'),
-    Executable('swift-console')
+    Executable('swift-cli')
 ]
 
 setup(name='Swift FCA',
