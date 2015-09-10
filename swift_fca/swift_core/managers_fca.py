@@ -32,13 +32,13 @@ class ManagerFca(QtCore.QObject):
     # Signals
     next_percent = QtCore.pyqtSignal()
 
-    def __init__(self, source, line_count=float("inf"), ignored_lines=None):
+    def __init__(self, source, line_count=float("inf"), skipped_lines=None):
         super().__init__()
         self._stop = False
         self._counter = None
         self._line_count = line_count
         self._source_from_stdin = not source.seekable()
-        self._ignored_lines = parse_sequence(ignored_lines)
+        self._skipped_lines = parse_sequence(skipped_lines)
 
     @property
     def stop(self):
@@ -56,8 +56,8 @@ class ManagerFca(QtCore.QObject):
     def source_from_stdin(self):
         return self._source_from_stdin
 
-    def ignore_line(self, i):
-        return bool(i in self._ignored_lines)
+    def skip_line(self, i):
+        return bool(i in self._skipped_lines)
 
     def update_percent(self):
         self.next_percent.emit()
@@ -79,8 +79,8 @@ class ManagerFca(QtCore.QObject):
 
 
 class Printer(ManagerFca):
-    def __init__(self, kwargs, line_count=float("inf"), ignored_lines=None):
-        super().__init__(kwargs[RunParams.SOURCE], line_count, ignored_lines)
+    def __init__(self, kwargs, line_count=float("inf"), skipped_lines=None):
+        super().__init__(kwargs[RunParams.SOURCE], line_count, skipped_lines)
         self._file_path = kwargs[RunParams.SOURCE].name
         self._data = self.get_data_class(kwargs)(**kwargs)
 
@@ -95,10 +95,11 @@ class Printer(ManagerFca):
 
 
 class Browser(ManagerFca):
-    def __init__(self, kwargs, line_count=20, ignored_lines=None):
-        super().__init__(kwargs[RunParams.SOURCE], line_count, ignored_lines)
+    def __init__(self, kwargs, line_count=20, skipped_lines=None):
+        super().__init__(kwargs[RunParams.SOURCE], line_count, skipped_lines)
         self._opened_file = kwargs[RunParams.SOURCE]
         self._data = self.get_data_class(kwargs)(**kwargs)
+        self._curr_line_index = -1
 
     def read_info(self):
         self._counter = EstimateCounter(self._opened_file.name, self)
@@ -114,15 +115,21 @@ class Browser(ManagerFca):
         count = int(count)
         END_FILE = -1
         to_display = []
-        for i in range(count):
+
+        i = 0
+        while i < count:
+            self._curr_line_index += 1
             line = next(self._opened_file, END_FILE)
             if line == END_FILE:
                 break
-            else:
-                prepared_line = self._data.prepare_line(line.strip(), i, False)
-                if not prepared_line:  # line is comment
-                    continue
-                to_display.append(prepared_line)
+            if self.skip_line(self._curr_line_index):
+                continue
+            prepared_line = self._data.prepare_line(line.strip(),
+                                                    self._curr_line_index, False)
+            if not prepared_line:  # line is comment
+                continue
+            to_display.append(prepared_line)
+            i += 1
         return to_display
 
     def close_file(self):
@@ -133,8 +140,8 @@ class Convertor(ManagerFca):
     """Manage data conversion"""
 
     def __init__(self, old, new, print_info=False, gui=False,
-                 line_count=float("inf"), ignored_lines=None):
-        super().__init__(old[RunParams.SOURCE], line_count, ignored_lines)
+                 line_count=float("inf"), skipped_lines=None):
+        super().__init__(old[RunParams.SOURCE], line_count, skipped_lines)
         self._gui = gui
         self._source_ext = self.get_extension(old)
         self._target_ext = self.get_extension(new)
@@ -176,7 +183,7 @@ class Convertor(ManagerFca):
         # skip header lines
         Data.skip_lines(self._old_data.index_data_start, source_file)
         for i, line in enumerate(source_file):
-            if self.ignore_line(i):
+            if self.skip_line(i):
                 continue
             prepared_line = self._old_data.prepare_line(line, i)
             if not prepared_line:  # line is comment

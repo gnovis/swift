@@ -15,7 +15,6 @@ import swift_fca.resources.resources_rc  # NOQA Resources file
 
 
 class GuiSwift(QtGui.QWidget):
-
     STATUS_MESSAGE_DURRATION = 5000
 
     class Colors():
@@ -52,6 +51,10 @@ class GuiSwift(QtGui.QWidget):
     def target_params(self):
         return self._target_params.copy()
 
+    @property
+    def skip_lines(self):
+        return self.line_skip_lines.text()
+
     def line_count(self):
         value = self.line_line_count.text()
         if value:
@@ -85,6 +88,12 @@ class GuiSwift(QtGui.QWidget):
         num_validator = QtGui.QRegExpValidator(numregex)
         self.line_line_count.setMaximumWidth(85)
         self.set_line_prop(self.line_line_count, num_validator, min_w=85)
+
+        self.line_skip_lines = QtGui.QLineEdit()
+        self.line_skip_lines.setPlaceholderText("Skip Lines")
+        seqregex = QtCore.QRegExp('^(\d+|(\d+)?-\d+)(,(\d+|(\d+)?-\d+))*$')
+        num_validator = QtGui.QRegExpValidator(seqregex)
+        self.set_line_prop(self.line_skip_lines, num_validator, min_w=100)
 
         self.line_source.textChanged.connect(self.check_state_source)
         self.line_target.textChanged.connect(self.check_state_target)
@@ -162,7 +171,8 @@ class GuiSwift(QtGui.QWidget):
         hbox_target.addWidget(btn_t_select)
         hbox_t_btn_set.addStretch(0)
         hbox_s_btn_set.addWidget(self.line_line_count)
-        hbox_s_btn_set.addStretch(0)
+        hbox_s_btn_set.addWidget(self.line_skip_lines)
+        # hbox_s_btn_set.addStretch(0)
         hbox_s_btn_set.addWidget(self.btn_convert)
         hbox_s_btn_set.addWidget(self.btn_export_info)
         hbox_s_btn_set.addWidget(self.btn_browse)
@@ -333,7 +343,7 @@ class GuiSwift(QtGui.QWidget):
             try:
                 main_args = self.source_params
                 main_args[RunParams.SOURCE] = open(self.subst_ext(self.source), 'r')
-                printer = Printer(main_args, line_count=self.line_count())
+                printer = Printer(main_args, line_count=self.line_count(), skipped_lines=self.skip_lines)
             except:
                 errors = traceback.format_exc()
                 self.show_error_dialog(errors=[errors])
@@ -418,7 +428,9 @@ class GuiSwift(QtGui.QWidget):
                     self.bg_worker.start()
 
             try:
-                convertor = Convertor(s_p, t_p, gui=True, line_count=self.line_count())
+                convertor = Convertor(s_p, t_p, gui=True,
+                                      line_count=self.line_count(),
+                                      skipped_lines=self.skip_lines)
             except:
                 errors = traceback.format_exc()
                 self.show_error_dialog(errors=[errors])
@@ -509,7 +521,7 @@ class GuiSwift(QtGui.QWidget):
         try:
             main_args = self.source_params
             main_args[RunParams.SOURCE] = open(self.subst_ext(self.source), 'r')
-            browser = Browser(main_args, line_count=self.line_count())
+            browser = Browser(main_args, line_count=self.line_count(), skipped_lines=self.skip_lines)
         except:
             errors = traceback.format_exc()
             self.show_error_dialog(errors=[errors])
@@ -570,7 +582,6 @@ class SwiftTableModel(QtCore.QAbstractTableModel):
 
 
 class ParamsDialog(QtGui.QDialog):
-
     NO_PARAMS = 'no_params'
 
     def __init__(self, parent):
@@ -621,7 +632,6 @@ class ParamsDialog(QtGui.QDialog):
 
 
 class OriginalDataDialog(QtGui.QDialog):
-
     def __init__(self, source_path, parent):
         super().__init__(parent)
         self.source_path = source_path
@@ -666,7 +676,6 @@ class OriginalDataDialog(QtGui.QDialog):
 
 
 class SourceParamsDialog(ParamsDialog):
-
     format_poss_args = {FileType.ARFF: (RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP),
                         FileType.CSV: (RunParams.SOURCE_SEP, RunParams.NFL, RunParams.SOURCE_ATTRS),
                         FileType.CXT: (RunParams.SOURCE_ATTRS),
@@ -693,7 +702,6 @@ class SourceParamsDialog(ParamsDialog):
 
 
 class TargetParamsDialog(ParamsDialog):
-
     format_poss_args = {FileType.ARFF: (RunParams.TARGET_SEP, RunParams.RELATION_NAME),
                         FileType.CSV: (RunParams.TARGET_SEP),
                         FileType.CXT: (RunParams.TARGET_OBJECTS, RunParams.RELATION_NAME),

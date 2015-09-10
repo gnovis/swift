@@ -13,7 +13,7 @@ class RunParams:
     NONE_VALUE = 'none_val'
     FORMAT = 'format'
     LINE_COUNT = 'line_count'
-    IGNORED_LINES = 'ignored_lines'
+    SKIPPED_LINES = 'skipped_lines'
 
 
 class FileType:

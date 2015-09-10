@@ -100,7 +100,7 @@ def get_args():
                    "classes": RunParams.CLASSES}
     OTHER_ARGS = {"source_info": RunParams.SOURCE_INFO,
                   "line_count": RunParams.LINE_COUNT,
-                  "ignored_lines": RunParams.IGNORED_LINES}
+                  "skipped_lines": RunParams.SKIPPED_LINES}
 
     parser = argparse.ArgumentParser()
 
@@ -131,7 +131,7 @@ def get_args():
     parser.add_argument("-{}".format(EXPORT[0]), "--{}".format(EXPORT), action='store_true',
                         help="Desired count of lines from source file will be scanned and informations about data will be exported to target file.")
     parser.add_argument("-lc", "--line_count", type=float, help="Count of lines which will be processed in any action.")
-    parser.add_argument("-il", "--ignored_lines", help="Indexes of lines which will be ignored in any operation.")
+    parser.add_argument("-sl", "--skipped_lines", help="Indexes of lines which will be skipped in any operation.")
 
     args = parser.parse_args()
 
