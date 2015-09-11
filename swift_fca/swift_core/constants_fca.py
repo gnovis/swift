@@ -29,3 +29,34 @@ class FileType:
 class ErrorMessage:
     UNKNOWN_ERROR = "\nSwift Unknown Error\nPlease report this bug with details below. Thank you.\n\n"
     MISSING_ARGS_ERROR = "Some of required arguments are missing or aren't specified correctly."
+
+
+class Bival:
+    true_val = '1'
+    false_val = '0'
+
+    @classmethod
+    def true(cls):
+        return cls.true_val
+
+    @classmethod
+    def false(cls):
+        return cls.false_val
+
+    @classmethod
+    def set_true(cls, val):
+        cls.true_val = str(val)
+
+    @classmethod
+    def set_false(cls, val):
+        cls.false_val = str(val)
+
+    @classmethod
+    def convert(cls, val):
+        if val == cls.true():
+            return cls.true()
+        if val == cls.false():
+            return cls.false()
+        if bool(int(val)):
+            return cls.true()
+        return cls.false()

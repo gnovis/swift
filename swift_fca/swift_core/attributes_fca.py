@@ -7,6 +7,7 @@ from pyparsing import quotedString, removeQuotes, ParseException
 from .date_parser_fca import DateParser
 from .grammars_fca import boolexpr
 from .exceptions_fca import SwiftAttributeException, SwiftParseException, SwiftException
+from .constants_fca import Bival
 
 
 class AttrType:
@@ -24,8 +25,6 @@ class AttrType:
 
 
 class Attribute:
-    TRUE = '1'
-    FALSE = '0'
 
     def __init__(self, index, name, attr_type=AttrType.NOT_SPECIFIED,
                  attr_pattern=None, expr_pattern=None):
@@ -74,14 +73,14 @@ class Attribute:
     def process(self, value, none_val, scale, update):
         if self._expr_pattern and scale:
             if value == none_val:  # result of scaling none value is False
-                return False
+                return Bival.false()
             return self.scale(value)
         if update:
             self.update(value, none_val)
         return value
 
     def scale(self, value):
-        return value
+        return Bival.convert(value)
 
     def has_children(self):
         return bool(self._children)
@@ -114,14 +113,13 @@ class Attribute:
         return result.strip()
 
     def arff_repr(self, sep):
-        return '{ ' + self.FALSE + sep + self.TRUE + ' }'
+        return '{ ' + Bival.false() + sep + Bival.true() + ' }'
 
     def data_repr(self, sep):
-        return self.FALSE + sep + self.TRUE
+        return Bival.false() + sep + Bival.true()
 
 
 class AttrNumeric(Attribute):
-
     EXCEPTION_MSG = "Value must be numeric (integer or real)"
 
     def __init__(self, index, name, attr_type=AttrType.NUMERIC, attr_pattern=None, expr_pattern=None):
@@ -134,7 +132,7 @@ class AttrNumeric(Attribute):
         except ValueError:
             raise SwiftAttributeException(self.EXCEPTION_MSG)
         replaced = re.sub(r"[^<>=0-9\s.]+", "x", self._expr_pattern)
-        return eval(replaced)
+        return super().scale(eval(replaced))
 
     def update(self, value, none_val):
         if value != none_val:
@@ -222,7 +220,7 @@ class AttrEnum(Attribute):
         self._values = values.copy()
 
     def scale(self, value):
-        return value == self._expr_pattern
+        return super().scale(value == self._expr_pattern)
 
     def update(self, value, none_val):
         if value not in self._values and value != none_val:
@@ -248,7 +246,7 @@ class AttrString(Attribute):
                 raise SwiftException("Regular Expression", "Invalid regular expression: {}".format(self._expr_pattern), e)
 
     def scale(self, value):
-        return bool(self._regex.search(value))
+        return super().scale(bool(self._regex.search(value)))
 
     def arff_repr(self, sep):
         return AttrType.STR_REPR[self.attr_type]

@@ -9,6 +9,7 @@ from .attributes_fca import (Attribute, AttrEnum)
 from .object_fca import Object
 from .parser_fca import FormulaParser, ArffParser, DataParser
 from .exceptions_fca import SwiftLineException, SwiftParseException, SwiftException, SwiftAttributeException
+from .constants_fca import Bival
 
 
 class Data:
@@ -393,8 +394,8 @@ class DataCxt(Data):
         super().__init__(source, str_attrs, str_objects,
                          separator, relation_name, none_val)
 
-    sym_vals = {'X': 1, '.': 0}
-    vals_sym = {1: 'X', 0: '.'}
+    sym_vals = {'X': Bival.true(), '.': Bival.false()}
+    vals_sym = {Bival.true(): 'X', Bival.false(): '.'}
 
     def get_header_info(self, manager=None):
         self.current_line = -1  # it is needed for Error message, is incremented in get_not_empty_line()
@@ -425,8 +426,8 @@ class DataCxt(Data):
         for k in range(columns):
             attr_name = self.get_not_empty_line()
             new = AttrEnum(k, attr_name)
-            new.update(Attribute.TRUE, self._none_val)
-            new.update(Attribute.FALSE, self._none_val)
+            new.update(Bival.true(), self._none_val)
+            new.update(Bival.false(), self._none_val)
             self._header_attrs.append(new)
 
         self._attr_count = columns
@@ -441,7 +442,7 @@ class DataCxt(Data):
         result = []
         for val_i, val in enumerate(splitted):
             try:
-                result.append(str(DataCxt.sym_vals[val]))
+                result.append(DataCxt.sym_vals[val])
             except KeyError:
                 raise SwiftLineException("Cxt Line", line, index, "Value must be X (True) or . (False)", val, val_i)
         return super().prepare_line(result, index, scale, update)
@@ -465,8 +466,9 @@ class DataCxt(Data):
 
     def write_line(self, prepared_line):
         result = []
+        print(prepared_line)
         for val in prepared_line:
-            result.append(DataCxt.vals_sym[int(val)])
+            result.append(DataCxt.vals_sym[val])
         self.write_line_to_file(result)
 
     def get_not_empty_line(self):
@@ -521,8 +523,8 @@ class DataDat(Data):
         self._obj_count = line_count
 
         self._header_attrs = [(AttrEnum(i, str(i)).update(
-                              Attribute.TRUE, self._none_val)).update(
-                                  Attribute.FALSE, self._none_val)
+                              Bival.true(), self._none_val)).update(
+                                  Bival.false(), self._none_val)
                               for i in range(self._attr_count)]
 
     def get_header_info(self, manager=None):
@@ -533,10 +535,10 @@ class DataDat(Data):
 
     def prepare_line(self, line, index, scale=True, update=False):
         splitted = super().ss_str(line, self.separator)
-        result = ['0'] * (self._attr_count)
+        result = [Bival.false()] * (self._attr_count)
         for val in splitted:
             try:
-                result[int(val)] = str(1)
+                result[int(val)] = Bival.true()
             except ValueError:
                 raise SwiftLineException(self.EXCEPTION_HEADER, line, index, self.EXCEPTION_DESCRIPTION, val)
         return super().prepare_line(result, index, scale, update)
@@ -544,6 +546,6 @@ class DataDat(Data):
     def write_line(self, line):
         result = []
         for i, val in enumerate(line):
-            if bool(int(val)):
+            if val == Bival.true():
                 result.append(str(i))
         self.write_line_to_file(result)
