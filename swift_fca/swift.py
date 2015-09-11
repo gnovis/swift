@@ -12,6 +12,15 @@ from .swift_core.managers_fca import Browser, Convertor, Printer, BgWorker
 from .swift_core.constants_fca import RunParams, FileType, ErrorMessage
 from .swift_core.validator_fca import ConvertValidator
 import swift_fca.resources.resources_rc  # NOQA Resources file
+from PyQt4.Qt import QFrame
+from PyQt4.Qt import QHBoxLayout
+from PyQt4.Qt import QPainter
+from PyQt4.Qt import QPlainTextEdit
+from PyQt4.Qt import QRect
+from PyQt4.Qt import QTextEdit
+from PyQt4.Qt import QTextFormat
+from PyQt4.Qt import QVariant
+from PyQt4.Qt import Qt
 
 
 class GuiSwift(QtGui.QWidget):
@@ -637,6 +646,110 @@ class ParamsDialog(QtGui.QDialog):
         self.fill_widgets()
 
 
+class TextView(QFrame):
+    class NumberBar(QtGui.QWidget):
+
+        def __init__(self, edit):
+            super().__init__(edit)
+
+            self.edit = edit
+            self.adjustWidth(1)
+
+        def paintEvent(self, event):
+            self.edit.numberbarPaint(self, event)
+            QtGui.QWidget.paintEvent(self, event)
+
+        def adjustWidth(self, count):
+            width = self.fontMetrics().width(str(count)) + 10
+            if self.width() != width:
+                self.setFixedWidth(width)
+
+        def updateContents(self, rect, scroll):
+            if scroll:
+                self.scroll(0, scroll)
+            else:
+                self.update()
+
+    class PlainTextEdit(QPlainTextEdit):
+
+        def __init__(self, *args):
+            QPlainTextEdit.__init__(self, *args)
+
+            self.setFrameStyle(QFrame.NoFrame)
+
+            self.setFrameStyle(QFrame.NoFrame)
+            self.highlight()
+            self.setLineWrapMode(QPlainTextEdit.NoWrap)
+
+            self.cursorPositionChanged.connect(self.highlight)
+
+        def highlight(self):
+            hi_selection = QTextEdit.ExtraSelection()
+            hi_selection.format.setBackground(self.palette().alternateBase())
+            hi_selection.format.setProperty(QTextFormat.FullWidthSelection, QVariant)
+            hi_selection.cursor = self.textCursor()
+            hi_selection.cursor.select(QtGui.QTextCursor.LineUnderCursor)
+            self.setExtraSelections([hi_selection])
+
+        def numberbarPaint(self, number_bar, event):
+            font_metrics = self.fontMetrics()
+            current_line = self.document().findBlock(self.textCursor().position()).blockNumber() + 1
+
+            block = self.firstVisibleBlock()
+            line_count = block.blockNumber()
+            painter = QPainter(number_bar)
+            painter.fillRect(event.rect(), self.palette().base())
+            painter.setPen(QtGui.QColor(168, 34, 3))
+
+            # Iterate over all visible text blocks in the document.
+            while block.isValid():
+                line_count += 1
+                block_top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
+
+                # Check if the position of the block is out side of the visible
+                # area.
+                if not block.isVisible() or block_top == event.rect().bottom():
+                    break
+
+                # We want the line number for the selected line to be bold.
+                if line_count == current_line:
+                    font = painter.font()
+                    font.setBold(True)
+                    painter.setFont(font)
+                else:
+                    font = painter.font()
+                    font.setBold(False)
+                    painter.setFont(font)
+
+                # Draw the line number left justified at the position of the line.
+                paint_rect = QRect(-5, block_top, number_bar.width(), font_metrics.height())
+                painter.drawText(paint_rect, Qt.AlignRight, str(line_count))
+
+                block = block.next()
+
+            painter.end()
+
+    def __init__(self, *args):
+        QFrame.__init__(self, *args)
+
+        self.setFrameStyle(QFrame.StyledPanel | QFrame.Sunken)
+
+        self.edit = self.PlainTextEdit()
+        self.number_bar = self.NumberBar(self.edit)
+
+        hbox = QHBoxLayout(self)
+        hbox.setSpacing(5)
+        hbox.setMargin(5)
+        hbox.addWidget(self.number_bar)
+        hbox.addWidget(self.edit)
+
+        self.edit.blockCountChanged.connect(self.number_bar.adjustWidth)
+        self.edit.updateRequest.connect(self.number_bar.updateContents)
+
+    def getEdit(self):
+        return self.edit
+
+
 class OriginalDataDialog(QtGui.QDialog):
     def __init__(self, source_path, parent):
         super().__init__(parent)
@@ -651,10 +764,11 @@ class OriginalDataDialog(QtGui.QDialog):
 
     def init_ui(self):
         hbox = QtGui.QVBoxLayout(self)
-        self.data_view = QtGui.QPlainTextEdit()
+        textw = TextView()
+        self.data_view = textw.getEdit()
         self.data_view.setReadOnly(True)
         self.data_view.verticalScrollBar().valueChanged.connect(self.fill_next)
-        hbox.addWidget(self.data_view)
+        hbox.addWidget(textw)
         buttons = QtGui.QDialogButtonBox(
             QtGui.QDialogButtonBox.Close, QtCore.Qt.Horizontal, self)
         buttons.rejected.connect(self.reject)
@@ -669,8 +783,9 @@ class OriginalDataDialog(QtGui.QDialog):
     def fill_next(self, value):
         if self.data_view.verticalScrollBar().maximum() == value:
             new_rows = self.load_next(self.load_count)
-            self.data_view.moveCursor(QtGui.QTextCursor.End)
-            self.data_view.insertPlainText(new_rows)
+            if new_rows:
+                self.data_view.moveCursor(QtGui.QTextCursor.End)
+                self.data_view.insertPlainText("\n{}".format(new_rows))
 
     def load_next(self, count):
         new_rows = ""
@@ -678,7 +793,7 @@ class OriginalDataDialog(QtGui.QDialog):
             new_rows += line
             if i == count:
                 break
-        return new_rows
+        return new_rows.strip()
 
 
 class SourceParamsDialog(ParamsDialog):
