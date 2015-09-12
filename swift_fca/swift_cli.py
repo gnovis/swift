@@ -6,6 +6,7 @@ import traceback
 from .swift_core.managers_fca import Convertor, Browser, Printer
 from .swift_core.constants_fca import RunParams, ErrorMessage, FileType
 from .swift_core.exceptions_fca import SwiftException
+from .swift_core.errors_fca import SwiftError
 from .swift_core.validator_fca import ConvertValidator
 
 SOURCE = 0
@@ -120,9 +121,9 @@ def get_args():
     parser.add_argument("-to", "--target_objects", help="Target file (new) objects. Only for CXT format.")
     parser.add_argument("-rn", "--relation_name", help="New name of relation.")
     parser.add_argument("-cls", "--classes", help="Classes seperated by commas - for C4.5 convert.")
-    parser.add_argument("-sf", "--source_format", type=str.lower, choices=list(map(lambda val: val[1:], FileType.ALL)),
+    parser.add_argument("-sf", "--source_format", type=str.lower, choices=list(map(lambda val: val[1:], FileType.ALL_EXT)),
                         help="Format of source file, must to be specified when source is standart input (stdin)")
-    parser.add_argument("-tf", "--target_format", type=str.lower, choices=list(map(lambda val: val[1:], FileType.ALL)),
+    parser.add_argument("-tf", "--target_format", type=str.lower, choices=list(map(lambda val: val[1:], FileType.ALL_EXT)),
                         help="Format of target file, must to be specified when target is standart output (stdout)")
     parser.add_argument("-{}".format(CONVERT[0]), "--{}".format(CONVERT), action='store_true',
                         help="Source file will be converted to target file, this is default option.")
@@ -161,7 +162,7 @@ def main():
     action, source_args, target_args, other_args = get_args()
     try:
         action(source_args, target_args, other_args)
-    except SwiftException as e:
+    except (SwiftException, SwiftError) as e:
         print(e)
     except:
         msg = ErrorMessage.UNKNOWN_ERROR + traceback.format_exc()

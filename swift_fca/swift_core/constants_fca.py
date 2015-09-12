@@ -17,13 +17,41 @@ class RunParams:
 
 
 class FileType:
-    CSV = ".csv"
-    ARFF = ".arff"
-    DAT = ".dat"
-    CXT = ".cxt"
-    DATA = ".data"
-    NAMES = ".names"
-    ALL = [CSV, ARFF, DAT, DATA, NAMES, CXT]
+    CSV = 0
+    ARFF = 1
+    DAT = 2
+    CXT = 3
+    DATA = 4
+    NAMES = 5
+
+    CSV_EXT = ".csv"
+    ARFF_EXT = ".arff"
+    DAT_EXT = ".dat"
+    CXT_EXT = ".cxt"
+    DATA_EXT = ".data"
+    NAMES_EXT = ".names"
+
+    CSV_REPR = "CSV"
+    ARFF_REPR = "ARFF"
+    DAT_REPR = "DAT"
+    CXT_REPR = "CXT"
+    DATA_REPR = "DATA"
+    NAMES_REPR = "NAMES"
+
+    ALL_EXT = [CSV_EXT, ARFF_EXT, DAT_EXT, DATA_EXT, NAMES_EXT, CXT_EXT]
+
+
+class AttrType:
+    NUMERIC = 0
+    NOMINAL = 1
+    STRING = 2
+    DATE = 3
+    NOT_SPECIFIED = 4
+    STR_REPR = {NUMERIC: "numeric",
+                NOMINAL: "nominal",
+                STRING: "string",
+                DATE: "date",
+                NOT_SPECIFIED: "not specified"}
 
 
 class ErrorMessage:

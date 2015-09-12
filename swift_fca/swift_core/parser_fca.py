@@ -7,7 +7,9 @@ from .attributes_fca import (Attribute, AttrNumeric, AttrDate,
                              AttrEnum, AttrString)
 from .date_parser_fca import DateParser
 from .grammars_fca import boolexpr, interval
-from .exceptions_fca import SwiftException, SwiftParseException
+from .exceptions_fca import SwiftParseException
+from .errors_fca import HeaderError, FormulaNamesError, FormulaSyntaxError, SequenceSyntaxError
+from .constants_fca import FileType
 
 
 class Parser():
@@ -58,9 +60,7 @@ class FormulaParser(Parser):
         cls = self.ATTR_CLASSES[attr_type]
 
         if len(old_names) != len(new_names):
-            raise SwiftException("Names Count",
-                                 "Bad count of names.",
-                                 "Count of new names (before =) and old names (after =) must be the same.")
+            raise FormulaNamesError(old_names, new_names)
 
         for old, new in zip(old_names, new_names):
             old = str(old)
@@ -130,7 +130,7 @@ class FormulaParser(Parser):
         try:
             parser.parseString(str_args)
         except ParseException as e:
-            raise SwiftParseException("Formula Syntax", e.line, e.lineno-1, e)
+            raise FormulaSyntaxError(e.lineno, e.col, e.line, e)
 
 
 class ArffParser(Parser):
@@ -205,7 +205,7 @@ class ArffParser(Parser):
         try:
             result = arff_header.parseString(header, parseAll=True)
         except ParseException as e:
-            raise SwiftParseException("Arff Header Syntax", e.line, e.lineno-1, e)
+            raise HeaderError(FileType.ARFF, e.lineno, e.col, e.line, e)
 
         self._relation_name = result.rel_name
         self._find_relational(result.children)
@@ -358,7 +358,7 @@ class DataParser(Parser):
         try:
             parser.parseFile(file_path, parseAll=True)
         except ParseException as e:
-            raise SwiftParseException("C4.5 (names) Syntax", e.line, e.lineno-1, e)
+            raise HeaderError(FileType.DATA, e.lineno, e.col, e.line, e)
 
 
 def parse_sequence(string):
@@ -368,4 +368,4 @@ def parse_sequence(string):
     try:
         return seq.parseString(string, parseAll=True).asList()
     except ParseException as e:
-        raise SwiftParseException("Formula Syntax", e.line, e.lineno-1, e)
+        raise SequenceSyntaxError(e.lineno, e.col, e.line, e)

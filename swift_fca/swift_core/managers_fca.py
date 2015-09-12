@@ -10,11 +10,11 @@ from .parser_fca import parse_sequence
 
 
 class ManagerFca(QtCore.QObject):
-    CSV = FileType.CSV
-    ARFF = FileType.ARFF
-    DAT = FileType.DAT
-    CXT = FileType.CXT
-    DATA = FileType.DATA
+    CSV = FileType.CSV_EXT
+    ARFF = FileType.ARFF_EXT
+    DAT = FileType.DAT_EXT
+    CXT = FileType.CXT_EXT
+    DATA = FileType.DATA_EXT
 
     EXTENSIONS = {CSV: DataCsv,
                   ARFF: DataArff,

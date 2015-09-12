@@ -12,15 +12,6 @@ from .swift_core.managers_fca import Browser, Convertor, Printer, BgWorker
 from .swift_core.constants_fca import RunParams, FileType, ErrorMessage
 from .swift_core.validator_fca import ConvertValidator
 import swift_fca.resources.resources_rc  # NOQA Resources file
-from PyQt4.Qt import QFrame
-from PyQt4.Qt import QHBoxLayout
-from PyQt4.Qt import QPainter
-from PyQt4.Qt import QPlainTextEdit
-from PyQt4.Qt import QRect
-from PyQt4.Qt import QTextEdit
-from PyQt4.Qt import QTextFormat
-from PyQt4.Qt import QVariant
-from PyQt4.Qt import Qt
 
 
 class GuiSwift(QtGui.QWidget):
@@ -470,8 +461,8 @@ class GuiSwift(QtGui.QWidget):
     @staticmethod
     def subst_ext(path):
         root, ext = os.path.splitext(path)
-        if ext == FileType.NAMES:
-            path = root + FileType.DATA
+        if ext == FileType.NAMES_EXT:
+            path = root + FileType.DATA_EXT
         return path
 
     def get_prepare_pbar(self, convertor):
@@ -646,7 +637,7 @@ class ParamsDialog(QtGui.QDialog):
         self.fill_widgets()
 
 
-class TextView(QFrame):
+class TextView(QtGui.QFrame):
     class NumberBar(QtGui.QWidget):
 
         def __init__(self, edit):
@@ -670,23 +661,23 @@ class TextView(QFrame):
             else:
                 self.update()
 
-    class PlainTextEdit(QPlainTextEdit):
+    class PlainTextEdit(QtGui.QPlainTextEdit):
 
         def __init__(self, *args):
-            QPlainTextEdit.__init__(self, *args)
+            QtGui.QPlainTextEdit.__init__(self, *args)
 
-            self.setFrameStyle(QFrame.NoFrame)
+            self.setFrameStyle(QtGui.QFrame.NoFrame)
 
-            self.setFrameStyle(QFrame.NoFrame)
+            self.setFrameStyle(QtGui.QFrame.NoFrame)
             self.highlight()
-            self.setLineWrapMode(QPlainTextEdit.NoWrap)
+            self.setLineWrapMode(QtGui.QPlainTextEdit.NoWrap)
 
             self.cursorPositionChanged.connect(self.highlight)
 
         def highlight(self):
-            hi_selection = QTextEdit.ExtraSelection()
+            hi_selection = QtGui.QTextEdit.ExtraSelection()
             hi_selection.format.setBackground(self.palette().alternateBase())
-            hi_selection.format.setProperty(QTextFormat.FullWidthSelection, QVariant)
+            hi_selection.format.setProperty(QtGui.QTextFormat.FullWidthSelection, QtCore.QVariant)
             hi_selection.cursor = self.textCursor()
             hi_selection.cursor.select(QtGui.QTextCursor.LineUnderCursor)
             self.setExtraSelections([hi_selection])
@@ -697,7 +688,7 @@ class TextView(QFrame):
 
             block = self.firstVisibleBlock()
             line_count = block.blockNumber()
-            painter = QPainter(number_bar)
+            painter = QtGui.QPainter(number_bar)
             painter.fillRect(event.rect(), self.palette().base())
             painter.setPen(QtGui.QColor(168, 34, 3))
 
@@ -722,22 +713,22 @@ class TextView(QFrame):
                     painter.setFont(font)
 
                 # Draw the line number left justified at the position of the line.
-                paint_rect = QRect(-5, block_top, number_bar.width(), font_metrics.height())
-                painter.drawText(paint_rect, Qt.AlignRight, str(line_count))
+                paint_rect = QtCore.QRect(-5, block_top, number_bar.width(), font_metrics.height())
+                painter.drawText(paint_rect, QtCore.Qt.AlignRight, str(line_count))
 
                 block = block.next()
 
             painter.end()
 
     def __init__(self, *args):
-        QFrame.__init__(self, *args)
+        QtGui.QFrame.__init__(self, *args)
 
-        self.setFrameStyle(QFrame.StyledPanel | QFrame.Sunken)
+        self.setFrameStyle(QtGui.QFrame.StyledPanel | QtGui.QFrame.Sunken)
 
         self.edit = self.PlainTextEdit()
         self.number_bar = self.NumberBar(self.edit)
 
-        hbox = QHBoxLayout(self)
+        hbox = QtGui.QHBoxLayout(self)
         hbox.setSpacing(5)
         hbox.setMargin(5)
         hbox.addWidget(self.number_bar)

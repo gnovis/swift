@@ -6,22 +6,8 @@ from collections import OrderedDict
 from pyparsing import quotedString, removeQuotes, ParseException
 from .date_parser_fca import DateParser
 from .grammars_fca import boolexpr
-from .exceptions_fca import SwiftAttributeException, SwiftParseException, SwiftException
-from .constants_fca import Bival
-
-
-class AttrType:
-    NUMERIC = 0
-    NOMINAL = 1
-    STRING = 2
-    DATE = 3
-    NOT_SPECIFIED = 4
-
-    STR_REPR = {NUMERIC: "numeric",
-                NOMINAL: "nominal",
-                STRING: "string",
-                DATE: "date",
-                NOT_SPECIFIED: "not specified"}
+from .constants_fca import Bival, AttrType
+from .errors_fca import InvalidValueError, DateSyntaxError, DateValFormatError, FormulaRegexError
 
 
 class Attribute:
@@ -120,7 +106,7 @@ class Attribute:
 
 
 class AttrNumeric(Attribute):
-    EXCEPTION_MSG = "Value must be numeric (integer or real)"
+    ERROR_MSG = "Value must be numeric (integer or real)"
 
     def __init__(self, index, name, attr_type=AttrType.NUMERIC, attr_pattern=None, expr_pattern=None):
         super().__init__(index, name, attr_type,
@@ -130,7 +116,7 @@ class AttrNumeric(Attribute):
         try:
             x = float(value)  # NOQA
         except ValueError:
-            raise SwiftAttributeException(self.EXCEPTION_MSG)
+            raise InvalidValueError(AttrType.NUMERIC, self.ERROR_MSG)
         replaced = re.sub(r"[^<>=0-9\s.]+", "x", self._expr_pattern)
         return super().scale(eval(replaced))
 
@@ -139,7 +125,7 @@ class AttrNumeric(Attribute):
             try:
                 value = float(value)
             except ValueError:
-                raise SwiftAttributeException(self.EXCEPTION_MSG)
+                raise InvalidValueError(AttrType.NUMERIC, self.ERROR_MSG)
 
         super().update(value, none_val)
 
@@ -178,7 +164,7 @@ class AttrDate(AttrNumeric):
             try:
                 return self.parser.get_time_stamp(removeQuotes(s, loc, tokens))
             except ValueError as e:
-                raise SwiftException("Date Format/Value", "Value doesn't match format.", e)
+                raise DateValFormatError(e)
 
         DATEXPR = quotedString.copy()
         EXPR = boolexpr(VAL=DATEXPR)
@@ -186,13 +172,13 @@ class AttrDate(AttrNumeric):
         try:
             self._expr_pattern = EXPR.parseString(self._expr_pattern, parseAll=True)[0]
         except ParseException as e:
-            raise SwiftParseException("Parse Date Expression", e.line, 0, e)
+            raise DateSyntaxError(e.lineno, e.col, e.line, e)
 
     def scale(self, value):
         try:
             time_stamp = self.parser.get_time_stamp(value)
         except ValueError as e:
-            raise SwiftAttributeException(e)
+            raise InvalidValueError(AttrType.DATE, e)
         return super().scale(time_stamp)
 
     def update(self, str_date, none_val):
@@ -200,7 +186,7 @@ class AttrDate(AttrNumeric):
             try:
                 time_stamp = self.parser.get_time_stamp(str_date)
             except ValueError as e:
-                raise SwiftAttributeException(e)
+                raise InvalidValueError(AttrType.DATE, e)
             super().update(time_stamp, none_val)
 
     def get_formated_rate(self, aux_func=str):
@@ -243,7 +229,7 @@ class AttrString(Attribute):
             try:
                 self._regex = re.compile(self._expr_pattern)
             except re.error as e:
-                raise SwiftException("Regular Expression", "Invalid regular expression: {}".format(self._expr_pattern), e)
+                raise FormulaRegexError("{}: '{}'".format(e, self._expr_pattern))
 
     def scale(self, value):
         return super().scale(bool(self._regex.search(value)))

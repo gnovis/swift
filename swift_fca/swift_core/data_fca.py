@@ -8,8 +8,8 @@ import copy
 from .attributes_fca import (Attribute, AttrEnum)
 from .object_fca import Object
 from .parser_fca import FormulaParser, ArffParser, DataParser
-from .exceptions_fca import SwiftLineException, SwiftParseException, SwiftException, SwiftAttributeException
-from .constants_fca import Bival
+from .constants_fca import Bival, FileType
+from .errors_fca import HeaderError, LineError, AttrError, InvalidValueError, FormulaKeyError
 
 
 class Data:
@@ -117,8 +117,7 @@ class Data:
                 try:
                     header_attr_index = self._template_attrs[attr.key]
                 except KeyError:
-                    raise SwiftException("Attribute Key", "Attribute key: {} doesn't exist.".format(attr.key),
-                                         "Old name or index of attribute used as key doesn't exist.")
+                    raise FormulaKeyError(attr.key)
                 header_attr = copy.copy(self._header_attrs[header_attr_index])
 
                 # rename attributes to string names if has index names
@@ -177,10 +176,9 @@ class Data:
             try:
                 new_value = attr.process(values[index], self._none_val, scale, update)
             except IndexError:
-                raise SwiftLineException("Missing Attribute", ",".join(values), line_i,
-                                         "Some of attribute is missing.", attri=index)
-            except SwiftAttributeException as e:
-                raise SwiftLineException("Invalid Value", ",".join(values), line_i, e.message, values[index], index)
+                raise LineError(self.FORMAT, line_i+1, index+1, ",".join(values), "Some of the attribute is missing.")
+            except InvalidValueError as e:
+                raise AttrError(line_i+1, ",".join(values), index+1, values[index], e)
 
             result.append(new_value)
         return result
@@ -253,6 +251,8 @@ class DataArff(Data):
 
     """
 
+    FORMAT = FileType.ARFF
+
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
                  separator=',', relation_name='',
@@ -307,6 +307,9 @@ class DataArff(Data):
 
 class DataCsv(Data):
     """Column seperated value format"""
+
+    FORMAT = FileType.CSV
+
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
                  separator=',', relation_name='', no_attrs_first_line=False,
@@ -345,6 +348,8 @@ class DataCsv(Data):
 
 class DataData(Data):
     """C4.5 data file format"""
+
+    FORMAT = FileType.DATA
 
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
@@ -388,6 +393,9 @@ class DataData(Data):
 class DataCxt(Data):
     """Burmeister data format"""
 
+    IDENT = 'B'
+    FORMAT = FileType.CXT
+
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
                  separator='', relation_name='', none_val=Data.NONE_VAL):
@@ -398,11 +406,13 @@ class DataCxt(Data):
     vals_sym = {Bival.true(): 'X', Bival.false(): '.'}
 
     def get_header_info(self, manager=None):
-        self.current_line = -1  # it is needed for Error message, is incremented in get_not_empty_line()
-        self.get_not_empty_line()  # skip B
-        value = self.get_not_empty_line()
+        self.current_line = 0  # it is needed for Error message, is incremented in get_not_empty_line()
 
-        exception_header = "Cxt Header Syntax"
+        b = self.get_not_empty_line()  # skip B
+        if b != self.IDENT:
+            raise HeaderError(FileType.CXT, self.current_line, 1, b, "First non empty line must contain 'B'.")
+
+        value = self.get_not_empty_line()
         try:
             rows = int(value)
         except ValueError:
@@ -411,13 +421,13 @@ class DataCxt(Data):
                 str_rows = self.get_not_empty_line()
                 rows = int(str_rows)
             except ValueError:
-                raise SwiftParseException(exception_header, str_rows, self.current_line, "After realation name must be specified count of objects.")
+                raise HeaderError(FileType.CXT, self.current_line, 1, str_rows, "After realation name must be specified count of objects.")
 
         try:
             str_columns = self.get_not_empty_line()
             columns = int(str_columns)
         except ValueError:
-            raise SwiftParseException(exception_header, str_columns, self.current_line, "After objects count must be specified count of attributes.")
+            raise HeaderError(FileType.CXT, self.current_line, 1, str_columns, "After objects count must be specified count of attributes.")
 
         for i in range(rows):
             obj_name = self.get_not_empty_line()
@@ -444,7 +454,7 @@ class DataCxt(Data):
             try:
                 result.append(DataCxt.sym_vals[val])
             except KeyError:
-                raise SwiftLineException("Cxt Line", line, index, "Value must be X (True) or . (False)", val, val_i)
+                raise LineError(self.FORMAT, index+1, val_i+1, line, "Invalid value: '{}'. Value must be X (True) or . (False)".format(val))
         return super().prepare_line(result, index, scale, update)
 
     def write_header(self, old_data):
@@ -453,7 +463,7 @@ class DataCxt(Data):
         if not self._objects:
             self._objects = [Object(str(i)) for i in range(old_data.obj_count)]
 
-        target.write('B\n')
+        target.write('{}\n'.format(self.IDENT))
         if not self.relation_name:
             self._relation_name = old_data.relation_name
         target.write(self.relation_name + '\n')
@@ -466,7 +476,6 @@ class DataCxt(Data):
 
     def write_line(self, prepared_line):
         result = []
-        print(prepared_line)
         for val in prepared_line:
             result.append(DataCxt.vals_sym[val])
         self.write_line_to_file(result)
@@ -483,8 +492,8 @@ class DataCxt(Data):
 class DataDat(Data):
     """Data format for FCALGS"""
 
-    EXCEPTION_HEADER = "DAT Value"
-    EXCEPTION_DESCRIPTION = "Value must be integer."
+    FORMAT = FileType.DAT
+    ERROR_DESCRIPTION = "Invalid value: '{}'. Value must be integer."
 
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
@@ -500,11 +509,11 @@ class DataDat(Data):
                 continue
             line_count += 1
             splitted = super().ss_str(line, self.separator)
-            for val in splitted:
+            for col, val in enumerate(splitted):
                 try:
                     int_val = int(val)
                 except ValueError:
-                    raise SwiftLineException(self.EXCEPTION_HEADER, line, i, self.EXCEPTION_DESCRIPTION, val)
+                    raise LineError(self.FORMAT, i+1, col+1, line, self.ERROR_DESCRIPTION.format(val))
                 if int_val > max_val:
                     max_val = int_val
 
@@ -536,11 +545,11 @@ class DataDat(Data):
     def prepare_line(self, line, index, scale=True, update=False):
         splitted = super().ss_str(line, self.separator)
         result = [Bival.false()] * (self._attr_count)
-        for val in splitted:
+        for col, val in enumerate(splitted):
             try:
                 result[int(val)] = Bival.true()
             except ValueError:
-                raise SwiftLineException(self.EXCEPTION_HEADER, line, index, self.EXCEPTION_DESCRIPTION, val)
+                raise LineError(self.FORMAT, index+1, col+1, line, self.ERROR_DESCRIPTION.format(val))
         return super().prepare_line(result, index, scale, update)
 
     def write_line(self, line):
