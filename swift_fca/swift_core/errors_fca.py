@@ -1,34 +1,40 @@
-from .constants_fca import FileType, AttrType
+from .constants_fca import FileType, AttrType, RunParams, App
 from enum import IntEnum, unique
 
 
 @unique
 class ErrorCode(IntEnum):
-    arff_header = 1
-    data_header = 2
-    csv_header = 3
-    dat_header = 4
-    cxt_header = 5
-    arff_line = 6
-    data_line = 7
-    csv_line = 8
-    dat_line = 9
-    cxt_line = 10
-    formula_syntax = 11
-    formula_names = 12
-    sequence_syntax = 13
-    date_val = 14
-    numeric_val = 15
-    string_val = 16
-    nominal_val = 17
-    date_syntax = 18
-    date_value_format = 19
-    formula_regex = 20
-    formula_key = 21
+    unknown = 1
+    arg_error = 2
+    arff_header = 3
+    data_header = 4
+    csv_header = 5
+    dat_header = 6
+    cxt_header = 7
+    arff_line = 8
+    data_line = 9
+    csv_line = 10
+    dat_line = 11
+    cxt_line = 12
+    formula_syntax = 13
+    formula_names = 14
+    sequence_syntax = 15
+    date_val = 16
+    numeric_val = 17
+    string_val = 18
+    nominal_val = 19
+    date_syntax = 20
+    date_value_format = 21
+    formula_regex = 22
+    formula_key = 23
+
+
+class ErrorMessage:
+    UNKNOWN_ERROR = "\nSwift Unknown Error\nPlease report this bug with details below. Thank you.\n\n"
+    MISSING_ARGS_ERROR = "Some of required arguments are missing or aren't specified correctly."
 
 
 class SwiftError(Exception):
-
     def __init__(self, ident, name, message):
         self._ident = ident
         self._name = "{} Error".format(name)
@@ -47,11 +53,10 @@ class SwiftError(Exception):
         return self._message
 
     def __str__(self):
-        return "swift: [{}: {}]\n{}".format(self.name, self.ident, self.message)
+        return "{}: [{}: {}]\n{}".format(App.NAME, self.name, self.ident, self.message)
 
 
 class ParseError(SwiftError):
-
     def __init__(self, row_no, col_no, line, message,
                  ident, name):
         new_name = "Parse {}".format(name)
@@ -60,7 +65,6 @@ class ParseError(SwiftError):
 
 
 class HeaderError(ParseError):
-
     NAME = "Header"
     HEADER_FORMAT = "{} {}"
 
@@ -144,3 +148,12 @@ class FormulaKeyError(SwiftError):
 class FormulaRegexError(SwiftError):
     def __init__(self, message):
         super().__init__(ErrorCode.formula_regex, "Formula Regular Expression", message)
+
+
+class ArgError(SwiftError):
+    ARGS = {RunParams.FORMAT: "Argument: '{}' is missing.\nIf you are using standart input/output as source/target, argument source/target {} must be set."}
+
+    def __init__(self, arg=None, message=""):
+        if arg in self.ARGS:
+            message = self.ARGS[arg].format(arg, arg)
+        super().__init__(ErrorCode.arg_error, "Argument", message)

@@ -1,12 +1,12 @@
 """Main file of swift - FCA data converter"""
 
+from __future__ import print_function
 import argparse
 import sys
 import traceback
 from .swift_core.managers_fca import Convertor, Browser, Printer
-from .swift_core.constants_fca import RunParams, ErrorMessage, FileType
-from .swift_core.exceptions_fca import SwiftException
-from .swift_core.errors_fca import SwiftError
+from .swift_core.constants_fca import RunParams, FileType, App
+from .swift_core.errors_fca import SwiftError, ErrorMessage, ErrorCode
 from .swift_core.validator_fca import ConvertValidator
 
 SOURCE = 0
@@ -20,9 +20,7 @@ def convert(*args):
                                  args[SOURCE], args[TARGET])
     warnings = validator.warnings
     if len(warnings) > 0:
-        raise SwiftException("Arguments",
-                             ErrorMessage.MISSING_ARGS_ERROR,
-                             "\n".join(warnings))
+        raise SwiftError(ErrorMessage.MISSING_ARGS_ERROR + "\n".join(warnings))
     convertor = Convertor(args[SOURCE], args[TARGET], **(args[OTHERS]))
     convertor.read_info()
     convertor.convert()
@@ -103,7 +101,7 @@ def get_args():
                   "line_count": RunParams.LINE_COUNT,
                   "skipped_lines": RunParams.SKIPPED_LINES}
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(prog=App.NAME)
 
     parser.add_argument("-s", "--source", nargs="?", type=argparse.FileType('r'), default=sys.stdin, help="Name of source file.")
     parser.add_argument("-ss", "--source_separator",
@@ -162,8 +160,10 @@ def main():
     action, source_args, target_args, other_args = get_args()
     try:
         action(source_args, target_args, other_args)
-    except (SwiftException, SwiftError) as e:
-        print(e)
+    except SwiftError as e:
+        print(e, file=sys.stderr)
+        sys.exit(e.ident)
     except:
         msg = ErrorMessage.UNKNOWN_ERROR + traceback.format_exc()
-        print(msg)
+        print(msg, file=sys.stderr)
+        sys.exit(ErrorCode.unknown)

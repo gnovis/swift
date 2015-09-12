@@ -7,8 +7,7 @@ from .attributes_fca import (Attribute, AttrNumeric, AttrDate,
                              AttrEnum, AttrString)
 from .date_parser_fca import DateParser
 from .grammars_fca import boolexpr, interval
-from .exceptions_fca import SwiftParseException
-from .errors_fca import HeaderError, FormulaNamesError, FormulaSyntaxError, SequenceSyntaxError
+from .errors_fca import HeaderError, FormulaNamesError, FormulaSyntaxError, SequenceSyntaxError, LineError
 from .constants_fca import FileType
 
 
@@ -218,7 +217,7 @@ class ArffParser(Parser):
         try:
             result = self._rel_delim_list_parser.parseString(line, parseAll=True).asList()
         except ParseException as e:
-            raise SwiftParseException("Arff Line Syntax", e.line, e.lineno-1, e)
+            raise LineError(FileType.ARFF, e.lineno, e.col, line, e)
         return result
 
     def show_result(self):

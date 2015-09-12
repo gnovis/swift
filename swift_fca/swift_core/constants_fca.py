@@ -1,3 +1,7 @@
+class App:
+    NAME = 'swift'
+
+
 class RunParams:
     """Parameters which are used for runing app"""
     SOURCE = 'source'
@@ -52,11 +56,6 @@ class AttrType:
                 STRING: "string",
                 DATE: "date",
                 NOT_SPECIFIED: "not specified"}
-
-
-class ErrorMessage:
-    UNKNOWN_ERROR = "\nSwift Unknown Error\nPlease report this bug with details below. Thank you.\n\n"
-    MISSING_ARGS_ERROR = "Some of required arguments are missing or aren't specified correctly."
 
 
 class Bival:

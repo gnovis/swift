@@ -9,8 +9,9 @@ import traceback
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import SIGNAL
 from .swift_core.managers_fca import Browser, Convertor, Printer, BgWorker
-from .swift_core.constants_fca import RunParams, FileType, ErrorMessage
+from .swift_core.constants_fca import RunParams, FileType
 from .swift_core.validator_fca import ConvertValidator
+from .swift_core.errors_fca import ErrorMessage
 import swift_fca.resources.resources_rc  # NOQA Resources file
 
 

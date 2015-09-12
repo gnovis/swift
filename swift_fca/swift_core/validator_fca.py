@@ -1,7 +1,7 @@
 import os
 import sys
 from .constants_fca import RunParams
-from .exceptions_fca import SwiftException
+from .errors_fca import ArgError
 
 
 class ConvertValidator:
@@ -74,7 +74,5 @@ class ConvertValidator:
             try:
                 return ".{}".format(params[RunParams.FORMAT])
             except KeyError:
-                raise SwiftException("Format Argument",
-                                     "Format argument is missing.",
-                                     "If you are using standart input/output as source/target, argument source/target format must be set.")
+                raise ArgError(RunParams.FORMAT)
         return os.path.splitext(path)[1]

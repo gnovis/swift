@@ -4,9 +4,9 @@ import sys
 import time
 from PyQt4 import QtCore
 from .data_fca import (Data, DataCsv, DataArff, DataDat, DataCxt, DataData)
-from .constants_fca import FileType, RunParams, ErrorMessage
-from .exceptions_fca import SwiftException
+from .constants_fca import FileType, RunParams
 from .parser_fca import parse_sequence
+from .errors_fca import SwiftError, ArgError, ErrorMessage
 
 
 class ManagerFca(QtCore.QObject):
@@ -71,10 +71,7 @@ class ManagerFca(QtCore.QObject):
             try:
                 ext = ".{}".format(args[RunParams.FORMAT])
             except KeyError:
-                # same exception is raised in validator, it should be implemented only on one place
-                raise SwiftException("Format Argument",
-                                     "Format argument is missing.",
-                                     "If you are using standart input/output as source/target, argument source/target format must be set.")
+                raise ArgError(RunParams.FORMAT)
             del args[RunParams.FORMAT]
         else:
             ext = os.path.splitext(f.name)[1]
@@ -217,7 +214,7 @@ class BgWorker(QtCore.QThread):
     def run(self):
         try:
             self.function(self)
-        except SwiftException as e:
+        except SwiftError as e:
             self.push_error(str(e))
         except:
             msg = ErrorMessage.UNKNOWN_ERROR + traceback.format_exc()
