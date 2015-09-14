@@ -156,8 +156,8 @@ class GuiSwift(QtGui.QWidget):
         btn_t_select.clicked.connect(self.select_target)
         self.btn_browse.clicked.connect(self.browse_source)
         self.btn_convert.clicked.connect(self.convert)
-        self.btn_s_orig_data.clicked.connect(lambda: OriginalDataDialog(self._source, self).exec_())
-        self.btn_t_orig_data.clicked.connect(lambda: OriginalDataDialog(self._target, self).exec_())
+        self.btn_s_orig_data.clicked.connect(lambda: OriginalDataDialog(self._source, self))
+        self.btn_t_orig_data.clicked.connect(lambda: OriginalDataDialog(self._target, self))
 
         # Checkbox
         self.chb_browse_convert = QtGui.QCheckBox("Browse data after convert")
@@ -603,7 +603,6 @@ class RadioButton(QtGui.QRadioButton):
 
 
 class FindDialog(QtGui.QDialog):
-
     SOURCE_TABLE = 1
     TARGET_TABLE = 2
 
@@ -791,7 +790,6 @@ class TextView(QtGui.QFrame):
             line_count = block.blockNumber()
             painter = QtGui.QPainter(number_bar)
             painter.fillRect(event.rect(), self.palette().base())
-            painter.setPen(QtGui.QColor(168, 34, 3))
 
             # Iterate over all visible text blocks in the document.
             while block.isValid():
@@ -853,20 +851,35 @@ class OriginalDataDialog(QtGui.QDialog):
         self.source = source_path
         self.source = open(source_path, 'r')
         self.data_view.setPlainText(self.load_next(self.load_count))
+        self.show()
 
     def init_ui(self):
-        hbox = QtGui.QVBoxLayout(self)
+        vbox = QtGui.QVBoxLayout(self)
         textw = TextView()
         self.data_view = textw.getEdit()
         self.data_view.setReadOnly(True)
         self.data_view.verticalScrollBar().valueChanged.connect(self.fill_next)
-        hbox.addWidget(textw)
+        vbox.addWidget(textw)
         buttons = QtGui.QDialogButtonBox(
             QtGui.QDialogButtonBox.Close, QtCore.Qt.Horizontal, self)
         buttons.rejected.connect(self.reject)
+
+        self.line = QtGui.QLineEdit()
+        self.line.setStyleSheet('QLineEdit { background-color: %s }' % '#ffffff')
+        btn_find = QtGui.QPushButton("Find")
+        btn_find.clicked.connect(self.find)
+        hbox = QtGui.QHBoxLayout()
+        hbox.addWidget(self.line)
+        hbox.addWidget(btn_find)
         hbox.addWidget(buttons)
+        vbox.addLayout(hbox)
+
         self.resize(700, 400)
         self.setWindowTitle(self.source_path)
+        self.setWindowModality(QtCore.Qt.NonModal)
+
+    def find(self):
+        self.data_view.find(self.line.text())
 
     def reject(self):
         self.source.close()
