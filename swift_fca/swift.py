@@ -6,6 +6,7 @@ import sys
 import collections
 import os.path
 import traceback
+import itertools
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import SIGNAL
 from .swift_core.managers_fca import Browser, Convertor, Printer, BgWorker
@@ -70,6 +71,8 @@ class GuiSwift(QtGui.QWidget):
 
     def initUI(self):
 
+        st_find = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+f"), self)
+        st_find.activated.connect(lambda: FindDialog(self))
         # Widgets
         label_source = QtGui.QLabel('<b>Source File</b>')
         label_target = QtGui.QLabel('<b>Target File</b>')
@@ -510,6 +513,7 @@ class GuiSwift(QtGui.QWidget):
                 header = browser.get_header()
                 table_view.model().header.extend(header)
                 self.browse_data(browser, table_view)
+
                 pbar.cancel()
                 self.status_bar.showMessage("Data were successfully prepared for browsing.",
                                             self.STATUS_MESSAGE_DURRATION)
@@ -584,8 +588,104 @@ class SwiftTableModel(QtCore.QAbstractTableModel):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
             return self.header[col]
         if orientation == QtCore.Qt.Vertical and role == QtCore.Qt.DisplayRole:
-            return col
+            return col+1
         return None
+
+
+class RadioButton(QtGui.QRadioButton):
+    def __init__(self, text, ident, parent=None):
+        super().__init__(text, parent=parent)
+        self._ident = ident
+
+    @property
+    def ident(self):
+        return self._ident
+
+
+class FindDialog(QtGui.QDialog):
+
+    SOURCE_TABLE = 1
+    TARGET_TABLE = 2
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.tables = {self.SOURCE_TABLE: parent.table_view_source,
+                       self.TARGET_TABLE: parent.table_view_target}
+        self.curr_table = self.tables[self.SOURCE_TABLE]
+        self.occurences = itertools.cycle([])
+        self.occur_count = 0
+
+        btn_find = QtGui.QPushButton("Find")
+        btn_close = QtGui.QPushButton("Close")
+        self.btn_next = QtGui.QPushButton("Next")
+        self.btn_next.setEnabled(False)
+        btn_find.clicked.connect(self.find)
+        self.btn_next.clicked.connect(self.next)
+        buttons = QtGui.QDialogButtonBox(QtCore.Qt.Horizontal)
+        buttons.addButton(btn_find, QtGui.QDialogButtonBox.ActionRole)
+        buttons.addButton(self.btn_next, QtGui.QDialogButtonBox.ActionRole)
+        buttons.addButton(btn_close, QtGui.QDialogButtonBox.ActionRole)
+        btn_close.clicked.connect(self.reject)
+
+        radio_btn_source = RadioButton("Source Table", self.SOURCE_TABLE)
+        radio_btn_source.setChecked(True)
+        radio_btn_target = RadioButton("Target Table", self.TARGET_TABLE)
+        btn_group = QtGui.QButtonGroup(self)
+        btn_group.addButton(radio_btn_source)
+        btn_group.addButton(radio_btn_target)
+        btn_group.buttonClicked.connect(self.change_table)
+        radio_hbox = QtGui.QHBoxLayout()
+        radio_hbox.addWidget(radio_btn_source)
+        radio_hbox.addWidget(radio_btn_target)
+
+        self.line = QtGui.QLineEdit()
+        self.line.setStyleSheet('QLineEdit { background-color: %s }' % '#ffffff')
+        self.line.setMinimumWidth(350)
+
+        self.msg = QtGui.QLabel("")
+
+        vbox = QtGui.QVBoxLayout(self)
+        vbox.addLayout(radio_hbox)
+        vbox.addWidget(self.line)
+        vbox.addWidget(self.msg)
+        vbox.addWidget(buttons)
+        vbox.addStretch(0)
+        self.setWindowModality(QtCore.Qt.NonModal)
+        self.setWindowTitle("Find in table")
+
+        self.show()
+
+    def find(self):
+        self.curr_table.selectionModel().clearSelection()
+        search_val = self.line.text()
+        result = []
+        no = 0
+        for row_i, row in enumerate(self.curr_table.model().table):
+            for col_i, col in enumerate(row):
+                if col == search_val:
+                    no += 1
+                    result.append([no, [row_i, col_i]])
+        if result:
+            self.occurences = itertools.cycle(result)
+            self.occur_count = no
+            self.next()
+            self.btn_next.setEnabled(True)
+        else:
+            self.msg.setText("Phrase not found")
+            self.btn_next.setEnabled(False)
+
+    def next(self):
+        EMPTY = None
+        occur = next(self.occurences, EMPTY)
+        if occur:
+            no, match = occur
+            ind = self.curr_table.model().index(*match)
+            self.curr_table.selectionModel().select(ind, QtGui.QItemSelectionModel.Select)
+            self.curr_table.scrollTo(ind, QtGui.QAbstractItemView.PositionAtCenter)
+            self.msg.setText("{} of {} matches".format(no, self.occur_count))
+
+    def change_table(self, btn):
+        self.curr_table = self.tables[btn.ident]
 
 
 class ParamsDialog(QtGui.QDialog):
@@ -789,11 +889,11 @@ class OriginalDataDialog(QtGui.QDialog):
 
 
 class SourceParamsDialog(ParamsDialog):
-    format_poss_args = {FileType.ARFF: (RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP),
-                        FileType.CSV: (RunParams.SOURCE_SEP, RunParams.NFL, RunParams.SOURCE_ATTRS),
-                        FileType.CXT: (RunParams.SOURCE_ATTRS),
-                        FileType.DAT: (RunParams.SOURCE_ATTRS),
-                        FileType.DATA: (RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP)}
+    format_poss_args = {FileType.ARFF_EXT: (RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP),
+                        FileType.CSV_EXT: (RunParams.SOURCE_SEP, RunParams.NFL, RunParams.SOURCE_ATTRS),
+                        FileType.CXT_EXT: (RunParams.SOURCE_ATTRS),
+                        FileType.DAT_EXT: (RunParams.SOURCE_ATTRS),
+                        FileType.DATA_EXT: (RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP)}
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -815,11 +915,11 @@ class SourceParamsDialog(ParamsDialog):
 
 
 class TargetParamsDialog(ParamsDialog):
-    format_poss_args = {FileType.ARFF: (RunParams.TARGET_SEP, RunParams.RELATION_NAME),
-                        FileType.CSV: (RunParams.TARGET_SEP),
-                        FileType.CXT: (RunParams.TARGET_OBJECTS, RunParams.RELATION_NAME),
-                        FileType.DAT: (ParamsDialog.NO_PARAMS),
-                        FileType.DATA: (RunParams.CLASSES, RunParams.TARGET_SEP)}
+    format_poss_args = {FileType.ARFF_EXT: (RunParams.TARGET_SEP, RunParams.RELATION_NAME),
+                        FileType.CSV_EXT: (RunParams.TARGET_SEP),
+                        FileType.CXT_EXT: (RunParams.TARGET_OBJECTS, RunParams.RELATION_NAME),
+                        FileType.DAT_EXT: (ParamsDialog.NO_PARAMS),
+                        FileType.DATA_EXT: (RunParams.CLASSES, RunParams.TARGET_SEP)}
 
     def __init__(self, parent):
         super().__init__(parent)
