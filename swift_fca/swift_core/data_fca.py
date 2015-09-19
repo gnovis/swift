@@ -143,6 +143,8 @@ class Data:
         self._attr_count = len(self._attributes)
         if read:
             for index, line in enumerate(self.source):
+                if manager.stop or manager.skip_rest_lines(index):
+                    break
                 if manager.skip_line(index):
                     continue
                 str_values = self.prepare_line(line, index, scale=False, update=True)
@@ -152,9 +154,6 @@ class Data:
 
                 if self._temp_source:
                     self._temp_source.write(line)
-
-                if manager.stop or (manager.line_count-1) <= index:
-                    break
                 manager.update_counter(line, self.index_data_start)
 
             if self._temp_source:
@@ -505,6 +504,8 @@ class DataDat(Data):
         max_val = -1
         line_count = 0
         for i, line in enumerate(self.source):
+            if manager.stop or manager.skip_rest_lines(i):
+                break
             if manager.skip_line(i):
                 continue
             line_count += 1
@@ -519,9 +520,6 @@ class DataDat(Data):
 
             if self._temp_source:
                 self._temp_source.write(line)
-
-            if manager.stop or (manager.line_count-1) <= i:
-                break
             manager.update_counter(line, self.index_data_start)
 
         if self._temp_source:

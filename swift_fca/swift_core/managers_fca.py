@@ -5,7 +5,7 @@ import time
 from PyQt4 import QtCore
 from .data_fca import (Data, DataCsv, DataArff, DataDat, DataCxt, DataData)
 from .constants_fca import FileType, RunParams
-from .parser_fca import parse_sequence
+from .parser_fca import parse_intervals
 from .errors_fca import SwiftError, ArgError, ErrorMessage
 
 
@@ -38,7 +38,7 @@ class ManagerFca(QtCore.QObject):
         self._counter = None
         self._line_count = line_count
         self._source_from_stdin = not source.seekable()
-        self._skipped_lines = parse_sequence(skipped_lines)
+        self._skipped_lines = parse_intervals(skipped_lines)
 
     @property
     def stop(self):
@@ -57,7 +57,10 @@ class ManagerFca(QtCore.QObject):
         return self._source_from_stdin
 
     def skip_line(self, i):
-        return bool(i in self._skipped_lines)
+        return self._skipped_lines.val_in_closed_interval(i)
+
+    def skip_rest_lines(self, i):
+        return self._skipped_lines.val_in_open_interval(i)
 
     def update_percent(self):
         self.next_percent.emit()
@@ -123,7 +126,7 @@ class Browser(ManagerFca):
         while i < count:
             self._curr_line_index += 1
             line = next(self._opened_file, END_FILE)
-            if line == END_FILE:
+            if line == END_FILE or self.skip_rest_lines(self._curr_line_index):
                 break
             if self.skip_line(self._curr_line_index):
                 continue
@@ -186,14 +189,14 @@ class Convertor(ManagerFca):
         # skip header lines
         Data.skip_lines(self._old_data.index_data_start, source_file)
         for i, line in enumerate(source_file):
+            if self.stop or self.skip_rest_lines(i):
+                break
             if self.skip_line(i):
                 continue
             prepared_line = self._old_data.prepare_line(line, i)
             if not prepared_line:  # line is comment
                 continue
             self._new_data.write_line(prepared_line)
-            if self.stop or (self.line_count-1) <= i:
-                break
             self._counter.update(line, self._old_data.index_data_start)
         self._new_data.source.close()
         source_file.close()

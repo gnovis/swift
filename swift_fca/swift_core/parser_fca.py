@@ -9,6 +9,7 @@ from .date_parser_fca import DateParser
 from .grammars_fca import boolexpr, interval
 from .errors_fca import HeaderError, FormulaNamesError, FormulaSyntaxError, SequenceSyntaxError, LineError
 from .constants_fca import FileType
+from .interval_fca import Interval, Intervals
 
 
 class Parser():
@@ -73,6 +74,11 @@ class FormulaParser(Parser):
             self._attributes.append(attribute)
 
     def parse(self, str_args, max_attrs_i):
+        def expand_interval(tokens):
+            val_from = int(tokens[0])
+            val_to = int(tokens[1]) + 1
+            result = list(range(val_from, val_to))
+            return result
 
         # Grammar definition
         QUOTED_STR = quotedString.copy()
@@ -93,10 +99,7 @@ class FormulaParser(Parser):
         PARAMS = Or(STR ^ ENUM ^ DATE ^ NUM ^ GEN ^ NO_SCALE)
 
         NAME = Word(printables, excludeChars="[]-,=")
-
-        # INTERVAL = Optional(Word(nums), default=0) + Suppress("-") + Optional(Word(nums), default=max_attrs_i)
-        # INTERVAL.setParseAction(expand_interval)
-        INTERVAL = interval(max_attrs_i)
+        INTERVAL = interval(max_attrs_i, expand_interval)
 
         ATTR_SEQUENCE = Group(delimitedList((INTERVAL | NAME)))
         VAR_FIRST_PART = Optional(ATTR_SEQUENCE + Suppress('='), default='') + ATTR_SEQUENCE
@@ -360,11 +363,12 @@ class DataParser(Parser):
             raise HeaderError(FileType.DATA, e.lineno, e.col, e.line, e)
 
 
-def parse_sequence(string):
+def parse_intervals(string):
     if not string:
-        return []
-    seq = delimitedList(interval() | Word(nums)("num").setParseAction(lambda t: int(t.num)))
+        return Intervals([])
+    seq = delimitedList(interval(end=float('inf'), func=lambda t: Interval(t[0], t[1])) |
+                        Word(nums)("num").setParseAction(lambda t: Interval(t.num, t.num)))
     try:
-        return seq.parseString(string, parseAll=True).asList()
+        return Intervals(seq.parseString(string, parseAll=True).asList())
     except ParseException as e:
         raise SequenceSyntaxError(e.lineno, e.col, e.line, e)

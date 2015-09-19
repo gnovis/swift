@@ -87,7 +87,7 @@ class GuiSwift(QtGui.QWidget):
         self.set_line_prop(self.line_target, line_validator)
 
         self.line_line_count = QtGui.QLineEdit()
-        self.line_line_count.setPlaceholderText("Line Count")
+        self.line_line_count.setPlaceholderText("Display")
         numregex = QtCore.QRegExp('^\d+$')
         num_validator = QtGui.QRegExpValidator(numregex)
         self.line_line_count.setMaximumWidth(85)
@@ -588,7 +588,7 @@ class SwiftTableModel(QtCore.QAbstractTableModel):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
             return self.header[col]
         if orientation == QtCore.Qt.Vertical and role == QtCore.Qt.DisplayRole:
-            return col+1
+            return col
         return None
 
 
