@@ -32,11 +32,10 @@ class ManagerFca(QtCore.QObject):
     # Signals
     next_percent = QtCore.pyqtSignal()
 
-    def __init__(self, source, line_count=float("inf"), skipped_lines=None):
+    def __init__(self, source, skipped_lines=None):
         super().__init__()
         self._stop = False
         self._counter = None
-        self._line_count = line_count
         self._source_from_stdin = not source.seekable()
         self._skipped_lines = parse_intervals(skipped_lines)
 
@@ -47,10 +46,6 @@ class ManagerFca(QtCore.QObject):
     @stop.setter
     def stop(self, value):
         self._stop = value
-
-    @property
-    def line_count(self):
-        return self._line_count
 
     @property
     def source_from_stdin(self):
@@ -85,8 +80,8 @@ class ManagerFca(QtCore.QObject):
 
 
 class Printer(ManagerFca):
-    def __init__(self, kwargs, line_count=float("inf"), skipped_lines=None):
-        super().__init__(kwargs[RunParams.SOURCE], line_count, skipped_lines)
+    def __init__(self, kwargs, skipped_lines=None):
+        super().__init__(kwargs[RunParams.SOURCE], skipped_lines)
         self._file_path = kwargs[RunParams.SOURCE].name
         self._data = self.get_data_class(kwargs)(**kwargs)
 
@@ -101,8 +96,8 @@ class Printer(ManagerFca):
 
 
 class Browser(ManagerFca):
-    def __init__(self, kwargs, line_count=20, skipped_lines=None):
-        super().__init__(kwargs[RunParams.SOURCE], line_count, skipped_lines)
+    def __init__(self, kwargs, skipped_lines=None):
+        super().__init__(kwargs[RunParams.SOURCE], skipped_lines)
         self._opened_file = kwargs[RunParams.SOURCE]
         self._data = self.get_data_class(kwargs)(**kwargs)
         self._curr_line_index = -1
@@ -117,8 +112,8 @@ class Browser(ManagerFca):
     def get_header(self):
         return list(map(lambda x: x.name, self._data.attributes))
 
-    def get_display_data(self, count):
-        count = int(count)
+    def get_display_data(self, count, print_func=None):
+        count = float(count)
         END_FILE = -1
         to_display = []
 
@@ -126,14 +121,20 @@ class Browser(ManagerFca):
         while i < count:
             self._curr_line_index += 1
             line = next(self._opened_file, END_FILE)
+
             if line == END_FILE or self.skip_rest_lines(self._curr_line_index):
                 break
             if self.skip_line(self._curr_line_index):
                 continue
-            prepared_line = self._data.prepare_line(line.strip(),
-                                                    self._curr_line_index, False)
+
+            prepared_line = self._data.prepare_line(line.strip(), self._curr_line_index, False)
+
             if not prepared_line:  # line is comment
                 continue
+            if print_func:  # used for display data from stdin (stream data)
+                print_func(prepared_line, self._curr_line_index)
+                continue
+
             to_display.append(prepared_line)
             i += 1
         return to_display
@@ -146,8 +147,8 @@ class Convertor(ManagerFca):
     """Manage data conversion"""
 
     def __init__(self, old, new, print_info=False, gui=False,
-                 line_count=float("inf"), skipped_lines=None):
-        super().__init__(old[RunParams.SOURCE], line_count, skipped_lines)
+                 skipped_lines=None):
+        super().__init__(old[RunParams.SOURCE], skipped_lines)
         self._gui = gui
         self._source_ext = self.get_extension(old)
         self._target_ext = self.get_extension(new)

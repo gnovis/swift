@@ -27,6 +27,7 @@ class ErrorCode(IntEnum):
     date_value_format = 21
     formula_regex = 22
     formula_key = 23
+    keyboard_interrupt = 24
 
 
 class ErrorMessage:

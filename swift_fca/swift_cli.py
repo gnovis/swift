@@ -37,10 +37,13 @@ def browse(*args):
             pass
         return count
 
+    def disp_line(line, index):
+        print(line_format.format(str(index), *line))
+
     def display_lines(lines, i):
         index = i
         for line in lines:
-            print(line_format.format(str(index), *line))
+            disp_line(line, index)
             index += 1
         return index
 
@@ -51,10 +54,8 @@ def browse(*args):
     formated_header = line_format.format("i", *header)
 
     if browser.source_from_stdin:
-        print("Max {} lines displayed. Use {} argument for changing it.\n".format(browser.line_count, RunParams.LINE_COUNT))
         print(formated_header)
-        lines = browser.get_display_data(browser.line_count)
-        display_lines(lines, 0)
+        browser.get_display_data(float('inf'), print_func=disp_line)
         return
 
     count = get_line_count(20)
@@ -129,7 +130,6 @@ def get_args():
                         help="Desired count of lines from source file will be displayed.")
     parser.add_argument("-{}".format(EXPORT[0]), "--{}".format(EXPORT), action='store_true',
                         help="Desired count of lines from source file will be scanned and informations about data will be exported to target file.")
-    parser.add_argument("-lc", "--line_count", type=float, help="Count of lines which will be processed in any action.")
     parser.add_argument("-sl", "--skipped_lines", help="Indexes of lines which will be skipped in any operation.")
 
     args = parser.parse_args()
@@ -163,6 +163,8 @@ def main():
     except SwiftError as e:
         print(e, file=sys.stderr)
         sys.exit(e.ident)
+    except KeyboardInterrupt:
+        sys.exit(ErrorCode.keyboard_interrupt)
     except:
         msg = ErrorMessage.UNKNOWN_ERROR + traceback.format_exc()
         print(msg, file=sys.stderr)

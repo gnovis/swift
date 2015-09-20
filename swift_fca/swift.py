@@ -18,6 +18,7 @@ import swift_fca.resources.resources_rc  # NOQA Resources file
 
 class GuiSwift(QtGui.QWidget):
     STATUS_MESSAGE_DURRATION = 5000
+    SCROLL_COUNT = 50
 
     class Colors():
         GREEN = '#c4df9b'
@@ -57,17 +58,11 @@ class GuiSwift(QtGui.QWidget):
     def skip_lines(self):
         return self.line_skip_lines.text()
 
-    def line_count(self):
-        value = self.line_line_count.text()
-        if value:
-            return int(value)
-        return float("inf")
-
     def scroll_count(self):
         value = self.line_line_count.text()
         if value:
             return int(value)
-        return 50
+        return self.SCROLL_COUNT
 
     def initUI(self):
 
@@ -353,7 +348,7 @@ class GuiSwift(QtGui.QWidget):
             try:
                 main_args = self.source_params
                 main_args[RunParams.SOURCE] = open(self.subst_ext(self.source), 'r')
-                printer = Printer(main_args, line_count=self.line_count(), skipped_lines=self.skip_lines)
+                printer = Printer(main_args, skipped_lines=self.skip_lines)
             except:
                 errors = traceback.format_exc()
                 self.show_error_dialog(errors=[errors])
@@ -439,7 +434,6 @@ class GuiSwift(QtGui.QWidget):
 
             try:
                 convertor = Convertor(s_p, t_p, gui=True,
-                                      line_count=self.line_count(),
                                       skipped_lines=self.skip_lines)
             except:
                 errors = traceback.format_exc()
@@ -532,7 +526,7 @@ class GuiSwift(QtGui.QWidget):
         try:
             main_args = params
             main_args[RunParams.SOURCE] = open(self.subst_ext(source_file), 'r')
-            browser = Browser(main_args, line_count=self.line_count(), skipped_lines=self.skip_lines)
+            browser = Browser(main_args, skipped_lines=self.skip_lines)
         except:
             errors = traceback.format_exc()
             self.show_error_dialog(errors=[errors])
