@@ -35,14 +35,15 @@ class FileType:
     DATA_EXT = ".data"
     NAMES_EXT = ".names"
 
-    CSV_REPR = "CSV"
-    ARFF_REPR = "ARFF"
-    DAT_REPR = "DAT"
-    CXT_REPR = "CXT"
-    DATA_REPR = "DATA"
-    NAMES_REPR = "NAMES"
+    CSV_REPR = "csv"
+    ARFF_REPR = "arff"
+    DAT_REPR = "dat"
+    CXT_REPR = "cxt"
+    DATA_REPR = "data"
+    NAMES_REPR = "names"
 
     ALL_EXT = [CSV_EXT, ARFF_EXT, DAT_EXT, DATA_EXT, NAMES_EXT, CXT_EXT]
+    ALL_REPR = [CSV_REPR, ARFF_REPR, DAT_REPR, DATA_REPR, NAMES_REPR, CXT_REPR]
 
 
 class AttrType:

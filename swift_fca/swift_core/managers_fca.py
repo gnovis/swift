@@ -63,27 +63,28 @@ class ManagerFca(QtCore.QObject):
     def update_counter(self, line, index):
         self._counter.update(line, index)
 
-    def get_extension(self, args):
-        f = args[RunParams.SOURCE]
-        if not f.seekable():
-            try:
-                ext = ".{}".format(args[RunParams.FORMAT])
-            except KeyError:
-                raise ArgError(RunParams.FORMAT)
-            del args[RunParams.FORMAT]
+    @staticmethod
+    def get_extension(path, args):
+        if RunParams.FORMAT in args:
+            ext = ".{}".format(args[RunParams.FORMAT])
+        elif path == sys.stdin.name or path == sys.stdout.name:  # stream from stdin -> file extension must be set
+            raise ArgError(RunParams.FORMAT)
         else:
-            ext = os.path.splitext(f.name)[1]
+            ext = os.path.splitext(path)[1]
         return ext
 
-    def get_data_class(self, args):
-        return self.EXTENSIONS[self.get_extension(args)]
+    def get_data_class(self, ext):
+        try:
+            return self.EXTENSIONS[ext]
+        except KeyError:
+            raise ArgError(message="Invalid source/target extension '{}'.\nPossible extensions are: {}".format(ext, ", ".join(FileType.ALL_REPR)))
 
 
 class Printer(ManagerFca):
     def __init__(self, kwargs, skipped_lines=None):
         super().__init__(kwargs[RunParams.SOURCE], skipped_lines)
         self._file_path = kwargs[RunParams.SOURCE].name
-        self._data = self.get_data_class(kwargs)(**kwargs)
+        self._data = self.get_data_class(self.get_extension(kwargs[RunParams.SOURCE].name, kwargs))(**kwargs)
 
     def read_info(self):
         self._counter = EstimateCounter(self._file_path, self)
@@ -99,7 +100,7 @@ class Browser(ManagerFca):
     def __init__(self, kwargs, skipped_lines=None):
         super().__init__(kwargs[RunParams.SOURCE], skipped_lines)
         self._opened_file = kwargs[RunParams.SOURCE]
-        self._data = self.get_data_class(kwargs)(**kwargs)
+        self._data = self.get_data_class(self.get_extension(kwargs[RunParams.SOURCE].name, kwargs))(**kwargs)
         self._curr_line_index = -1
 
     def read_info(self):
@@ -144,17 +145,16 @@ class Browser(ManagerFca):
 
 
 class Convertor(ManagerFca):
-    """Manage data conversion"""
 
     def __init__(self, old, new, print_info=False, gui=False,
                  skipped_lines=None):
         super().__init__(old[RunParams.SOURCE], skipped_lines)
         self._gui = gui
-        self._source_ext = self.get_extension(old)
-        self._target_ext = self.get_extension(new)
+        self._source_ext = self.get_extension(old[RunParams.SOURCE].name, old)
+        self._target_ext = self.get_extension(new[RunParams.TARGET].name, new)
 
-        self._source_cls = self.EXTENSIONS[self._source_ext]
-        self._target_cls = self.EXTENSIONS[self._target_ext]
+        self._source_cls = self.get_data_class(self._source_ext)
+        self._target_cls = self.get_data_class(self._target_ext)
         self._old_data = self._source_cls(**old)
         self._new_data = self._target_cls(**new)
         self._print_info = print_info

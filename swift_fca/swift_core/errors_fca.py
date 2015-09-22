@@ -28,6 +28,7 @@ class ErrorCode(IntEnum):
     formula_regex = 22
     formula_key = 23
     keyboard_interrupt = 24
+    missing_arg = 25
 
 
 class ErrorMessage:
@@ -152,9 +153,10 @@ class FormulaRegexError(SwiftError):
 
 
 class ArgError(SwiftError):
-    ARGS = {RunParams.FORMAT: "Argument: '{}' is missing.\nIf you are using standart input/output as source/target, argument source/target {} must be set."}
+    ARGS = {RunParams.FORMAT:
+            "Argument: 'format' is missing.\nIf you are using standart input/output as source/target, argument source/target 'format' must be set."}
 
     def __init__(self, arg=None, message=""):
         if arg in self.ARGS:
-            message = self.ARGS[arg].format(arg, arg)
+            message = self.ARGS[arg]
         super().__init__(ErrorCode.arg_error, "Argument", message)

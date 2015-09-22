@@ -20,7 +20,7 @@ def convert(*args):
                                  args[SOURCE], args[TARGET])
     warnings = validator.warnings
     if len(warnings) > 0:
-        raise SwiftError(ErrorMessage.MISSING_ARGS_ERROR + "\n".join(warnings))
+        raise SwiftError(ErrorCode.missing_arg, "Missing Arguments", ErrorMessage.MISSING_ARGS_ERROR + "\n" + "\n".join(warnings))
     convertor = Convertor(args[SOURCE], args[TARGET], **(args[OTHERS]))
     convertor.read_info()
     convertor.convert()
@@ -120,9 +120,9 @@ def get_args():
     parser.add_argument("-to", "--target_objects", help="Target file (new) objects. Only for CXT format.")
     parser.add_argument("-rn", "--relation_name", help="New name of relation.")
     parser.add_argument("-cls", "--classes", help="Classes seperated by commas - for C4.5 convert.")
-    parser.add_argument("-sf", "--source_format", type=str.lower, choices=list(map(lambda val: val[1:], FileType.ALL_EXT)),
+    parser.add_argument("-sf", "--source_format", type=str.lower, choices=FileType.ALL_REPR,
                         help="Format of source file, must to be specified when source is standart input (stdin)")
-    parser.add_argument("-tf", "--target_format", type=str.lower, choices=list(map(lambda val: val[1:], FileType.ALL_EXT)),
+    parser.add_argument("-tf", "--target_format", type=str.lower, choices=FileType.ALL_REPR,
                         help="Format of target file, must to be specified when target is standart output (stdout)")
     parser.add_argument("-{}".format(CONVERT[0]), "--{}".format(CONVERT), action='store_true',
                         help="Source file will be converted to target file, this is default option.")
@@ -130,7 +130,7 @@ def get_args():
                         help="Desired count of lines from source file will be displayed.")
     parser.add_argument("-{}".format(EXPORT[0]), "--{}".format(EXPORT), action='store_true',
                         help="Desired count of lines from source file will be scanned and informations about data will be exported to target file.")
-    parser.add_argument("-sl", "--skipped_lines", help="Indexes of lines which will be skipped in any operation.")
+    parser.add_argument("-sl", "--skipped_lines", help="Interval of lines which will be skipped in any operation.")
 
     args = parser.parse_args()
 

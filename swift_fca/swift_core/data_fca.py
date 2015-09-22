@@ -255,7 +255,7 @@ class DataArff(Data):
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
                  separator=',', relation_name='',
-                 none_val=Data.NONE_VAL):
+                 none_val=Data.NONE_VAL, **kwargs):
         super().__init__(source, str_attrs, str_objects,
                          separator, relation_name, none_val)
         self._parser = ArffParser(separator)
@@ -312,7 +312,7 @@ class DataCsv(Data):
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
                  separator=',', relation_name='', no_attrs_first_line=False,
-                 none_val=Data.NONE_VAL):
+                 none_val=Data.NONE_VAL, **kwargs):
         self._no_attrs_first_line = no_attrs_first_line
         super().__init__(source, str_attrs, str_objects,
                          separator, relation_name, none_val)
@@ -352,7 +352,7 @@ class DataData(Data):
 
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
-                 separator=',', relation_name='', classes="", none_val=Data.NONE_VAL):
+                 separator=',', relation_name='', classes="", none_val=Data.NONE_VAL, **kwargs):
         super().__init__(source, str_attrs, str_objects,
                          separator, relation_name, none_val)
         self._classes = list(reversed(self.ss_str(classes, self._separator)))
@@ -397,7 +397,7 @@ class DataCxt(Data):
 
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
-                 separator='', relation_name='', none_val=Data.NONE_VAL):
+                 separator='', relation_name='', none_val=Data.NONE_VAL, **kwargs):
         super().__init__(source, str_attrs, str_objects,
                          separator, relation_name, none_val)
 
@@ -496,7 +496,7 @@ class DataDat(Data):
 
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
-                 separator=',', relation_name=''):
+                 separator=',', relation_name='', **kwargs):
         super().__init__(source, str_attrs, str_objects,
                          ' ', relation_name)
 

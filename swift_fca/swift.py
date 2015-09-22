@@ -76,10 +76,12 @@ class GuiSwift(QtGui.QWidget):
         self.line_source.setObjectName('line_source')
         self.line_target = QtGui.QLineEdit()
         self.line_target.setObjectName('line_target')
-        regexp = QtCore.QRegExp('^.+\.(arff|data|names|dat|cxt|csv)$')
-        line_validator = QtGui.QRegExpValidator(regexp)
-        self.set_line_prop(self.line_source, line_validator)
-        self.set_line_prop(self.line_target, line_validator)
+        regexp_ext = QtCore.QRegExp('^.+\.(arff|data|names|dat|cxt|csv)$')
+        regexp_all = QtCore.QRegExp('^.+$')
+        self.line_ext_validator = QtGui.QRegExpValidator(regexp_ext)
+        self.line_all_validator = QtGui.QRegExpValidator(regexp_all)
+        self.set_line_prop(self.line_source, self.line_ext_validator)
+        self.set_line_prop(self.line_target, self.line_ext_validator)
 
         self.line_line_count = QtGui.QLineEdit()
         self.line_line_count.setPlaceholderText("Display")
@@ -140,8 +142,6 @@ class GuiSwift(QtGui.QWidget):
         self.btn_export_info.clicked.connect(self.export_info)
         self.btn_s_params.clicked.connect(self.change_source_params)
         self.btn_t_params.clicked.connect(self.change_target_params)
-        self.btn_t_params.setEnabled(False)
-        self.btn_s_params.setEnabled(False)
         self.btn_browse.setEnabled(False)
         self.btn_export_info.setEnabled(False)
         self.btn_convert.setEnabled(False)
@@ -241,14 +241,12 @@ class GuiSwift(QtGui.QWidget):
             self.browser_source = None
             self.reset_table(self.table_view_source)
             self._source_params.clear()
-            self.btn_s_params.setEnabled(True)
             self.btn_browse.setEnabled(True)
             self.btn_export_info.setEnabled(True)
             self.btn_s_orig_data.setEnabled(True)
             self._source = sender.text()
         else:
             color = self.Colors.RED
-            self.btn_s_params.setEnabled(False)
             self.btn_browse.setEnabled(False)
             self.btn_export_info.setEnabled(False)
             self.btn_s_orig_data.setEnabled(False)
@@ -271,7 +269,6 @@ class GuiSwift(QtGui.QWidget):
             self.browser_target = None
             self.reset_table(self.table_view_target)
             self._target_params.clear()
-            self.btn_t_params.setEnabled(True)
             if os.path.isfile(sender.text()):
                 self.btn_t_orig_data.setEnabled(True)
             else:
@@ -279,7 +276,6 @@ class GuiSwift(QtGui.QWidget):
             self._target = sender.text()
         else:
             color = self.Colors.RED
-            self.btn_t_params.setEnabled(False)
             self.btn_t_orig_data.setEnabled(False)
             self.browser_target = None
             self.reset_table(self.table_view_target)
@@ -552,6 +548,15 @@ class GuiSwift(QtGui.QWidget):
             params.clear()
             params.update(result[0])
 
+            def set_validator(validator):
+                self.line_source.setValidator(validator)
+                self.line_target.setValidator(validator)
+
+            if RunParams.FORMAT in params:
+                set_validator(self.line_all_validator)
+            else:
+                set_validator(self.line_ext_validator)
+
 
 class SwiftTableModel(QtCore.QAbstractTableModel):
     def __init__(self, parent, *args):
@@ -700,6 +705,10 @@ class ParamsDialog(QtGui.QDialog):
         self.layout.setDirection(QtGui.QBoxLayout.BottomToTop)
         self.layout.addWidget(buttons)
 
+        # combobox
+        self.combo_format = FormComboBox("Format", items=FileType.ALL_REPR)
+        self.widgets[RunParams.FORMAT] = self.combo_format
+
     @classmethod
     def get_params(cls, parent):
         dialog = cls(parent)
@@ -713,8 +722,14 @@ class ParamsDialog(QtGui.QDialog):
                 result[name] = w.data()
         return result
 
-    def fill_layout(self, suff):
-        poss_args = self.format_poss_args[suff]
+    def fill_layout(self, path):
+        try:
+            suff = os.path.splitext(path)[1]
+            poss_args = self.format_poss_args[suff]
+        except AttributeError:
+            for name, w in self.widgets.items():
+                self.layout.addWidget(w)
+            return
         filtered = collections.OrderedDict()
         for name, w in self.widgets.items():
             if name in poss_args:
@@ -896,11 +911,11 @@ class OriginalDataDialog(QtGui.QDialog):
 
 
 class SourceParamsDialog(ParamsDialog):
-    format_poss_args = {FileType.ARFF_EXT: (RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP),
-                        FileType.CSV_EXT: (RunParams.SOURCE_SEP, RunParams.NFL, RunParams.SOURCE_ATTRS),
-                        FileType.CXT_EXT: (RunParams.SOURCE_ATTRS),
-                        FileType.DAT_EXT: (RunParams.SOURCE_ATTRS),
-                        FileType.DATA_EXT: (RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP)}
+    format_poss_args = {FileType.ARFF_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP),
+                        FileType.CSV_EXT: (RunParams.FORMAT, RunParams.SOURCE_SEP, RunParams.NFL, RunParams.SOURCE_ATTRS),
+                        FileType.CXT_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS),
+                        FileType.DAT_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS),
+                        FileType.DATA_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP)}
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -908,7 +923,7 @@ class SourceParamsDialog(ParamsDialog):
         # form lines
         self.line_separator = FormLine("Separator", default_val=',')
         self.line_str_attrs = FormLine("Attributes")
-        # check box
+        # checkbox
         self.cb_nfl = FormCheckBox('Attributes on first line')
 
         # layout
@@ -916,17 +931,16 @@ class SourceParamsDialog(ParamsDialog):
         self.widgets[RunParams.SOURCE_ATTRS] = self.line_str_attrs
         self.widgets[RunParams.SOURCE_SEP] = self.line_separator
 
-        suffix = os.path.splitext(parent.source)[1]  # source file must be set!
-        self.fill_layout(suffix)
+        self.fill_layout(parent.source)
         self.setWindowTitle('Arguments for source file')
 
 
 class TargetParamsDialog(ParamsDialog):
-    format_poss_args = {FileType.ARFF_EXT: (RunParams.TARGET_SEP, RunParams.RELATION_NAME),
-                        FileType.CSV_EXT: (RunParams.TARGET_SEP),
-                        FileType.CXT_EXT: (RunParams.TARGET_OBJECTS, RunParams.RELATION_NAME),
-                        FileType.DAT_EXT: (ParamsDialog.NO_PARAMS),
-                        FileType.DATA_EXT: (RunParams.CLASSES, RunParams.TARGET_SEP)}
+    format_poss_args = {FileType.ARFF_EXT: (RunParams.FORMAT, RunParams.TARGET_SEP, RunParams.RELATION_NAME),
+                        FileType.CSV_EXT: (RunParams.FORMAT, RunParams.TARGET_SEP),
+                        FileType.CXT_EXT: (RunParams.FORMAT, RunParams.TARGET_OBJECTS, RunParams.RELATION_NAME),
+                        FileType.DAT_EXT: (RunParams.FORMAT),
+                        FileType.DATA_EXT: (RunParams.FORMAT, RunParams.CLASSES, RunParams.TARGET_SEP)}
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -944,9 +958,8 @@ class TargetParamsDialog(ParamsDialog):
         self.widgets[RunParams.TARGET_SEP] = self.line_separator
         self.widgets[RunParams.TARGET_OBJECTS] = self.line_str_objects
         self.widgets[RunParams.RELATION_NAME] = self.line_rel_name
-        self.widgets[self.NO_PARAMS] = FormLabel("No arguments can be set.")
-        suffix = os.path.splitext(parent.target)[1]
-        self.fill_layout(suffix)
+        # self.widgets[self.NO_PARAMS] = FormLabel("No arguments can be set.")
+        self.fill_layout(parent.target)
         self.setWindowTitle('Arguments for target file')
 
 
@@ -964,8 +977,28 @@ class FormWidget(QtGui.QWidget):
     def data(self):
         return self.NONE_VAL
 
-    def set_data(self):
+    def set_data(self, data):
         pass
+
+
+class FormComboBox(FormWidget):
+    def __init__(self, label, items=[], parent=None, default_val="---"):
+        super().__init__(parent, default_val)
+        self.label = QtGui.QLabel(label)
+        self.combo = QtGui.QComboBox()
+        self.combo.addItem(default_val)
+        self.combo.addItems(items)
+        layout = QtGui.QVBoxLayout(self)
+        layout.addWidget(self.label)
+        layout.addWidget(self.combo)
+        self.setLayout(layout)
+
+    def data(self):
+        return self.combo.currentText()
+
+    def set_data(self, data):
+        index = self.combo.findText(data)
+        self.combo.setCurrentIndex(index)
 
 
 class FormCheckBox(FormWidget):
@@ -990,7 +1023,6 @@ class FormCheckBox(FormWidget):
 class FormLine(FormWidget):
     def __init__(self, label, parent=None, default_val=FormWidget.NONE_VAL):
         super().__init__(parent, default_val)
-
         self.label = QtGui.QLabel(label)
         self.line = QtGui.QLineEdit()
         self.line.setText(default_val)

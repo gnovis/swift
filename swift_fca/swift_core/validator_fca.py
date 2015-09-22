@@ -1,7 +1,5 @@
-import os
-import sys
 from .constants_fca import RunParams
-from .errors_fca import ArgError
+from .managers_fca import ManagerFca
 
 
 class ConvertValidator:
@@ -41,8 +39,8 @@ class ConvertValidator:
             if source == target:
                 self._warnings.append("Isn't possible to read and write to the same file, target and source can't be same.")
                 return
-            self._source_suff = self._get_file_suff(source, source_params)
-            self._target_suff = self._get_file_suff(target, target_params)
+            self._source_suff = ManagerFca.get_extension(source, source_params)
+            self._target_suff = ManagerFca.get_extension(target, target_params)
             self._validate()
         else:
             self._warnings.append("Source File and Target File are required for conversion.")
@@ -68,11 +66,3 @@ class ConvertValidator:
 
             validate_params(self._source_params, oblig_source, self.SOURCE_ARGS_DISPLAY)
             validate_params(self._target_params, oblig_target, self.TARGET_ARGS_DISPLAY)
-
-    def _get_file_suff(self, path, params):
-        if path == sys.stdin.name or path == sys.stdout.name:
-            try:
-                return ".{}".format(params[RunParams.FORMAT])
-            except KeyError:
-                raise ArgError(RunParams.FORMAT)
-        return os.path.splitext(path)[1]
