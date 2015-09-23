@@ -240,7 +240,6 @@ class GuiSwift(QtGui.QWidget):
             color = self.Colors.GREEN
             self.browser_source = None
             self.reset_table(self.table_view_source)
-            self._source_params.clear()
             self.btn_browse.setEnabled(True)
             self.btn_export_info.setEnabled(True)
             self.btn_s_orig_data.setEnabled(True)
@@ -253,9 +252,9 @@ class GuiSwift(QtGui.QWidget):
             self.browser_source = None
             self.reset_table(self.table_view_source)
             self._source = None
-            self._source_params.clear()
         if sender.text() == "":
             color = self.Colors.WHITE
+            self._source_params.clear()
         self.set_line_bg(sender, color)
         self.btn_convert.setEnabled(self.can_convert())
 
@@ -268,7 +267,6 @@ class GuiSwift(QtGui.QWidget):
             color = self.Colors.GREEN
             self.browser_target = None
             self.reset_table(self.table_view_target)
-            self._target_params.clear()
             if os.path.isfile(sender.text()):
                 self.btn_t_orig_data.setEnabled(True)
             else:
@@ -280,9 +278,9 @@ class GuiSwift(QtGui.QWidget):
             self.browser_target = None
             self.reset_table(self.table_view_target)
             self._target = None
-            self._target_params.clear()
         if sender.text() == "":
             color = self.Colors.WHITE
+            self._target_params.clear()
         self.set_line_bg(sender, color)
         self.btn_convert.setEnabled(self.can_convert())
 
@@ -298,11 +296,11 @@ class GuiSwift(QtGui.QWidget):
 
     def change_source_params(self):
         """Slot for btn_s_params"""
-        self.change_params(SourceParamsDialog, self._source_params)
+        self.change_params(SourceParamsDialog, self._source_params, self.line_source)
 
     def change_target_params(self):
         """Slot for btn_t_params"""
-        self.change_params(TargetParamsDialog, self._target_params)
+        self.change_params(TargetParamsDialog, self._target_params, self.line_target)
 
     def browse_source(self):
         """Slot for btn_source"""
@@ -389,6 +387,7 @@ class GuiSwift(QtGui.QWidget):
 
             def display_data(convertor, pbar):
                 if not convertor.stop:
+                    self.btn_t_orig_data.setEnabled(True)
                     pbar.cancel()
                     self.status_bar.showMessage("Conversion was successful.",
                                                 self.STATUS_MESSAGE_DURRATION)
@@ -541,7 +540,7 @@ class GuiSwift(QtGui.QWidget):
             bg.start()
             return browser
 
-    def change_params(self, cls, params):
+    def change_params(self, cls, params, line):
         result = cls.get_params(self)
         confirmed = result[1]
         if confirmed:
@@ -549,8 +548,9 @@ class GuiSwift(QtGui.QWidget):
             params.update(result[0])
 
             def set_validator(validator):
-                self.line_source.setValidator(validator)
-                self.line_target.setValidator(validator)
+                line.setValidator(validator)
+                # refresh
+                line.textChanged.emit(line.text())
 
             if RunParams.FORMAT in params:
                 set_validator(self.line_all_validator)
@@ -692,6 +692,7 @@ class ParamsDialog(QtGui.QDialog):
     def __init__(self, parent):
         super().__init__(parent)
         self.widgets = collections.OrderedDict()
+        self.widgets_selected = collections.OrderedDict()
         self.params = {}
 
         # OK and Cancel buttons
@@ -700,13 +701,16 @@ class ParamsDialog(QtGui.QDialog):
             QtCore.Qt.Horizontal, self)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
-        self.layout = QtGui.QVBoxLayout(self)
-        self.layout.addStretch(0)
-        self.layout.setDirection(QtGui.QBoxLayout.BottomToTop)
-        self.layout.addWidget(buttons)
+        self.main_layout = QtGui.QVBoxLayout(self)
+        self.main_layout.addStretch(0)
+        self.main_layout.setDirection(QtGui.QBoxLayout.BottomToTop)
+        self.main_layout.addWidget(buttons)
+        self.layout = QtGui.QVBoxLayout()
+        self.main_layout.addLayout(self.layout)
 
         # combobox
         self.combo_format = FormComboBox("Format", items=FileType.ALL_REPR)
+        self.combo_format.combo.activated.connect(self.refresh_layout)
         self.widgets[RunParams.FORMAT] = self.combo_format
 
     @classmethod
@@ -717,25 +721,42 @@ class ParamsDialog(QtGui.QDialog):
 
     def get_dict_data(self):
         result = {}
-        for name, w in self.widgets.items():
+        for name, w in self.widgets_selected.items():
             if w.data() != w.default_val and w.data() != w.NONE_VAL:
                 result[name] = w.data()
         return result
 
-    def fill_layout(self, path):
+    def refresh_layout(self, ext):
+        for name, w in self.widgets.items():
+            w.hide()
+        if RunParams.FORMAT in self.params:
+            del self.params[RunParams.FORMAT]
+        if ext:
+            self.params[RunParams.FORMAT] = FileType.ALL_REPR[ext-1]
+        self.filter_widgets()
+
+    def filter_widgets(self, path=""):
         try:
-            suff = os.path.splitext(path)[1]
+            if RunParams.FORMAT in self.params:
+                suff = ".{}".format(self.params[RunParams.FORMAT])
+            else:
+                suff = os.path.splitext(path)[1]
             poss_args = self.format_poss_args[suff]
-        except AttributeError:
+        except (AttributeError, KeyError):
             for name, w in self.widgets.items():
-                self.layout.addWidget(w)
+                w.show()
             return
-        filtered = collections.OrderedDict()
+        self.widgets_selected.clear()
         for name, w in self.widgets.items():
             if name in poss_args:
-                self.layout.addWidget(w)
-                filtered[name] = w
-        self.widgets = filtered
+                w.show()
+                self.widgets_selected[name] = w
+
+    def fill_layout(self, path):
+        for name, w in self.widgets.items():
+            w.hide()
+            self.layout.addWidget(w)
+        self.filter_widgets(path)
 
     def fill_widgets(self):
         for name, w in self.widgets.items():
@@ -915,7 +936,8 @@ class SourceParamsDialog(ParamsDialog):
                         FileType.CSV_EXT: (RunParams.FORMAT, RunParams.SOURCE_SEP, RunParams.NFL, RunParams.SOURCE_ATTRS),
                         FileType.CXT_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS),
                         FileType.DAT_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS),
-                        FileType.DATA_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP)}
+                        FileType.DATA_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP),
+                        FileType.NAMES_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP)}
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -940,7 +962,8 @@ class TargetParamsDialog(ParamsDialog):
                         FileType.CSV_EXT: (RunParams.FORMAT, RunParams.TARGET_SEP),
                         FileType.CXT_EXT: (RunParams.FORMAT, RunParams.TARGET_OBJECTS, RunParams.RELATION_NAME),
                         FileType.DAT_EXT: (RunParams.FORMAT),
-                        FileType.DATA_EXT: (RunParams.FORMAT, RunParams.CLASSES, RunParams.TARGET_SEP)}
+                        FileType.DATA_EXT: (RunParams.FORMAT, RunParams.CLASSES, RunParams.TARGET_SEP),
+                        FileType.NAMES_EXT: (RunParams.FORMAT, RunParams.CLASSES, RunParams.TARGET_SEP)}
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -959,6 +982,7 @@ class TargetParamsDialog(ParamsDialog):
         self.widgets[RunParams.TARGET_OBJECTS] = self.line_str_objects
         self.widgets[RunParams.RELATION_NAME] = self.line_rel_name
         # self.widgets[self.NO_PARAMS] = FormLabel("No arguments can be set.")
+
         self.fill_layout(parent.target)
         self.setWindowTitle('Arguments for target file')
 
