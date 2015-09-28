@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import traceback
 import sys
@@ -6,7 +7,7 @@ from PyQt4 import QtCore
 from .data_fca import (Data, DataCsv, DataArff, DataDat, DataCxt, DataData)
 from .constants_fca import FileType, RunParams
 from .parser_fca import parse_intervals
-from .errors_fca import SwiftError, ArgError, ErrorMessage
+from .errors_fca import SwiftError, ArgError, ErrorMessage, LineError, AttrError
 
 
 class ManagerFca(QtCore.QObject):
@@ -32,12 +33,13 @@ class ManagerFca(QtCore.QObject):
     # Signals
     next_percent = QtCore.pyqtSignal()
 
-    def __init__(self, source, skipped_lines=None):
+    def __init__(self, source, skipped_lines=None, skip_errors=False):
         super().__init__()
         self._stop = False
         self._counter = None
         self._source_from_stdin = not source.seekable()
         self._skipped_lines = parse_intervals(skipped_lines)
+        self._skip_errors = skip_errors
 
     @property
     def stop(self):
@@ -50,6 +52,10 @@ class ManagerFca(QtCore.QObject):
     @property
     def source_from_stdin(self):
         return self._source_from_stdin
+
+    @property
+    def skip_errors(self):
+        return self._skip_errors
 
     def skip_line(self, i):
         return self._skipped_lines.val_in_closed_interval(i)
@@ -81,8 +87,8 @@ class ManagerFca(QtCore.QObject):
 
 
 class Printer(ManagerFca):
-    def __init__(self, kwargs, skipped_lines=None):
-        super().__init__(kwargs[RunParams.SOURCE], skipped_lines)
+    def __init__(self, kwargs, skipped_lines=None, skip_errors=False, **unused):
+        super().__init__(kwargs[RunParams.SOURCE], skipped_lines, skip_errors)
         self._file_path = kwargs[RunParams.SOURCE].name
         self._data = self.get_data_class(self.get_extension(kwargs[RunParams.SOURCE].name, kwargs))(**kwargs)
 
@@ -97,8 +103,8 @@ class Printer(ManagerFca):
 
 
 class Browser(ManagerFca):
-    def __init__(self, kwargs, skipped_lines=None):
-        super().__init__(kwargs[RunParams.SOURCE], skipped_lines)
+    def __init__(self, kwargs, skipped_lines=None, skip_errors=False, **unused):
+        super().__init__(kwargs[RunParams.SOURCE], skipped_lines, skip_errors)
         self._opened_file = kwargs[RunParams.SOURCE]
         self._data = self.get_data_class(self.get_extension(kwargs[RunParams.SOURCE].name, kwargs))(**kwargs)
         self._curr_line_index = -1
@@ -128,7 +134,13 @@ class Browser(ManagerFca):
             if self.skip_line(self._curr_line_index):
                 continue
 
-            prepared_line = self._data.prepare_line(line.strip(), self._curr_line_index, False)
+            try:
+                prepared_line = self._data.prepare_line(line.strip(), self._curr_line_index, False)
+            except (LineError, AttrError) as e:
+                if self.skip_errors:
+                    print(e, sys.stderr)
+                    continue
+                raise e
 
             if not prepared_line:  # line is comment
                 continue
@@ -145,10 +157,9 @@ class Browser(ManagerFca):
 
 
 class Convertor(ManagerFca):
-
     def __init__(self, old, new, print_info=False, gui=False,
-                 skipped_lines=None):
-        super().__init__(old[RunParams.SOURCE], skipped_lines)
+                 skipped_lines=None, skip_errors=False, **kwargs):
+        super().__init__(old[RunParams.SOURCE], skipped_lines, skip_errors)
         self._gui = gui
         self._source_ext = self.get_extension(old[RunParams.SOURCE].name, old)
         self._target_ext = self.get_extension(new[RunParams.TARGET].name, new)
@@ -194,7 +205,13 @@ class Convertor(ManagerFca):
                 break
             if self.skip_line(i):
                 continue
-            prepared_line = self._old_data.prepare_line(line, i)
+            try:
+                prepared_line = self._old_data.prepare_line(line, i)
+            except (LineError, AttrError) as e:
+                if self.skip_errors:
+                    print(e, file=sys.stderr)
+                    continue
+                raise e
             if not prepared_line:  # line is comment
                 continue
             self._new_data.write_line(prepared_line)

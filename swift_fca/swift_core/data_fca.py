@@ -147,7 +147,13 @@ class Data:
                     break
                 if manager.skip_line(index):
                     continue
-                str_values = self.prepare_line(line, index, scale=False, update=True)
+                try:
+                    str_values = self.prepare_line(line, index, scale=False, update=True)
+                except (LineError, AttrError) as e:
+                    if manager.skip_errors:
+                        print(e, file=sys.stderr)
+                        continue
+                    raise e
                 if not str_values:  # current line is comment
                     continue
                 self._obj_count += 1
@@ -514,7 +520,11 @@ class DataDat(Data):
                 try:
                     int_val = int(val)
                 except ValueError:
-                    raise LineError(self.FORMAT, i+1, col+1, line, self.ERROR_DESCRIPTION.format(val))
+                    e = LineError(self.FORMAT, i+1, col+1, line, self.ERROR_DESCRIPTION.format(val))
+                    if manager.skip_errors:
+                        print(e, file=sys.stderr)
+                        continue
+                    raise e
                 if int_val > max_val:
                     max_val = int_val
 

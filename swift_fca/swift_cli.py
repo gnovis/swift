@@ -99,8 +99,8 @@ def get_args():
                    "relation_name": RunParams.RELATION_NAME,
                    "classes": RunParams.CLASSES}
     OTHER_ARGS = {"source_info": RunParams.SOURCE_INFO,
-                  "line_count": RunParams.LINE_COUNT,
-                  "skipped_lines": RunParams.SKIPPED_LINES}
+                  "skipped_lines": RunParams.SKIPPED_LINES,
+                  "skip_errors": RunParams.SKIP_ERRORS}
 
     parser = argparse.ArgumentParser(prog=App.NAME)
 
@@ -131,6 +131,7 @@ def get_args():
     parser.add_argument("-{}".format(EXPORT[0]), "--{}".format(EXPORT), action='store_true',
                         help="Desired count of lines from source file will be scanned and informations about data will be exported to target file.")
     parser.add_argument("-sl", "--skipped_lines", help="Interval of lines which will be skipped in any operation.")
+    parser.add_argument("-se", "--skip_errors", action="store_true", help="Skip broken lines, which cause an errors.")
 
     args = parser.parse_args()
 

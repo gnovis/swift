@@ -18,6 +18,7 @@ class RunParams:
     FORMAT = 'format'
     LINE_COUNT = 'line_count'
     SKIPPED_LINES = 'skipped_lines'
+    SKIP_ERRORS = 'skip_errors'
 
 
 class FileType:
