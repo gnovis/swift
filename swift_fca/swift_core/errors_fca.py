@@ -34,6 +34,8 @@ class ErrorCode(IntEnum):
 class ErrorMessage:
     UNKNOWN_ERROR = "\nSwift Unknown Error\nPlease report this bug with details below. Thank you.\n\n"
     MISSING_ARGS_ERROR = "Some of required arguments are missing or aren't specified correctly."
+    SKIPPED_ERRORS = "Following errors were skipped: "
+    SKIPPED_ERRORS_HEADER = "Skipped Errors"
 
 
 class SwiftError(Exception):

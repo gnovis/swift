@@ -54,10 +54,6 @@ class GuiSwift(QtGui.QWidget):
     def target_params(self):
         return self._target_params.copy()
 
-    @property
-    def skip_lines(self):
-        return self.line_skip_lines.text()
-
     def scroll_count(self):
         value = self.line_line_count.text()
         if value:
@@ -89,12 +85,6 @@ class GuiSwift(QtGui.QWidget):
         num_validator = QtGui.QRegExpValidator(numregex)
         self.line_line_count.setMaximumWidth(85)
         self.set_line_prop(self.line_line_count, num_validator, min_w=85)
-
-        self.line_skip_lines = QtGui.QLineEdit()
-        self.line_skip_lines.setPlaceholderText("Skip Lines")
-        seqregex = QtCore.QRegExp('^(\d+|(\d+)?-\d+)(,(\d+|(\d+)?-\d+))*$')
-        num_validator = QtGui.QRegExpValidator(seqregex)
-        self.set_line_prop(self.line_skip_lines, num_validator, min_w=100)
 
         self.line_source.textChanged.connect(self.check_state_source)
         self.line_target.textChanged.connect(self.check_state_target)
@@ -176,8 +166,7 @@ class GuiSwift(QtGui.QWidget):
         hbox_target.addWidget(btn_t_select)
         hbox_t_btn_set.addStretch(0)
         hbox_s_btn_set.addWidget(self.line_line_count)
-        hbox_s_btn_set.addWidget(self.line_skip_lines)
-        # hbox_s_btn_set.addStretch(0)
+        hbox_s_btn_set.addStretch(0)
         hbox_s_btn_set.addWidget(self.btn_export_info)
         hbox_s_btn_set.addWidget(self.btn_browse)
         hbox_s_btn_set.addWidget(self.btn_s_orig_data)
@@ -325,10 +314,10 @@ class GuiSwift(QtGui.QWidget):
                 errors = worker.get_errors()
                 if len(errors) > 0:
                     pbar.cancel()
-                    self.show_error_dialog(
+                    self.show_dialog(
                         "Print Error",
                         "Wasn't possible to prepare data for print informations, please check syntax in source file and specified arguments.",
-                        errors)
+                        errors=errors)
                     self.status_bar.showMessage("Export infomatios about source data aborted.",
                                                 self.STATUS_MESSAGE_DURRATION)
 
@@ -338,14 +327,16 @@ class GuiSwift(QtGui.QWidget):
                                                 self.STATUS_MESSAGE_DURRATION)
                     printer.print_info(open(file_name, 'w'))
                     pbar.cancel()
+                if printer.errors:
+                    self.show_dialog(ErrorMessage.SKIPPED_ERRORS_HEADER, ErrorMessage.SKIPPED_ERRORS, printer.errors, QtGui.QMessageBox.Information)
 
             try:
                 main_args = self.source_params
                 main_args[RunParams.SOURCE] = open(self.subst_ext(self.source), 'r')
-                printer = Printer(main_args, skipped_lines=self.skip_lines)
+                printer = Printer(main_args, **self.source_params)
             except:
                 errors = traceback.format_exc()
-                self.show_error_dialog(errors=[errors])
+                self.show_dialog(errors=[errors])
             else:
                 pbar = self.get_prepare_pbar(printer)
                 printer.next_percent.connect(pbar.update)
@@ -395,15 +386,17 @@ class GuiSwift(QtGui.QWidget):
                     if self.chb_browse_convert.isChecked():
                         self.browser_target = self.browse_first_data(self.table_view_target, self.browser_target,
                                                                      self.target, self.target_params)
+                if convertor.errors:
+                    self.show_dialog(ErrorMessage.SKIPPED_ERRORS_HEADER, ErrorMessage.SKIPPED_ERRORS, convertor.errors, QtGui.QMessageBox.Information)
 
             # method is called when background thread finished
             def worker_finished(worker, pbar):
                 errors = worker.get_errors()
                 if len(errors) > 0:
                     pbar.cancel()
-                    self.show_error_dialog("Convert Error",
-                                           "Wasn't possible to convert data, please check syntax in source file and specified arguments.",
-                                           errors)
+                    self.show_dialog("Convert Error",
+                                     "Wasn't possible to convert data, please check syntax in source file and specified arguments.",
+                                     errors=errors)
                     self.status_bar.showMessage("Conversion aborted.",
                                                 self.STATUS_MESSAGE_DURRATION)
 
@@ -428,11 +421,10 @@ class GuiSwift(QtGui.QWidget):
                     self.bg_worker.start()
 
             try:
-                convertor = Convertor(s_p, t_p, gui=True,
-                                      skipped_lines=self.skip_lines)
+                convertor = Convertor(s_p, t_p, gui=True, **self.source_params)
             except:
                 errors = traceback.format_exc()
-                self.show_error_dialog(errors=[errors])
+                self.show_dialog(errors=[errors])
             else:
                 pbar = self.get_prepare_pbar(convertor)
                 convertor.next_percent.connect(pbar.update)
@@ -464,13 +456,14 @@ class GuiSwift(QtGui.QWidget):
     def can_convert(self):
         return bool(self.source and self.target)
 
-    def show_error_dialog(self, title="Arguments Error", message="Some of arguments aren't correct, operation aborted.", errors=[]):
+    def show_dialog(self, title="Arguments Error", message="Some of arguments aren't correct, operation aborted.",
+                    errors=[], icon=QtGui.QMessageBox.Critical):
         msgBox = QtGui.QMessageBox()
         msgBox.setWindowTitle(title)
         msgBox.setText(message)
         msgBox.setStandardButtons(QtGui.QMessageBox.Close)
         msgBox.setDetailedText("\n".join(errors))
-        msgBox.setIcon(QtGui.QMessageBox.Critical)
+        msgBox.setIcon(icon)
         msgBox.exec_()
 
     def set_line_prop(self, line, validator, min_w=200):
@@ -485,6 +478,8 @@ class GuiSwift(QtGui.QWidget):
         data = browser.get_display_data(self.scroll_count())
         table_view.model().table.extend(data)
         table_view.model().layoutChanged.emit()
+        if browser.errors:
+            self.show_dialog(ErrorMessage.SKIPPED_ERRORS_HEADER, ErrorMessage.SKIPPED_ERRORS, browser.errors, QtGui.QMessageBox.Information)
 
     def reset_table(self, table):
         table_model = SwiftTableModel(self)
@@ -512,19 +507,19 @@ class GuiSwift(QtGui.QWidget):
             if len(errors) > 0:
                 pbar.cancel()
                 self.reset_table(table_view)
-                self.show_error_dialog("Browse Error",
-                                       "Wasn't possible to browse data, please check syntax in browsing file and separator used.",
-                                       errors)
+                self.show_dialog("Browse Error",
+                                 "Wasn't possible to browse data, please check syntax in browsing file and separator used.",
+                                 errors=errors)
                 self.status_bar.showMessage("Data preparation for browsing aborted.",
                                             self.STATUS_MESSAGE_DURRATION)
 
         try:
             main_args = params
             main_args[RunParams.SOURCE] = open(self.subst_ext(source_file), 'r')
-            browser = Browser(main_args, skipped_lines=self.skip_lines)
+            browser = Browser(main_args, **params)
         except:
             errors = traceback.format_exc()
-            self.show_error_dialog(errors=[errors])
+            self.show_dialog(errors=[errors])
         else:
             pbar = self.get_prepare_pbar(browser)
             browser.next_percent.connect(pbar.update)
@@ -932,26 +927,34 @@ class OriginalDataDialog(QtGui.QDialog):
 
 
 class SourceParamsDialog(ParamsDialog):
-    format_poss_args = {FileType.ARFF_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP),
-                        FileType.CSV_EXT: (RunParams.FORMAT, RunParams.SOURCE_SEP, RunParams.NFL, RunParams.SOURCE_ATTRS),
-                        FileType.CXT_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS),
-                        FileType.DAT_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS),
-                        FileType.DATA_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP),
-                        FileType.NAMES_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP)}
+    format_poss_args = {FileType.ARFF_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP, RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS),
+                        FileType.CSV_EXT: (RunParams.FORMAT, RunParams.SOURCE_SEP, RunParams.NFL,
+                                           RunParams.SOURCE_ATTRS, RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS),
+                        FileType.CXT_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS),
+                        FileType.DAT_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS),
+                        FileType.DATA_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP, RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS),
+                        FileType.NAMES_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP, RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS)}
 
     def __init__(self, parent):
         super().__init__(parent)
         self.params = parent.source_params
         # form lines
+        seqregex = QtCore.QRegExp('^(\d+|(\d+)?-\d+)(,(\d+|(\d+)?-\d+))*$')
+        seq_validator = QtGui.QRegExpValidator(seqregex)
+
+        self.skip_lines = FormLine("Skip Lines", validator=seq_validator)
         self.line_separator = FormLine("Separator", default_val=',')
         self.line_str_attrs = FormLine("Attributes")
         # checkbox
         self.cb_nfl = FormCheckBox('Attributes on first line')
+        self.cb_skip_errors = FormCheckBox('Skip Errors')
 
         # layout
-        self.widgets[RunParams.NFL] = self.cb_nfl
         self.widgets[RunParams.SOURCE_ATTRS] = self.line_str_attrs
         self.widgets[RunParams.SOURCE_SEP] = self.line_separator
+        self.widgets[RunParams.SKIPPED_LINES] = self.skip_lines
+        self.widgets[RunParams.SKIP_ERRORS] = self.cb_skip_errors
+        self.widgets[RunParams.NFL] = self.cb_nfl
 
         self.fill_layout(parent.source)
         self.setWindowTitle('Arguments for source file')
@@ -1045,10 +1048,11 @@ class FormCheckBox(FormWidget):
 
 
 class FormLine(FormWidget):
-    def __init__(self, label, parent=None, default_val=FormWidget.NONE_VAL):
+    def __init__(self, label, parent=None, default_val=FormWidget.NONE_VAL, validator=None):
         super().__init__(parent, default_val)
         self.label = QtGui.QLabel(label)
         self.line = QtGui.QLineEdit()
+        self.line.setValidator(validator)
         self.line.setText(default_val)
         self.line.setMinimumWidth(350)
         self.line.setStyleSheet('QLineEdit { background-color: %s }' % '#ffffff')

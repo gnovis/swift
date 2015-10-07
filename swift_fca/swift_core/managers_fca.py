@@ -40,6 +40,7 @@ class ManagerFca(QtCore.QObject):
         self._source_from_stdin = not source.seekable()
         self._skipped_lines = parse_intervals(skipped_lines)
         self._skip_errors = skip_errors
+        self._errors = []
 
     @property
     def stop(self):
@@ -54,8 +55,15 @@ class ManagerFca(QtCore.QObject):
         return self._source_from_stdin
 
     @property
+    def errors(self):
+        return self._errors.copy()
+
+    @property
     def skip_errors(self):
         return self._skip_errors
+
+    def add_error(self, e):
+        self._errors.append(str(e))
 
     def skip_line(self, i):
         return self._skipped_lines.val_in_closed_interval(i)
@@ -138,7 +146,7 @@ class Browser(ManagerFca):
                 prepared_line = self._data.prepare_line(line.strip(), self._curr_line_index, False)
             except (LineError, AttrError) as e:
                 if self.skip_errors:
-                    print(e, sys.stderr)
+                    self.add_error(e)
                     continue
                 raise e
 
@@ -209,7 +217,7 @@ class Convertor(ManagerFca):
                 prepared_line = self._old_data.prepare_line(line, i)
             except (LineError, AttrError) as e:
                 if self.skip_errors:
-                    print(e, file=sys.stderr)
+                    self.add_error(e)
                     continue
                 raise e
             if not prepared_line:  # line is comment

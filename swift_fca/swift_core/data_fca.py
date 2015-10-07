@@ -151,7 +151,7 @@ class Data:
                     str_values = self.prepare_line(line, index, scale=False, update=True)
                 except (LineError, AttrError) as e:
                     if manager.skip_errors:
-                        print(e, file=sys.stderr)
+                        manager.add_error(e)
                         continue
                     raise e
                 if not str_values:  # current line is comment
@@ -522,7 +522,7 @@ class DataDat(Data):
                 except ValueError:
                     e = LineError(self.FORMAT, i+1, col+1, line, self.ERROR_DESCRIPTION.format(val))
                     if manager.skip_errors:
-                        print(e, file=sys.stderr)
+                        manager.add_error(e)
                         continue
                     raise e
                 if int_val > max_val:
