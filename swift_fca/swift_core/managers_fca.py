@@ -77,6 +77,10 @@ class ManagerFca(QtCore.QObject):
     def update_counter(self, line, index):
         self._counter.update(line, index)
 
+    def print_formated_errors(self):
+        if self.errors:
+            print("\n{}\n\n{}".format(ErrorMessage.SKIPPED_ERRORS, "\n\n".join(self.errors)), file=sys.stderr)
+
     @staticmethod
     def get_extension(path, args):
         if RunParams.FORMAT in args:
@@ -108,6 +112,7 @@ class Printer(ManagerFca):
     def print_info(self, f):
         self._data.print_info(out_file=f)
         f.close()
+        self.print_formated_errors()
 
 
 class Browser(ManagerFca):
@@ -158,6 +163,7 @@ class Browser(ManagerFca):
 
             to_display.append(prepared_line)
             i += 1
+        self.print_formated_errors()
         return to_display
 
     def close_file(self):
@@ -226,6 +232,7 @@ class Convertor(ManagerFca):
             self._counter.update(line, self._old_data.index_data_start)
         self._new_data.source.close()
         source_file.close()
+        self.print_formated_errors()
 
 
 class BgWorker(QtCore.QThread):
