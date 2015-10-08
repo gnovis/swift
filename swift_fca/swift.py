@@ -55,9 +55,6 @@ class GuiSwift(QtGui.QWidget):
         return self._target_params.copy()
 
     def scroll_count(self):
-        value = self.line_line_count.text()
-        if value:
-            return int(value)
         return self.SCROLL_COUNT
 
     def initUI(self):
@@ -78,13 +75,6 @@ class GuiSwift(QtGui.QWidget):
         self.line_all_validator = QtGui.QRegExpValidator(regexp_all)
         self.set_line_prop(self.line_source, self.line_ext_validator)
         self.set_line_prop(self.line_target, self.line_ext_validator)
-
-        self.line_line_count = QtGui.QLineEdit()
-        self.line_line_count.setPlaceholderText("Display")
-        numregex = QtCore.QRegExp('^\d+$')
-        num_validator = QtGui.QRegExpValidator(numregex)
-        self.line_line_count.setMaximumWidth(85)
-        self.set_line_prop(self.line_line_count, num_validator, min_w=85)
 
         self.line_source.textChanged.connect(self.check_state_source)
         self.line_target.textChanged.connect(self.check_state_target)
@@ -137,6 +127,8 @@ class GuiSwift(QtGui.QWidget):
         self.btn_convert.setEnabled(False)
         self.btn_s_orig_data.setEnabled(False)
         self.btn_t_orig_data.setEnabled(False)
+        self.btn_s_params.setEnabled(False)
+        self.btn_t_params.setEnabled(False)
         btn_s_select.clicked.connect(self.select_source)
         btn_t_select.clicked.connect(self.select_target)
         self.btn_browse.clicked.connect(self.browse_source)
@@ -165,7 +157,6 @@ class GuiSwift(QtGui.QWidget):
         hbox_target.addWidget(self.line_target)
         hbox_target.addWidget(btn_t_select)
         hbox_t_btn_set.addStretch(0)
-        hbox_s_btn_set.addWidget(self.line_line_count)
         hbox_s_btn_set.addStretch(0)
         hbox_s_btn_set.addWidget(self.btn_export_info)
         hbox_s_btn_set.addWidget(self.btn_browse)
@@ -244,6 +235,9 @@ class GuiSwift(QtGui.QWidget):
         if sender.text() == "":
             color = self.Colors.WHITE
             self._source_params.clear()
+            self.btn_s_params.setEnabled(False)
+        else:
+            self.btn_s_params.setEnabled(True)
         self.set_line_bg(sender, color)
         self.btn_convert.setEnabled(self.can_convert())
 
@@ -270,6 +264,9 @@ class GuiSwift(QtGui.QWidget):
         if sender.text() == "":
             color = self.Colors.WHITE
             self._target_params.clear()
+            self.btn_t_params.setEnabled(False)
+        else:
+            self.btn_t_params.setEnabled(True)
         self.set_line_bg(sender, color)
         self.btn_convert.setEnabled(self.can_convert())
 
@@ -947,7 +944,7 @@ class SourceParamsDialog(ParamsDialog):
         self.line_str_attrs = FormLine("Attributes")
         # checkbox
         self.cb_nfl = FormCheckBox('Attributes on first line')
-        self.cb_skip_errors = FormCheckBox('Skip Errors')
+        self.cb_skip_errors = FormCheckBox('Skip Errors', default_val=QtCore.Qt.Unchecked)
 
         # layout
         self.widgets[RunParams.SOURCE_ATTRS] = self.line_str_attrs
@@ -1040,11 +1037,10 @@ class FormCheckBox(FormWidget):
         self.setLayout(layout)
 
     def data(self):
-        return not bool(self.cb.checkState())
+        return bool(self.cb.checkState())
 
     def set_data(self, data):
-        if data:
-            self.cb.setChecked(QtCore.Qt.Unchecked)
+        self.cb.setChecked(data)
 
 
 class FormLine(FormWidget):

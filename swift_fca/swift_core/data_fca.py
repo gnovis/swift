@@ -317,9 +317,9 @@ class DataCsv(Data):
 
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
-                 separator=',', relation_name='', no_attrs_first_line=False,
+                 separator=',', relation_name='', attrs_first_line=True,
                  none_val=Data.NONE_VAL, **kwargs):
-        self._no_attrs_first_line = no_attrs_first_line
+        self._attrs_first_line = attrs_first_line
         super().__init__(source, str_attrs, str_objects,
                          separator, relation_name, none_val)
 
@@ -330,7 +330,7 @@ class DataCsv(Data):
         self.write_line_to_file(attrs_name)
 
     def get_header_info(self, manager=None):
-        if not self._no_attrs_first_line:  # attributes are specified on first line
+        if self._attrs_first_line:  # attributes are specified on first line
             self._index_data_start = 1
             line = self._get_first_line()
             str_values = self.ss_str(line, self.separator)

@@ -7,7 +7,7 @@ class RunParams:
     SOURCE = 'source'
     SOURCE_SEP = 'separator'
     SOURCE_ATTRS = 'str_attrs'
-    NFL = 'no_attrs_first_line'
+    NFL = 'attrs_first_line'
     TARGET = 'source'
     TARGET_SEP = 'separator'
     TARGET_OBJECTS = 'str_objects'

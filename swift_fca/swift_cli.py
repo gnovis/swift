@@ -111,7 +111,7 @@ def get_args():
     parser.add_argument("-si", "--source_info", action='store_true', help="Print information about source file data.")
     parser.add_argument("-nv", "--none_value", help="Character which is used in data as value for non-specified attribute.")
     parser.add_argument("-nfl", "--no_first_line",
-                        action='store_true',
+                        action='store_false',
                         help="Attributes aren't specified on first line in csv data file.")
 
     parser.add_argument("-t", "--target", nargs="?", type=argparse.FileType('w'), default=sys.stdout, help="Name of target file.")
@@ -141,7 +141,7 @@ def get_args():
     action = ACTIONS[CONVERT]
 
     for key, val in vars(args).items():
-        if val:
+        if val is not None:
             if key in SOURCE_ARGS:
                 new_key = SOURCE_ARGS[key]
                 source_args[new_key] = val
@@ -152,7 +152,8 @@ def get_args():
                 new_key = OTHER_ARGS[key]
                 other_args[new_key] = val
             else:
-                action = ACTIONS[key]
+                if val:
+                    action = ACTIONS[key]
 
     return action, source_args, target_args, other_args
 
