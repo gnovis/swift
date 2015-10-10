@@ -8,17 +8,17 @@ source_file=test.cxt
 print_header $format
 
 # -> csv
-$app -s $source_file -t cxt.csv
+$app $source_file -t cxt.csv
 print_test_info $format $CSV
 
 # -> arff
-$app -s $source_file -t cxt.arff 
+$app $source_file -t cxt.arff 
 print_test_info $format $ARFF
 
 # -> dat
-$app -s $source_file -t cxt.dat 
+$app $source_file -t cxt.dat 
 print_test_info $format $DAT
 
 # -> data
-$app -s $source_file -t cxt.data -cls "$classes"
+$app $source_file -t cxt.data -cls "$classes"
 print_test_info $format $DATA

@@ -11,17 +11,17 @@ source_file_nfl=test_nfl.csv
 print_header $format
 
 # -> cxt
-$app -s $source_file_nfl -t csv.cxt -sa "$new_str_attrs_indexes" -to "$new_str_objects" -nfl
+$app $source_file_nfl -t csv.cxt -ta "$new_str_attrs_indexes" -to "$new_str_objects" -nfl
 print_test_info $format $CXT
 
 # -> arff
-$app -s $source_file -t csv.arff -sa "$old_str_attrs" 
+$app $source_file -t csv.arff -ta "$old_str_attrs" 
 print_test_info $format $ARFF
 
 # -> dat
-$app -s $source_file -t csv.dat -sa "$new_str_attrs" 
+$app $source_file -t csv.dat -ta "$new_str_attrs" 
 print_test_info $format $DAT
 
 # -> data
-$app -s $source_file -t csv.data -cls "$classes" -sa "$old_str_attrs"
+$app $source_file -t csv.data -cls "$classes" -ta "$old_str_attrs"
 print_test_info $format $DATA

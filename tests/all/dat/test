@@ -9,17 +9,17 @@ new_str_attrs="note=0[], outlook=1[], temperature=2[], humidity=3[], windy=4[], 
 print_header $format
 
 # -> csv
-$app -s $source_file -t dat.csv -sa "$new_str_attrs"
+$app $source_file -t dat.csv -ta "$new_str_attrs"
 print_test_info $format $CSV
 
 # -> arff
-$app -s $source_file -t dat.arff -sa "$new_str_attrs"
+$app $source_file -t dat.arff -ta "$new_str_attrs"
 print_test_info $format $ARFF
 
 # -> cxt
-$app -s $source_file -t dat.cxt -sa "$new_str_attrs" -to "$new_str_objects"
+$app $source_file -t dat.cxt -ta "$new_str_attrs" -to "$new_str_objects"
 print_test_info $format $CXT
 
 # -> data
-$app -s $source_file -t dat.data -sa "$new_str_attrs" -cls "$classes"
+$app $source_file -t dat.data -ta "$new_str_attrs" -cls "$classes"
 print_test_info $format $DATA

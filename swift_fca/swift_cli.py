@@ -12,6 +12,7 @@ from .swift_core.validator_fca import ConvertValidator
 SOURCE = 0
 TARGET = 1
 OTHERS = 2
+ADDITIONAL_ACTION_ARG = 3
 
 
 def convert(*args):
@@ -27,50 +28,29 @@ def convert(*args):
 
 
 def browse(*args):
-    def get_line_count(count):
-        try:
-            command = input('Enter the nubmer of rows (defualt=20) or (q/quit) for exit: ')
-            if command == 'q' or command == 'quit':
-                return None
-            count = int(command)
-        except ValueError:
-            pass
-        return count
+
+    def get_line_format(line):
+        max_len = len(max(line))
+        return " ".join(["{:" + str(max_len) + "}"] * (len(header)))
 
     def disp_line(line, index):
-        print(line_format.format(str(index), *line))
+        print(get_line_format(line).format(*line))
 
-    def display_lines(lines, i):
-        index = i
-        for line in lines:
-            disp_line(line, index)
-            index += 1
-        return index
+    line_count = 20
+    if type(args[ADDITIONAL_ACTION_ARG]) is str:
+        try:
+            parsed_num = int(args[ADDITIONAL_ACTION_ARG])
+            line_count = parsed_num
+        except ValueError:
+            pass
 
     browser = Browser(args[SOURCE], **(args[OTHERS]))
     browser.read_info()
     header = browser.get_header()
-    line_format = " ".join(["{:10}"] * (len(header) + 1))
-    formated_header = line_format.format("i", *header)
+    formated_header = get_line_format(header).format(*header)
 
-    if browser.source_from_stdin:
-        print(formated_header)
-        browser.get_display_data(float('inf'), print_func=disp_line)
-        return
-
-    count = get_line_count(20)
-    index = 0
     print(formated_header)
-    while True:
-        if count is None:
-            break
-        lines = browser.get_display_data(count)
-        if not lines and count != 0:
-            print("End of file.")
-            break
-        index = display_lines(lines, index)
-        count = get_line_count(count)
-    browser.close_file()
+    browser.get_display_data(line_count, print_func=disp_line)
 
 
 def export(*args):
@@ -81,15 +61,16 @@ def export(*args):
 
 def get_args():
     CONVERT = 'convert'
-    BROWSE = 'browse'
+    PREVIEW = 'preview'
     EXPORT = 'export'
 
-    ACTIONS = {CONVERT: convert, BROWSE: browse, EXPORT: export}
+    ACTIONS = {CONVERT: convert, PREVIEW: browse, EXPORT: export}
 
     SOURCE_ARGS = {"source": RunParams.SOURCE,
+                   "source_pos": RunParams.SOURCE,
                    "source_format": RunParams.FORMAT,
                    "source_separator": RunParams.SOURCE_SEP,
-                   "source_attributes": RunParams.SOURCE_ATTRS,
+                   "target_attributes": RunParams.SOURCE_ATTRS,
                    "no_first_line": RunParams.NFL,
                    "none_value": RunParams.NONE_VALUE}
     TARGET_ARGS = {"target": RunParams.TARGET,
@@ -98,17 +79,17 @@ def get_args():
                    "target_objects": RunParams.TARGET_OBJECTS,
                    "relation_name": RunParams.RELATION_NAME,
                    "classes": RunParams.CLASSES}
-    OTHER_ARGS = {"source_info": RunParams.SOURCE_INFO,
+    OTHER_ARGS = {"info": RunParams.SOURCE_INFO,
                   "skipped_lines": RunParams.SKIPPED_LINES,
                   "skip_errors": RunParams.SKIP_ERRORS}
 
     parser = argparse.ArgumentParser(prog=App.NAME)
 
-    parser.add_argument("-s", "--source", nargs="?", type=argparse.FileType('r'), default=sys.stdin, help="Name of source file.")
+    parser.add_argument("source", nargs="?", type=argparse.FileType('r'), default=sys.stdin, help="Name of source file.")
     parser.add_argument("-ss", "--source_separator",
                         help="Separator which is used in source file. Default is ','.")
-    parser.add_argument("-sa", "--source_attributes", help="Attributes Formula used for filtering, reordering and converting attributes.")
-    parser.add_argument("-si", "--source_info", action='store_true', help="Print information about source file data.")
+    parser.add_argument("-ta", "--target_attributes", help="Attributes Formula used for filtering, reordering and converting attributes.")
+    parser.add_argument("-i", "--info", action='store_true', help="Print information about source file data.")
     parser.add_argument("-nv", "--none_value", help="Character which is used in data as value for non-specified attribute.")
     parser.add_argument("-nfl", "--no_first_line",
                         action='store_false',
@@ -124,11 +105,11 @@ def get_args():
                         help="Format of source file, must to be specified when source is standart input (stdin)")
     parser.add_argument("-tf", "--target_format", type=str.lower, choices=FileType.ALL_REPR,
                         help="Format of target file, must to be specified when target is standart output (stdout)")
-    parser.add_argument("-{}".format(CONVERT[0]), "--{}".format(CONVERT), action='store_true',
+    parser.add_argument("-{}".format(CONVERT[0]), "--{}".format(CONVERT), nargs='?', default=False, const=True,
                         help="Source file will be converted to target file, this is default option.")
-    parser.add_argument("-{}".format(BROWSE[0]), "--{}".format(BROWSE), action='store_true',
+    parser.add_argument("-{}".format(PREVIEW[0]), "--{}".format(PREVIEW), nargs='?', default=False, const=True,
                         help="Desired count of lines from source file will be displayed.")
-    parser.add_argument("-{}".format(EXPORT[0]), "--{}".format(EXPORT), action='store_true',
+    parser.add_argument("-{}".format(EXPORT[0]), "--{}".format(EXPORT), nargs='?', default=False, const=True,
                         help="Desired count of lines from source file will be scanned and informations about data will be exported to target file.")
     parser.add_argument("-sl", "--skipped_lines", help="Interval of lines which will be skipped in any operation.")
     parser.add_argument("-se", "--skip_errors", action="store_true", help="Skip broken lines, which cause an errors.")
@@ -139,6 +120,7 @@ def get_args():
     target_args = {}
     other_args = {}
     action = ACTIONS[CONVERT]
+    action_arg = None
 
     for key, val in vars(args).items():
         if val is not None:
@@ -154,14 +136,15 @@ def get_args():
             else:
                 if val:
                     action = ACTIONS[key]
+                    action_arg = val
 
-    return action, source_args, target_args, other_args
+    return action, source_args, target_args, other_args, action_arg
 
 
 def main():
-    action, source_args, target_args, other_args = get_args()
+    action, source_args, target_args, other_args, action_arg = get_args()
     try:
-        action(source_args, target_args, other_args)
+        action(source_args, target_args, other_args, action_arg)
     except SwiftError as e:
         print(e, file=sys.stderr)
         sys.exit(e.ident)

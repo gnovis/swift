@@ -10,17 +10,17 @@ source_file=test.data
 print_header $format
 
 # -> cxt
-$app -s $source_file -t data.cxt -sa "$new_str_attrs" -to "$new_str_objects"
+$app $source_file -t data.cxt -ta "$new_str_attrs" -to "$new_str_objects"
 print_test_info $format $CXT
 
 # -> csv
-$app -s $source_file -t data.csv
+$app $source_file -t data.csv
 print_test_info $format $CSV
 
 # -> arff
-$app -s $source_file -t data.arff
+$app $source_file -t data.arff
 print_test_info $format $ARFF
 
 # -> dat
-$app -s $source_file -t data.dat -sa "$new_str_attrs"
+$app $source_file -t data.dat -ta "$new_str_attrs"
 print_test_info $format $DAT

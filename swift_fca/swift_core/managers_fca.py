@@ -157,11 +157,11 @@ class Browser(ManagerFca):
 
             if not prepared_line:  # line is comment
                 continue
+
             if print_func:  # used for display data from stdin (stream data)
                 print_func(prepared_line, self._curr_line_index)
-                continue
-
-            to_display.append(prepared_line)
+            else:
+                to_display.append(prepared_line)
             i += 1
         self.print_formated_errors()
         return to_display
