@@ -18,7 +18,7 @@ def boolexpr(VAL=numeric()):
     VAR = Word(alphas)
     OP = Or(Literal("<") ^ Literal(">") ^
             Literal("<=") ^ Literal(">=") ^
-            Literal("=="))
+            Literal("==") ^ Literal("!="))
     EXPR = Or(Combine(VAR + OP + VAL, adjacent=False) ^
               Combine(VAL + OP + VAR, adjacent=False) ^
               Combine(VAL + OP + VAR + OP + VAL, adjacent=False))

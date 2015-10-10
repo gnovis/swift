@@ -40,7 +40,7 @@ Example: `"obj1, obj2, obj3, ... "`
 <date_expr> ::= <expr_var> <op> <date_val> |
                 <date_val> <op> <expr_var> |
                 <date_val> <op> <expr_var> <op> <date_val>
-<op> ::= "<" | ">" | "<=" | ">=" | "=="
+<op> ::= "<" | ">" | "<=" | ">=" | "==" | "!="
 <no_scale_arg> ::= <no_scale_num> | <no_scale_enum> | <no_scale_str> | <no_scale_date>
 <no_scale_num> ::= "n"
 <no_scale_enum> ::= "e"

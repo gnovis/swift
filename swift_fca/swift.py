@@ -959,7 +959,7 @@ class SourceParamsDialog(ParamsDialog):
 
 class TargetParamsDialog(ParamsDialog):
     format_poss_args = {FileType.ARFF_EXT: (RunParams.FORMAT, RunParams.TARGET_SEP, RunParams.RELATION_NAME),
-                        FileType.CSV_EXT: (RunParams.FORMAT, RunParams.TARGET_SEP),
+                        FileType.CSV_EXT: (RunParams.FORMAT, RunParams.TARGET_SEP, RunParams.NFL),
                         FileType.CXT_EXT: (RunParams.FORMAT, RunParams.TARGET_OBJECTS, RunParams.RELATION_NAME),
                         FileType.DAT_EXT: (RunParams.FORMAT),
                         FileType.DATA_EXT: (RunParams.FORMAT, RunParams.CLASSES, RunParams.TARGET_SEP),
@@ -968,11 +968,11 @@ class TargetParamsDialog(ParamsDialog):
     def __init__(self, parent):
         super().__init__(parent)
         self.params = parent.target_params
-        # form lines
         self.line_separator = FormLine("Separator", default_val=',')
         self.line_str_objects = FormLine("Objects")
         self.line_rel_name = FormLine("Relation Name")
         self.line_classes = FormLine("Classes")
+        self.cb_nfl = FormCheckBox('Attributes on first line')
         # placeholders
         self.line_str_objects.setPlaceholderText("obj1_name, obj2_name, obj3_name")
         self.line_classes.setPlaceholderText("cls1_name, cls2_name, cls3_name")
@@ -981,6 +981,7 @@ class TargetParamsDialog(ParamsDialog):
         self.widgets[RunParams.TARGET_SEP] = self.line_separator
         self.widgets[RunParams.TARGET_OBJECTS] = self.line_str_objects
         self.widgets[RunParams.RELATION_NAME] = self.line_rel_name
+        self.widgets[RunParams.NFL] = self.cb_nfl
         # self.widgets[self.NO_PARAMS] = FormLabel("No arguments can be set.")
 
         self.fill_layout(parent.target)

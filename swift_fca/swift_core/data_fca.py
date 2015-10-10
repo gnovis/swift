@@ -324,10 +324,11 @@ class DataCsv(Data):
                          separator, relation_name, none_val)
 
     def write_header(self, old_data):
-        attrs_name = []
-        for attr in old_data.attributes:
-            attrs_name.append(attr.name)
-        self.write_line_to_file(attrs_name)
+        if self._attrs_first_line:
+            attrs_name = []
+            for attr in old_data.attributes:
+                attrs_name.append(attr.name)
+            self.write_line_to_file(attrs_name)
 
     def get_header_info(self, manager=None):
         if self._attrs_first_line:  # attributes are specified on first line
@@ -515,7 +516,7 @@ class DataDat(Data):
             if manager.skip_line(i):
                 continue
             line_count += 1
-            splitted = super().ss_str(line, self.separator)
+            splitted = line.split()
             for col, val in enumerate(splitted):
                 try:
                     int_val = int(val)
@@ -551,7 +552,7 @@ class DataDat(Data):
         pass
 
     def prepare_line(self, line, index, scale=True, update=False):
-        splitted = super().ss_str(line, self.separator)
+        splitted = line.split()
         result = [Bival.false()] * (self._attr_count)
         for col, val in enumerate(splitted):
             try:

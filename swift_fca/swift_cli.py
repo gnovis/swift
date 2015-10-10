@@ -67,17 +67,17 @@ def get_args():
     ACTIONS = {CONVERT: convert, PREVIEW: browse, EXPORT: export}
 
     SOURCE_ARGS = {"source": RunParams.SOURCE,
-                   "source_pos": RunParams.SOURCE,
                    "source_format": RunParams.FORMAT,
                    "source_separator": RunParams.SOURCE_SEP,
                    "target_attributes": RunParams.SOURCE_ATTRS,
-                   "no_first_line": RunParams.NFL,
+                   "source_no_header": RunParams.NFL,
                    "none_value": RunParams.NONE_VALUE}
     TARGET_ARGS = {"target": RunParams.TARGET,
                    "target_format": RunParams.FORMAT,
                    "target_separator": RunParams.TARGET_SEP,
                    "target_objects": RunParams.TARGET_OBJECTS,
-                   "relation_name": RunParams.RELATION_NAME,
+                   "name": RunParams.RELATION_NAME,
+                   "target_no_header": RunParams.NFL,
                    "classes": RunParams.CLASSES}
     OTHER_ARGS = {"info": RunParams.SOURCE_INFO,
                   "skipped_lines": RunParams.SKIPPED_LINES,
@@ -91,15 +91,19 @@ def get_args():
     parser.add_argument("-ta", "--target_attributes", help="Attributes Formula used for filtering, reordering and converting attributes.")
     parser.add_argument("-i", "--info", action='store_true', help="Print information about source file data.")
     parser.add_argument("-nv", "--none_value", help="Character which is used in data as value for non-specified attribute.")
-    parser.add_argument("-nfl", "--no_first_line",
+    parser.add_argument("-snh", "--source_no_header",
                         action='store_false',
                         help="Attributes aren't specified on first line in csv data file.")
+
+    parser.add_argument("-tnh", "--target_no_header",
+                        action='store_false',
+                        help="Attributes wont't be specified on first line in csv data file.")
 
     parser.add_argument("-t", "--target", nargs="?", type=argparse.FileType('w'), default=sys.stdout, help="Name of target file.")
     parser.add_argument("-ts", "--target_separator",
                         help="Separator which will be used in target file. Default is ','.")
     parser.add_argument("-to", "--target_objects", help="Target file (new) objects. Only for CXT format.")
-    parser.add_argument("-rn", "--relation_name", help="New name of relation.")
+    parser.add_argument("-n", "--name", help="New name of relation.")
     parser.add_argument("-cls", "--classes", help="Classes seperated by commas - for C4.5 convert.")
     parser.add_argument("-sf", "--source_format", type=str.lower, choices=FileType.ALL_REPR,
                         help="Format of source file, must to be specified when source is standart input (stdin)")

@@ -11,7 +11,6 @@ from .errors_fca import InvalidValueError, DateSyntaxError, DateValFormatError, 
 
 
 class Attribute:
-
     def __init__(self, index, name, attr_type=AttrType.NOT_SPECIFIED,
                  attr_pattern=None, expr_pattern=None):
         # name of atrribute, it is pattern to scaling
@@ -117,7 +116,7 @@ class AttrNumeric(Attribute):
             x = float(value)  # NOQA
         except ValueError:
             raise InvalidValueError(AttrType.NUMERIC, self.ERROR_MSG)
-        replaced = re.sub(r"[^<>=0-9\s.]+", "x", self._expr_pattern)
+        replaced = re.sub(r"[^<>!=0-9\s.]+", "x", self._expr_pattern)
         return super().scale(eval(replaced))
 
     def update(self, value, none_val):

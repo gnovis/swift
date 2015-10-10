@@ -11,7 +11,7 @@ source_file_nfl=test_nfl.csv
 print_header $format
 
 # -> cxt
-$app $source_file_nfl -t csv.cxt -ta "$new_str_attrs_indexes" -to "$new_str_objects" -nfl
+$app $source_file_nfl -t csv.cxt -ta "$new_str_attrs_indexes" -to "$new_str_objects" -snh
 print_test_info $format $CXT
 
 # -> arff
