@@ -4,6 +4,7 @@ import os
 import sys
 import tempfile
 import copy
+from collections import OrderedDict
 
 from .attributes_fca import (Attribute, AttrEnum)
 from .object_fca import Object
@@ -97,8 +98,10 @@ class Data:
         # fill dictionary which is used for filtering attributes in prepare_line function,
         # keys are indexes and names of all attributes (given from header), values are indexes of attributes in line (object)
         for attr in self._header_attrs:
-            self._template_attrs[str(attr.index)] = attr.index
+            str_index = str(attr.index)
             self._template_attrs[attr.name] = attr.index
+            if str_index not in self._template_attrs:
+                self._template_attrs[str_index] = attr.index
 
         # create attributes from argument entered by the user, fill _attributes
         if self.str_attrs:
@@ -124,11 +127,7 @@ class Data:
                 if attr.index is not None and str(attr.index) == attr.name:
                     attr.name = header_attr.name
 
-                if type(attr) is Attribute:
-                    header_attr.name = attr.name
-                    merged.append(header_attr)
-                else:
-                    merged.append(attr)
+                merged.append(attr)
             self._attributes = merged
 
     def get_header_info(self, manager=None):
@@ -184,7 +183,6 @@ class Data:
                 raise LineError(self.FORMAT, line_i+1, index+1, ",".join(values), "Some of the attribute is missing.")
             except InvalidValueError as e:
                 raise AttrError(line_i+1, ",".join(values), index+1, values[index], e)
-
             result.append(new_value)
         return result
 
@@ -510,7 +508,7 @@ class DataDat(Data):
     def get_data_header_info(self, manager):
         max_val = -1
         line_count = 0
-        attributes = {}
+        attributes = OrderedDict()
         for i, line in enumerate(self.source):
             if manager.stop or manager.skip_rest_lines(i):
                 break
@@ -553,7 +551,8 @@ class DataDat(Data):
         self._attr_count = max_val + 1
         self._obj_count = line_count
 
-        self._header_attrs = attributes.values()
+        sorted_attrs = OrderedDict(sorted(attributes.items(), key=lambda t: t))
+        self._header_attrs = list(sorted_attrs.values())
 
     def get_header_info(self, manager=None):
         self.get_data_header_info(manager)

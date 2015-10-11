@@ -29,6 +29,8 @@ class Attribute:
     def key(self):
         if self._attr_pattern:
             return self._attr_pattern
+        if self._name:
+            return self._name
         return str(self.index)
 
     @property

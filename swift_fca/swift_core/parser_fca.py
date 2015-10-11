@@ -69,7 +69,6 @@ class FormulaParser(Parser):
             curr_next_args['attr_pattern'] = old
 
             index = self._parse_int(old)
-
             attribute = cls(index, new, **curr_next_args)
             self._attributes.append(attribute)
 
