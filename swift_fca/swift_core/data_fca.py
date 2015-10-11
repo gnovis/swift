@@ -510,6 +510,7 @@ class DataDat(Data):
     def get_data_header_info(self, manager):
         max_val = -1
         line_count = 0
+        attributes = {}
         for i, line in enumerate(self.source):
             if manager.stop or manager.skip_rest_lines(i):
                 break
@@ -517,6 +518,7 @@ class DataDat(Data):
                 continue
             line_count += 1
             splitted = line.split()
+            updated_attrs = {}
             for col, val in enumerate(splitted):
                 try:
                     int_val = int(val)
@@ -529,6 +531,17 @@ class DataDat(Data):
                 if int_val > max_val:
                     max_val = int_val
 
+                if int_val not in attributes:
+                    attributes[int_val] = AttrEnum(int_val, str(int_val)).update(Bival.false(), self._none_val, step=line_count-1)
+                attributes[int_val].update(Bival.true(), self._none_val)
+                updated_attrs[int_val] = attributes[int_val]
+
+            for i in range(max_val + 1):
+                if i not in attributes:
+                    attributes[i] = AttrEnum(i, str(i)).update(Bival.false(), self._none_val, step=line_count-1)
+                if i not in updated_attrs:
+                    attributes[i].update(Bival.false(), self._none_val)
+
             if self._temp_source:
                 self._temp_source.write(line)
             manager.update_counter(line, self.index_data_start)
@@ -540,10 +553,7 @@ class DataDat(Data):
         self._attr_count = max_val + 1
         self._obj_count = line_count
 
-        self._header_attrs = [(AttrEnum(i, str(i)).update(
-                              Bival.true(), self._none_val)).update(
-                                  Bival.false(), self._none_val)
-                              for i in range(self._attr_count)]
+        self._header_attrs = attributes.values()
 
     def get_header_info(self, manager=None):
         self.get_data_header_info(manager)

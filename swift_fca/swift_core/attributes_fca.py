@@ -76,12 +76,12 @@ class Attribute:
             self.index, AttrType.STR_REPR[self.attr_type]), file=out)
         print(self.get_formated_rate(), file=out)
 
-    def update(self, value, none_val):
+    def update(self, value, none_val, step=1):
         if value != none_val:
             if value in self._values_rate:
-                self._values_rate[value] += 1
+                self._values_rate[value] += step
             else:
-                self._values_rate[value] = 1
+                self._values_rate[value] = step
         else:
             self._none_val_count += 1
             self._none_val = none_val
@@ -119,14 +119,14 @@ class AttrNumeric(Attribute):
         replaced = re.sub(r"[^<>!=0-9\s.]+", "x", self._expr_pattern)
         return super().scale(eval(replaced))
 
-    def update(self, value, none_val):
+    def update(self, value, none_val, step=1):
         if value != none_val:
             try:
                 value = float(value)
             except ValueError:
                 raise InvalidValueError(AttrType.NUMERIC, self.ERROR_MSG)
 
-        super().update(value, none_val)
+        super().update(value, none_val, step)
 
     def get_formated_rate(self, aux_func=str):
         max_val = max(self._values_rate.keys())
@@ -180,13 +180,13 @@ class AttrDate(AttrNumeric):
             raise InvalidValueError(AttrType.DATE, e)
         return super().scale(time_stamp)
 
-    def update(self, str_date, none_val):
+    def update(self, str_date, none_val, step=1):
         if str_date != none_val:
             try:
                 time_stamp = self.parser.get_time_stamp(str_date)
             except ValueError as e:
                 raise InvalidValueError(AttrType.DATE, e)
-            super().update(time_stamp, none_val)
+            super().update(time_stamp, none_val, step)
 
     def get_formated_rate(self, aux_func=str):
         return super().get_formated_rate(aux_func=self.parser.time_stamp_to_str)
@@ -207,10 +207,10 @@ class AttrEnum(Attribute):
     def scale(self, value):
         return super().scale(value == self._expr_pattern)
 
-    def update(self, value, none_val):
+    def update(self, value, none_val, step=1):
         if value not in self._values and value != none_val:
             self._values.append(value)
-        super().update(value, none_val)
+        super().update(value, none_val, step)
         return self
 
     def arff_repr(self, sep):
