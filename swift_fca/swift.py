@@ -93,8 +93,8 @@ class GuiSwift(QtGui.QWidget):
 
         btn_s_select = QtGui.QPushButton("Select")
         btn_t_select = QtGui.QPushButton("Select")
-        self.btn_s_params = QtGui.QPushButton("Set Arguments")
-        self.btn_t_params = QtGui.QPushButton("Set Arguments")
+        self.btn_s_params = QtGui.QPushButton("Settings")
+        self.btn_t_params = QtGui.QPushButton("Settings")
         self.btn_browse = QtGui.QPushButton("Browse")
         self.btn_export_info = QtGui.QPushButton("Export Info")
         self.btn_s_orig_data = QtGui.QPushButton("Original data")
