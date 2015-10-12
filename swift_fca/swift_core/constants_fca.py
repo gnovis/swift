@@ -89,3 +89,15 @@ class Bival:
         if bool(int(val)):
             return cls.true()
         return cls.false()
+
+
+class ShortCuts:
+    CONVERT = "Ctrl+c"
+    BROWSE = "Ctrl+b"
+    EXPORT = "Ctrl+e"
+    SOURCE_FILE = "Ctrl+s, Ctrl+f"
+    TARGET_FILE = "Ctrl+t, Ctrl+f"
+    SOURCE_SETTINGS = "Ctrl+s, Ctrl+s"
+    TARGET_SETTINGS = "Ctrl+t, Ctrl+s"
+    SOURCE_ORIG_DATA = "Ctrl+s, Ctrl+o"
+    TARGET_ORIG_DATA = "Ctrl+t, Ctrl+o"

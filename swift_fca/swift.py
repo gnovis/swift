@@ -10,7 +10,7 @@ import itertools
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import SIGNAL
 from .swift_core.managers_fca import Browser, Convertor, Printer, BgWorker
-from .swift_core.constants_fca import RunParams, FileType
+from .swift_core.constants_fca import RunParams, FileType, ShortCuts
 from .swift_core.validator_fca import ConvertValidator
 from .swift_core.errors_fca import ErrorMessage
 import swift_fca.resources.resources_rc  # NOQA Resources file
@@ -109,15 +109,54 @@ class GuiSwift(QtGui.QWidget):
 
         self.file_filter = "FCA files (*.arff *.cxt *.data *.names *.dat *.csv);;All(*)"
 
+        open_orig = lambda path: OriginalDataDialog(path, self)
+
+        self.convert_shortcut = QtGui.QShortcut(QtGui.QKeySequence(ShortCuts.CONVERT), self.btn_convert, self.convert)
+        self.select_source_shortcut = QtGui.QShortcut(QtGui.QKeySequence(ShortCuts.SOURCE_FILE), btn_s_select, self.select_source)
+        self.select_target_shortcut = QtGui.QShortcut(QtGui.QKeySequence(ShortCuts.TARGET_FILE), btn_t_select, self.select_target)
+        self.source_settings_shortcut = QtGui.QShortcut(QtGui.QKeySequence(ShortCuts.SOURCE_SETTINGS), self.btn_s_params, self.change_source_params)
+        self.target_settings_shortcut = QtGui.QShortcut(QtGui.QKeySequence(ShortCuts.TARGET_SETTINGS), self.btn_t_params, self.change_target_params)
+        self.source_origin_shortcut = QtGui.QShortcut(QtGui.QKeySequence(ShortCuts.SOURCE_ORIG_DATA), self.btn_s_orig_data, lambda: open_orig(self._source))
+        self.target_origin_shortcut = QtGui.QShortcut(QtGui.QKeySequence(ShortCuts.TARGET_ORIG_DATA), self.btn_t_orig_data, lambda: open_orig(self._target))
+        self.browse_shortcut = QtGui.QShortcut(QtGui.QKeySequence(ShortCuts.BROWSE), self.btn_browse, self.browse_source)
+        self.export_shortcut = QtGui.QShortcut(QtGui.QKeySequence(ShortCuts.EXPORT), self.btn_export_info, self.export_info)
+
         # Buttons tool-tip
-        btn_s_select.setToolTip("Select existing data file in one of the format: ARFF, DATA, CSV, DAT, CXT")
-        btn_t_select.setToolTip(("Select name for new data file, supported formats: " +
-                                 "ARFF, DATA, CSV, DAT, CXT.\nThis file will be created or rewrited by converted data."))
-        self.btn_s_params.setToolTip("Set arguments which will be used for Source Data in selected operation.")
-        self.btn_t_params.setToolTip("Set arguments which will be used for Target Data in conversion.")
-        self.btn_browse.setToolTip("Display and browse Source Data")
-        self.btn_export_info.setToolTip("Select file for export informations about Source Data")
-        self.btn_convert.setToolTip("Convert Source Data to Target Data")
+        tooltip_format = "({})\n{}"
+        btn_s_select.setToolTip(
+            tooltip_format.format(ShortCuts.SOURCE_FILE,
+                                  "Select existing data file in one of the format: ARFF, DATA, CSV, DAT, CXT"))
+        btn_t_select.setToolTip(
+            tooltip_format.format(ShortCuts.TARGET_FILE,
+                                  ("Select name for new data file, supported formats: " +
+                                   "ARFF, DATA, CSV, DAT, CXT.\nThis file will be created or rewrited by converted data.")))
+
+        self.btn_s_orig_data.setToolTip(
+            tooltip_format.format(ShortCuts.SOURCE_ORIG_DATA,
+                                  "Display original source data."))
+        self.btn_t_orig_data.setToolTip(
+            tooltip_format.format(ShortCuts.TARGET_ORIG_DATA,
+                                  "Display original target data."))
+
+        self.btn_s_params.setToolTip(
+            tooltip_format.format(ShortCuts.SOURCE_SETTINGS,
+                                  "Set arguments which will be used for Source Data in selected operation."))
+
+        self.btn_t_params.setToolTip(
+            tooltip_format.format(ShortCuts.TARGET_SETTINGS,
+                                  "Set arguments which will be used for Target Data in conversion."))
+
+        self.btn_browse.setToolTip(
+            tooltip_format.format(ShortCuts.BROWSE,
+                                  "Display and browse Source Data"))
+
+        self.btn_export_info.setToolTip(
+            tooltip_format.format(ShortCuts.EXPORT,
+                                  "Select file for export informations about Source Data"))
+
+        self.btn_convert.setToolTip(
+            tooltip_format.format(ShortCuts.CONVERT,
+                                  "Convert Source Data to Target Data"))
 
         self.btn_export_info.clicked.connect(self.export_info)
         self.btn_s_params.clicked.connect(self.change_source_params)
@@ -133,8 +172,8 @@ class GuiSwift(QtGui.QWidget):
         btn_t_select.clicked.connect(self.select_target)
         self.btn_browse.clicked.connect(self.browse_source)
         self.btn_convert.clicked.connect(self.convert)
-        self.btn_s_orig_data.clicked.connect(lambda: OriginalDataDialog(self._source, self))
-        self.btn_t_orig_data.clicked.connect(lambda: OriginalDataDialog(self._target, self))
+        self.btn_s_orig_data.clicked.connect(lambda: open_orig(self._source))
+        self.btn_t_orig_data.clicked.connect(lambda: open_orig(self._target))
 
         # Checkbox
         self.chb_browse_convert = QtGui.QCheckBox("Browse data after convert")
