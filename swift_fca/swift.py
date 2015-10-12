@@ -61,6 +61,21 @@ class GuiSwift(QtGui.QWidget):
 
         st_find = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+f"), self)
         st_find.activated.connect(lambda: FindDialog(self))
+
+        def move_splitter_right():
+            sizes = self.splitter.sizes()
+            self.splitter.setSizes([sizes[0]+10, sizes[1]-10])
+
+        def move_splitter_left():
+            sizes = self.splitter.sizes()
+            self.splitter.setSizes([sizes[0]-10, sizes[1]+10])
+
+        st_move_splitter_right = QtGui.QShortcut(QtGui.QKeySequence("Alt+Right"), self)
+        st_move_splitter_right.activated.connect(move_splitter_right)
+
+        st_move_splitter_left = QtGui.QShortcut(QtGui.QKeySequence("Alt+Left"), self)
+        st_move_splitter_left.activated.connect(move_splitter_left)
+
         # Widgets
         label_source = QtGui.QLabel('<b>Source File</b>')
         label_target = QtGui.QLabel('<b>Target File</b>')
@@ -78,6 +93,11 @@ class GuiSwift(QtGui.QWidget):
 
         self.line_source.textChanged.connect(self.check_state_source)
         self.line_target.textChanged.connect(self.check_state_target)
+
+        st_source_focus = QtGui.QShortcut(QtGui.QKeySequence("Alt+s"), self)
+        st_source_focus.activated.connect(self.line_source.setFocus)
+        st_target_focus = QtGui.QShortcut(QtGui.QKeySequence("Alt+t"), self)
+        st_target_focus.activated.connect(self.line_target.setFocus)
 
         # Tables
         self.table_view_source = QtGui.QTableView()
@@ -217,10 +237,11 @@ class GuiSwift(QtGui.QWidget):
         grid.addLayout(hbox_s_btn_set, 2, 0)
         grid.addLayout(hbox_t_btn_set, 2, 3)
 
-        splitter = QtGui.QSplitter(QtCore.Qt.Horizontal)
-        splitter.addWidget(self.table_view_source)
-        splitter.addWidget(self.table_view_target)
-        grid.addWidget(splitter, 3, 0, 1, 4)
+        self.splitter = QtGui.QSplitter(QtCore.Qt.Horizontal)
+        self.splitter.setHandleWidth(15)
+        self.splitter.addWidget(self.table_view_source)
+        self.splitter.addWidget(self.table_view_target)
+        grid.addWidget(self.splitter, 3, 0, 1, 4)
 
         grid.addWidget(self.status_bar, 4, 0, 1, 2)
 
