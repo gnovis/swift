@@ -112,14 +112,16 @@ class AttrNumeric(Attribute):
     def __init__(self, index, name, attr_type=AttrType.NUMERIC, attr_pattern=None, expr_pattern=None):
         super().__init__(index, name, attr_type,
                          attr_pattern, expr_pattern)
+        if self._expr_pattern:
+            subst_expr_pattern = re.sub(r"[^<>!=0-9\s.]+", "x", self._expr_pattern)
+            self._evaled_expr_func = eval('lambda x:' + subst_expr_pattern)
 
     def scale(self, value):
         try:
-            x = float(value)  # NOQA
+            x = float(value)
         except ValueError:
             raise InvalidValueError(AttrType.NUMERIC, self.ERROR_MSG)
-        replaced = re.sub(r"[^<>!=0-9\s.]+", "x", self._expr_pattern)
-        return super().scale(eval(replaced))
+        return super().scale(self._evaled_expr_func(x))
 
     def update(self, value, none_val, step=1):
         if value != none_val:
@@ -147,10 +149,11 @@ class AttrNumeric(Attribute):
 class AttrDate(AttrNumeric):
     def __init__(self, index, name, date_format=DateParser.ISO_FORMAT,
                  attr_type=AttrType.DATE, attr_pattern=None, expr_pattern=None):
-        super().__init__(index, name, attr_type, attr_pattern, expr_pattern)
         self.parser = DateParser(date_format)
+        self._expr_pattern = expr_pattern
         if expr_pattern:
             self.substitute_date()
+        super().__init__(index, name, attr_type, attr_pattern, self._expr_pattern)
 
     @property
     def max_value(self):
