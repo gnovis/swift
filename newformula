@@ -92,21 +92,30 @@ def expand_interval(tokens):
 
 
 ######################################################################################
+def clone_names(tokens):
+    # print(tokens)
+    if tokens[0] == "":
+        return [tokens[1]] * 2
+    else:
+        return [tokens[0], tokens[1]]
+
 
 def test(s, loc, tokens):
-    # print(lineno(loc, s))
     print(tokens)
-    print(tokens.names.new_names)
-    print(tokens.names.old_names)
+    print(tokens[0])
+    print(tokens[1])
     print(tokens.attr_type)
+    print(tokens.scale)
+    print(tokens.unpack)
+    print(tokens.new_bins == "")
     try:
-        print(tokens.attr_type.date_format)
+        print(tokens.new_bins.new_false, tokens.new_bins.new_true)
     except:
         pass
-    print(tokens.scale)
     print(10*"=")
 
 quoted_str = quotedString
+quoted_str.setParseAction(removeQuotes)
 comma = Suppress(",")
 date_val = quoted_str
 num_val = numeric()
@@ -114,7 +123,7 @@ op = Or(Literal("<") ^ Literal(">") ^
         Literal("<=") ^ Literal(">=") ^
         Literal("==") ^ Literal("!="))
 var = Word(alphas)
-bin_vals = Optional((Literal("0=") + quoted_str + comma)) + Optional(Literal("1=")) + quoted_str
+bin_vals = Group(Optional((Suppress("0=") + quoted_str("new_false") + comma)) + Optional(Suppress("1=")) + quoted_str("new_true"))
 date_scale = Or(Combine(var + op + date_val, adjacent=False) ^
                 Combine(date_val + op + var, adjacent=False) ^
                 Combine(date_val + op + var + op + date_val, adjacent=False))
@@ -123,24 +132,31 @@ enum_scale = quoted_str
 num_scale = Or(Combine(var + op + num_val, adjacent=False) ^
                Combine(num_val + op + var, adjacent=False) ^
                Combine(num_val + op + var + op + num_val, adjacent=False))
-date_format = Optional("F=") + quoted_str
-name = (Optional(Word(nums)) + Suppress("-") + Optional(Word(nums))).setParseAction(expand_interval) | Word(printables, excludeChars="[]-,=:")
-scale = num_scale | enum_scale | str_scale | date_scale | bin_vals
-typ = Or(Literal("n") ^ Literal("e") ^
-         Literal("s") ^ Group(Literal("d") + Optional(Suppress("/") + date_format("date_format"), default="%Y-%m-%dT%H:%M:%S")))
+date_format = Optional(Suppress("F=")) + quoted_str
+name = (Optional(Word(nums)) + Suppress("-") + Optional(Word(nums))).setParseAction(expand_interval) | Word(printables, excludeChars="[]-,=:;")
+scale = num_scale | enum_scale | str_scale | date_scale
+typ = Or(CaselessLiteral("n") ^ CaselessLiteral("e") ^
+         CaselessLiteral("s") ^ Group(Literal("d") + Optional(Suppress("/") + date_format("date_format"), default="%Y-%m-%dT%H:%M:%S")))
 names = Group(delimitedList(name))
-new_old_names = Optional(names("new_names") + Suppress("="), default='') + names("old_names")
-formula = (new_old_names("names") +
-           Optional(Or((Suppress(":") + typ("attr_type") + Optional(Suppress("[") + Optional(scale("scale")) + Suppress("]"))) ^ Literal("[]"))))
+new_old_names = (Optional(names + Suppress("="), default='') + names).setParseAction(clone_names)
+formula = (new_old_names +
+           Optional(Or(Literal("[]")("unpack") ^
+                       (Suppress("[") + bin_vals("new_bins") + Suppress("]")) ^
+                       (Suppress(":") + typ("attr_type") +
+                        Optional(Suppress("[") + Optional(scale("scale")) + Suppress("]"))))))
 formulas = delimitedList(formula, delim=";")
 
-quoted_str.setParseAction(removeQuotes)
-new_old_names.setParseAction(lambda tokens: [tokens[1]]*2 if tokens[0] == '' else [tokens[0], tokens[1]])
 formula.setParseAction(test)
 
 args = """new,new2=old,old2:s['hell[a-z]+'];
-          newdate=olddate:d/'%Y-%m-%d';
-          5-7:n[5<value<30]"""
+          newdate=olddate:d/F='%Y-%m-%d'[date!='2014-02-11'];
+          5-7:n[5<value<30];
+          attr[];
+          attr2;
+          enum_attr:e;
+          new_bin_values['ANO'];
+          new_bin_values2[0='NO', 1='YES'];
+          new_bin_values3[1='DA']"""
 try:
     formulas.parseString(args, parseAll=True)
 except ParseException as e:
