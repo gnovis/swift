@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from pyparsing import (alphanums, alphas, nums, Combine, Or, Empty, printables,
+from pyparsing import (alphas, nums, Combine, Or, printables,
                        Group, Literal, removeQuotes, ParseException,
                        Optional, delimitedList,
                        Suppress, Word, quotedString, CaselessLiteral)
@@ -26,11 +26,7 @@ def expand_interval(tokens):
     return result
 
 
-def test(s, loc, tokens):
-    # print(lineno(loc, s))
-    print(tokens)
-
-attr_max_i = 10
+# attr_max_i = 10
 
 # Grammar definition
 # NUMVAL = numeric()
@@ -97,6 +93,19 @@ attr_max_i = 10
 
 ######################################################################################
 
+def test(s, loc, tokens):
+    # print(lineno(loc, s))
+    print(tokens)
+    print(tokens.names.new_names)
+    print(tokens.names.old_names)
+    print(tokens.attr_type)
+    try:
+        print(tokens.attr_type.date_format)
+    except:
+        pass
+    print(tokens.scale)
+    print(10*"=")
+
 quoted_str = quotedString
 comma = Suppress(",")
 date_val = quoted_str
@@ -118,18 +127,18 @@ date_format = Optional("F=") + quoted_str
 name = (Optional(Word(nums)) + Suppress("-") + Optional(Word(nums))).setParseAction(expand_interval) | Word(printables, excludeChars="[]-,=:")
 scale = num_scale | enum_scale | str_scale | date_scale | bin_vals
 typ = Or(Literal("n") ^ Literal("e") ^
-         Literal("s") ^ (Literal("d") + Optional(Suppress("/") + date_format)))
+         Literal("s") ^ Group(Literal("d") + Optional(Suppress("/") + date_format("date_format"), default="%Y-%m-%dT%H:%M:%S")))
 names = Group(delimitedList(name))
-ffpart = Optional(names + Suppress("="), default='') + names
-formula = (ffpart +
-           Optional(Or((Suppress(":") + typ + Optional(Suppress("[") + Optional(scale) + Suppress("]"))) ^ Literal("[]"))))
+new_old_names = Optional(names("new_names") + Suppress("="), default='') + names("old_names")
+formula = (new_old_names("names") +
+           Optional(Or((Suppress(":") + typ("attr_type") + Optional(Suppress("[") + Optional(scale("scale")) + Suppress("]"))) ^ Literal("[]"))))
 formulas = delimitedList(formula, delim=";")
 
 quoted_str.setParseAction(removeQuotes)
-ffpart.setParseAction(lambda tokens: [tokens[1]]*2 if tokens[0] == '' else [tokens[0], tokens[1]])
+new_old_names.setParseAction(lambda tokens: [tokens[1]]*2 if tokens[0] == '' else [tokens[0], tokens[1]])
 formula.setParseAction(test)
 
-args = """new,new2=old,old2,*:s['hell[a-z]+'];
+args = """new,new2=old,old2:s['hell[a-z]+'];
           newdate=olddate:d/'%Y-%m-%d';
           5-7:n[5<value<30]"""
 try:
