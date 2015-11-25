@@ -41,12 +41,6 @@ class Parser():
 
 class FormulaParser(Parser):
 
-    NEW_NAME = 0
-    OLD_NAME = 1
-    ARGS = 2
-    TYPE = 0
-    NEXT_ARGS = 1
-
     def clone_names(self, tokens):
         if tokens[0] == "":
             return [tokens[1]] * 2
