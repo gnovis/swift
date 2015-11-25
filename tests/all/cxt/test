@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ../../test_config
+source ../../new_test_config
 
 format=$CXT
 source_file=test.cxt

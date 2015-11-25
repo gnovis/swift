@@ -114,10 +114,10 @@ def test(s, loc, tokens):
         pass
     print(10*"=")
 
+date_val = quotedString.copy()
 quoted_str = quotedString
 quoted_str.setParseAction(removeQuotes)
 comma = Suppress(",")
-date_val = quoted_str
 num_val = numeric()
 op = Or(Literal("<") ^ Literal(">") ^
         Literal("<=") ^ Literal(">=") ^
@@ -157,10 +157,23 @@ args = """ne_w,new2=old,old2:s['hell[a-z]+'];
           new_bin_values['ANO'];
           new_bin_values2[0='NO', 1='YES'];
           new_bin_values3[1='DA']"""
+
+args2 = """WINDY=windy:e['TRUE'];
+           SUNNY=outlook:e['sunny'];
+           FOG_DUP, FOG=fog_bival, fog_bival;
+           TEMP=temperature:n[x>80];
+           HUM=humidity.relative.day:n[70<=x<=80];
+           NOTE=note:s['hell|[0-9]'];
+           BIRTHDAY=day:d/'%Y-%m-%d'[date=='2001-04-03']"""
 try:
-    formulas.parseString(args, parseAll=True)
+    formulas.parseString(args2, parseAll=True)
 except ParseException as e:
     print("========================================")
     print(e.lineno, e.col)
     print(str(e))
+<<<<<<< HEAD
 # TEST in master
+=======
+
+# TEST newgrammar
+>>>>>>> newgrammar

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ../../test_config
+source ../../new_test_config
 
 format=$ARFF
 none_value="?"
