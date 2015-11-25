@@ -122,7 +122,7 @@ num_val = numeric()
 op = Or(Literal("<") ^ Literal(">") ^
         Literal("<=") ^ Literal(">=") ^
         Literal("==") ^ Literal("!="))
-var = Word(alphas)
+var = Word(alphas + "_")
 bin_vals = Group(Optional((Suppress("0=") + quoted_str("new_false") + comma)) + Optional(Suppress("1=")) + quoted_str("new_true"))
 date_scale = Or(Combine(var + op + date_val, adjacent=False) ^
                 Combine(date_val + op + var, adjacent=False) ^
@@ -148,9 +148,9 @@ formulas = delimitedList(formula, delim=";")
 
 formula.setParseAction(test)
 
-args = """new,new2=old,old2:s['hell[a-z]+'];
+args = """ne_w,new2=old,old2:s['hell[a-z]+'];
           newdate=olddate:d/F='%Y-%m-%d'[date!='2014-02-11'];
-          5-7:n[5<value<30];
+          5-7:n[5<INT_value<30];
           attr[];
           attr2;
           enum_attr:e;
