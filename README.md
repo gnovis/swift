@@ -20,33 +20,24 @@ Example: `"obj1, obj2, obj3, ... "`
 #### Grammar (BNF with [regular expressions](https://docs.python.org/2/library/re.html))
 
 ```
-<formula_list> ::= <formula> | <formula> <comma> <formula_list>
-<formula> ::= <formula_first_part> <formula_second_part>
-<formula_first_part> ::= (<names> "=")? <names>
-<formula_second_part> ::= "[" <args>? "]"
-<key> ::= \w+ | \d? "-" \d?
-<names> ::= <key> | <key> <comma> <names>
-<args> ::= <num_arg> | <enum_arg> | <str_arg> | <date_arg> | <no_scale_arg>
-<num_arg> ::= "n" <comma> <num_expr>
-<enum_arg> ::= "e" <comma> "'" \w+ "'"
-<str_arg> ::= "s" <comma> "'" .+ "'"
-<date_arg> ::= "d" <comma> <date_expr> (<comma> "'" .+ "'")?
-<expr_var> ::= [a-zA-Z_]
-<num_val> ::= "-"? \d
-<num_expr> ::= <expr_var> <op> <num_val> |
-               <num_val> <op> <expr_var> |
-               <num_val> <op> <expr_var> <op> <num_val>
+<formulas> ::= <formula> | (<formula> ";" <formulas>)
+<formula> ::= (<names> "=")? <names> ((":" <type> ("[" <scale>? "]")?) | "[]")?
+<names> ::= <name> | (<name> "," <names>)
+<type> ::= "n" | "e" | "s" | ("d" ("/" <date_format>)?)
+<scale> ::= <num_scale> | <enum_scale> | <str_scale> | <date_scale> | <bin_vals>
+<name> ::= \w+ | ((\d+)? "-" (\d+)?) | "*"
+<date_format> ::= "F="? "'" .+ "'"
+<num_scale> ::= (<var> <op> <num_val>) | (<num_val> <op> <var>) |
+                (<num_val> <op> <var> <op> <num_val>)
+<enum_scale> ::= "'" \w+ "'"
+<str_scale> ::= "'" .+ "'"
+<date_scale> ::= ((<var> <op> <date_val>) | (<date_val> <op> <var>) |
+                 (<date_val> <op> <var> <op> <date_val>))
+<bin_vals> ::= ("0="? "'" .* "'" ",")? "1="? "'" .+ "'"
+<var> ::= [a-zA-Z_]+
+<op> ::= "<" | ">" | "<=" | ">=" | "=" | "!="
+<num_val> ::= "-"? \d+
 <date_val> ::= "'" .+ "'"
-<date_expr> ::= <expr_var> <op> <date_val> |
-                <date_val> <op> <expr_var> |
-                <date_val> <op> <expr_var> <op> <date_val>
-<op> ::= "<" | ">" | "<=" | ">=" | "==" | "!="
-<no_scale_arg> ::= <no_scale_num> | <no_scale_enum> | <no_scale_str> | <no_scale_date>
-<no_scale_num> ::= "n"
-<no_scale_enum> ::= "e"
-<no_scale_str> ::= "s"
-<no_scale_date> ::= "d" <comma> (<comma> "'" .+ "'")?
-<comma> ::= ","
 ```
 *Notes: Every token can be surrounded by any amount of white spaces. In grammar are white spaces omitted because of better readability.*  
 
