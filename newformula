@@ -171,9 +171,3 @@ except ParseException as e:
     print("========================================")
     print(e.lineno, e.col)
     print(str(e))
-<<<<<<< HEAD
-# TEST in master
-=======
-
-# TEST newgrammar
->>>>>>> newgrammar
