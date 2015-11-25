@@ -1,4 +1,4 @@
-from pyparsing import (alphanums, Or, Empty, CharsNotIn, ZeroOrMore, nums, LineEnd,
+from pyparsing import (alphas, Combine, Or, Empty, CharsNotIn, ZeroOrMore, nums, LineEnd,
                        Group, removeQuotes, Literal, restOfLine, lineno, ParseException,
                        Optional, delimitedList, printables, OneOrMore, Forward,
                        Suppress, Word, quotedString, CaselessLiteral)
@@ -6,7 +6,7 @@ from pyparsing import (alphanums, Or, Empty, CharsNotIn, ZeroOrMore, nums, LineE
 from .attributes_fca import (Attribute, AttrNumeric, AttrDate,
                              AttrEnum, AttrString)
 from .date_parser_fca import DateParser
-from .grammars_fca import boolexpr, interval
+from .grammars_fca import interval, numeric
 from .errors_fca import HeaderError, FormulaNamesError, FormulaSyntaxError, SequenceSyntaxError, LineError
 from .constants_fca import FileType
 from .interval_fca import Interval, Intervals
@@ -27,6 +27,7 @@ class Parser():
                     'd': AttrDate,
                     'date': AttrDate,
                     GENERAL_TYPE: Attribute,
+                    '': Attribute,
                     'relational': Attribute}
 
     def __init__(self):
@@ -46,6 +47,12 @@ class FormulaParser(Parser):
     TYPE = 0
     NEXT_ARGS = 1
 
+    def clone_names(self, tokens):
+        if tokens[0] == "":
+            return [tokens[1]] * 2
+        else:
+            return [tokens[0], tokens[1]]
+
     def _parse_int(self, value):
         try:
             return int(value)
@@ -53,11 +60,34 @@ class FormulaParser(Parser):
             return None
 
     def _create_attribute(self, tokens):
-        old_names = tokens[self.OLD_NAME]
-        new_names = tokens[self.NEW_NAME]
-        attr_type = tokens[self.ARGS][self.TYPE]
-        next_args = tokens[self.ARGS][self.NEXT_ARGS]
-        cls = self.ATTR_CLASSES[attr_type]
+
+        def process_attr_type(attr_type):
+            cls = AttrDate
+            next_args = {}
+            if type(attr_type) is str:
+                cls = self.ATTR_CLASSES[attr_type]
+            else:
+                next_args = dict(date_format=attr_type[1])
+            return [cls, next_args]
+
+        NEW_NAMES = 0
+        OLD_NAMES = 1
+        CLASS = 0
+        NEXT = 1
+
+        old_names = tokens[OLD_NAMES]
+        new_names = tokens[NEW_NAMES]
+        attribute_type = process_attr_type(tokens.attr_type)
+        cls = attribute_type[CLASS]
+        next_args = attribute_type[NEXT]
+
+        scale = tokens.scale
+        # print(tokens.unpack)
+        # print(tokens.new_bins == "")
+        # try:
+        #     print(tokens.new_bins.new_false, tokens.new_bins.new_true)
+        # except:
+        #     pass
 
         if len(old_names) != len(new_names):
             raise FormulaNamesError(old_names, new_names)
@@ -67,69 +97,56 @@ class FormulaParser(Parser):
             new = str(new)
             curr_next_args = next_args.copy()
             curr_next_args['attr_pattern'] = old
-
+            curr_next_args['expr_pattern'] = scale
             index = self._parse_int(old)
             attribute = cls(index, new, **curr_next_args)
             self._attributes.append(attribute)
 
     def parse(self, str_args, max_attrs_i):
+        # TODO use boolexpr for date and numeric scale (after testing new grammar)
         def expand_interval(tokens):
             val_from = int(tokens[0])
             val_to = int(tokens[1]) + 1
-            result = list(range(val_from, val_to))
+            result = list(map(str, range(val_from, val_to)))
             return result
 
-        # Grammar definition
-        QUOTED_STR = quotedString.copy()
-        NUMEXPR = boolexpr()
-        DATEXPR = boolexpr(VAL=quotedString)
-        SCOMMA = Suppress(',')
-        DATE_FORMAT = Optional(SCOMMA + QUOTED_STR, default=DateParser.ISO_FORMAT)
-        NO_SCALE_NUM = CaselessLiteral('n')
-        NO_SCALE_DATE = CaselessLiteral('d') + DATE_FORMAT
-        NO_SCALE_ENUM = CaselessLiteral('e')
-        NO_SCALE_STR = CaselessLiteral('s')
-        NUM = CaselessLiteral('n') + SCOMMA + NUMEXPR
-        DATE = CaselessLiteral('d') + SCOMMA + DATEXPR + DATE_FORMAT
-        ENUM = CaselessLiteral('e') + SCOMMA + Word(alphanums)
-        STR = CaselessLiteral('s') + SCOMMA + QUOTED_STR
-        GEN = Empty()
-        NO_SCALE = NO_SCALE_NUM | NO_SCALE_DATE | NO_SCALE_ENUM | NO_SCALE_STR
-        PARAMS = Or(STR ^ ENUM ^ DATE ^ NUM ^ GEN ^ NO_SCALE)
+        date_val = quotedString.copy()
+        quoted_str = quotedString
+        quoted_str.setParseAction(removeQuotes)
+        comma = Suppress(",")
+        num_val = numeric()
+        op = Or(Literal("<") ^ Literal(">") ^
+                Literal("<=") ^ Literal(">=") ^
+                Literal("==") ^ Literal("!="))
+        var = Word(alphas + "_")
+        bin_vals = Group(Optional((Suppress("0=") + quoted_str("new_false") + comma)) + Optional(Suppress("1=")) + quoted_str("new_true"))
+        date_scale = Or(Combine(var + op + date_val, adjacent=False) ^
+                        Combine(date_val + op + var, adjacent=False) ^
+                        Combine(date_val + op + var + op + date_val, adjacent=False))
+        str_scale = quoted_str
+        enum_scale = quoted_str
+        num_scale = Or(Combine(var + op + num_val, adjacent=False) ^
+                       Combine(num_val + op + var, adjacent=False) ^
+                       Combine(num_val + op + var + op + num_val, adjacent=False))
+        date_format = Optional(Suppress("F=")) + quoted_str
+        name = (Optional(Word(nums)) + Suppress("-") + Optional(Word(nums))).setParseAction(expand_interval) | Word(printables, excludeChars="[]-,=:;")
+        scale = num_scale | enum_scale | str_scale | date_scale
+        typ = Or(CaselessLiteral("n") ^ CaselessLiteral("e") ^
+                 CaselessLiteral("s") ^ Group(Literal("d") + Optional(Suppress("/") + date_format("date_format"), default="%Y-%m-%dT%H:%M:%S")))
+        names = Group(delimitedList(name))
+        new_old_names = (Optional(names + Suppress("="), default='') + names).setParseAction(self.clone_names)
+        formula = (new_old_names +
+                   Optional(Or(Literal("[]")("unpack") ^
+                               (Suppress("[") + bin_vals("new_bins") + Suppress("]")) ^
+                               (Suppress(":") + typ("attr_type") +
+                                Optional(Suppress("[") + Optional(scale("scale")) + Suppress("]"))))))
+        formulas = delimitedList(formula, delim=";")
 
-        NAME = Word(printables, excludeChars="[]-,=")
-        INTERVAL = interval(max_attrs_i, expand_interval)
-
-        ATTR_SEQUENCE = Group(delimitedList((INTERVAL | NAME)))
-        VAR_FIRST_PART = Optional(ATTR_SEQUENCE + Suppress('='), default='') + ATTR_SEQUENCE
-
-        VAR_SECOND_PART = Suppress('[') + Group(PARAMS) + Suppress(']')
-        VAR = VAR_FIRST_PART + VAR_SECOND_PART
-        parser = delimitedList(VAR)
-
-        # Parse actions for no scale attributes
-        no_scale_default_action = lambda tokens: [tokens[0], {}]
-        NO_SCALE_NUM.setParseAction(no_scale_default_action)
-        NO_SCALE_ENUM.setParseAction(no_scale_default_action)
-        NO_SCALE_STR.setParseAction(no_scale_default_action)
-        NO_SCALE_DATE.setParseAction(lambda tokens: [tokens[0], dict(date_format=tokens[1])])
-
-        # Parse actions for scale attributes
-        scale_default_action = lambda tokens: [tokens[0], dict(expr_pattern=tokens[1])]
-        NUM.setParseAction(scale_default_action)
-        ENUM.setParseAction(scale_default_action)
-        STR.setParseAction(scale_default_action)
-        GEN.setParseAction(lambda tokens: [self.GENERAL_TYPE, {}])
-        DATE.setParseAction(lambda tokens: [tokens[0], dict(expr_pattern=tokens[1],
-                                                            date_format=tokens[2])])
-        # Auxiliary parse actions
-        QUOTED_STR.setParseAction(removeQuotes)
-        VAR_FIRST_PART.setParseAction(lambda tokens: [tokens[1]]*2 if tokens[0] == '' else [tokens[0], tokens[1]])
-        VAR.setParseAction(self._create_attribute)
+        formula.setParseAction(self._create_attribute)
 
         # Run parser
         try:
-            parser.parseString(str_args)
+            formulas.parseString(str_args, parseAll=True)
         except ParseException as e:
             raise FormulaSyntaxError(e.lineno, e.col, e.line, e)
 

@@ -1,10 +1,10 @@
 #!/bin/bash
 
-source ../../test_config
+source ../../new_test_config
 
 format=$CSV
-new_str_attrs="WINDY=windy[e, TRUE], SUNNY=outlook[e, sunny], ORDER=order[], TEMP=temperature[n, x>80], HUM=humidity[n, 70<=x<=80], NOTE=note[s, 'hell|[0-9]'], BIRTHDAY=birthday[d, date=='2001-04-03', '%Y-%m-%d']"  
-old_str_attrs="note[s], outlook[e], temperature[n], humidity[n], windy[e], play[e], order[e], birthday[d,'%Y-%m-%d']"
+new_str_attrs="WINDY=windy:e['TRUE']; SUNNY=outlook:e['sunny']; ORDER=order; TEMP=temperature:n[x>80]; HUM=humidity:n[70<=x<=80]; NOTE=note:s['hell|[0-9]']; BIRTHDAY=birthday:d/'%Y-%m-%d'[date=='2001-04-03']"  
+old_str_attrs="note:s; outlook:e; temperature:n; humidity:n; windy:e; play:e; order:e; birthday:d/'%Y-%m-%d'"
 source_file=test.csv
 source_file_nfl=test_nfl.csv
 
