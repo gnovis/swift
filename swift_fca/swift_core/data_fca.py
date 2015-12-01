@@ -183,7 +183,8 @@ class Data:
                 raise LineError(self.FORMAT, line_i+1, index+1, ",".join(values), "Some of the attribute is missing.")
             except InvalidValueError as e:
                 raise AttrError(line_i+1, ",".join(values), index+1, values[index], e)
-            result.append(new_value)
+
+            result.append([new_value, attr.true, attr.false])
         return result
 
     def write_line_to_file(self, line):
@@ -199,7 +200,7 @@ class Data:
         Will write data to output in new format
         based on old_values - list of string values
         """
-        self.write_line_to_file(prepered_line)
+        self.write_line_to_file(list(map(lambda l: l[0], prepered_line)))
 
     def write_header(self, old_data):
         """This method should be rewritten in child class"""
@@ -364,7 +365,7 @@ class DataData(Data):
 
     def write_line(self, prepared_line):
         if self._classes:
-            prepared_line.append(self._classes.pop())
+            prepared_line.append([self._classes.pop(), Bival.true(), Bival.false()])
         super().write_line(prepared_line)
 
     def write_header(self, old_data):
@@ -399,6 +400,8 @@ class DataCxt(Data):
 
     IDENT = 'B'
     FORMAT = FileType.CXT
+    DOT = '.'
+    CROSS = 'X'
 
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
@@ -406,8 +409,8 @@ class DataCxt(Data):
         super().__init__(source, str_attrs, str_objects,
                          separator, relation_name, none_val)
 
-    sym_vals = {'X': Bival.true(), '.': Bival.false()}
-    vals_sym = {Bival.true(): 'X', Bival.false(): '.'}
+    sym_vals = {CROSS: Bival.true(), DOT: Bival.false()}
+    vals_sym = {Bival.true(): CROSS, Bival.false(): DOT}
 
     def get_header_info(self, manager=None):
         self.current_line = 0  # it is needed for Error message, is incremented in get_not_empty_line()
@@ -481,7 +484,10 @@ class DataCxt(Data):
     def write_line(self, prepared_line):
         result = []
         for val in prepared_line:
-            result.append(DataCxt.vals_sym[val])
+            if val[0] == val[1]:
+                result.append(self.CROSS)
+            else:
+                result.append(self.DOT)
         self.write_line_to_file(result)
 
     def get_not_empty_line(self):
@@ -572,7 +578,7 @@ class DataDat(Data):
 
     def write_line(self, line):
         result = []
-        for i, val in enumerate(line):
-            if val == Bival.true():
+        for i, vals in enumerate(line):
+            if vals[0] == vals[1]:
                 result.append(str(i))
         self.write_line_to_file(result)

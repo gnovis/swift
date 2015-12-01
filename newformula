@@ -107,11 +107,10 @@ def test(s, loc, tokens):
     print(tokens.attr_type)
     print(tokens.scale)
     print(tokens.unpack)
-    print(tokens.new_bins == "")
-    try:
-        print(tokens.new_bins.new_false, tokens.new_bins.new_true)
-    except:
-        pass
+    bins = tokens.get('new_bins')
+    if bins:
+        print(bool(bins.new_true))
+        print(bool(bins.new_false))
     print(10*"=")
 
 date_val = quotedString.copy()
@@ -133,7 +132,8 @@ num_scale = Or(Combine(var + op + num_val, adjacent=False) ^
                Combine(num_val + op + var, adjacent=False) ^
                Combine(num_val + op + var + op + num_val, adjacent=False))
 date_format = Optional(Suppress("F=")) + quoted_str
-name = (Optional(Word(nums)) + Suppress("-") + Optional(Word(nums))).setParseAction(expand_interval) | Word(printables, excludeChars="[]-,=:;")
+name = (Optional(Word(nums), default=0) + Suppress("-") +
+        Optional(Word(nums), default=10)).setParseAction(expand_interval) | Word(printables, excludeChars="[]-,=:;")
 scale = num_scale | enum_scale | str_scale | date_scale
 typ = Or(CaselessLiteral("n") ^ CaselessLiteral("e") ^
          CaselessLiteral("s") ^ Group(Literal("d") + Optional(Suppress("/") + date_format("date_format"), default="%Y-%m-%dT%H:%M:%S")))
@@ -156,7 +156,8 @@ args = """ne_w,new2=old,old2:s['hell[a-z]+'];
           enum_attr:e;
           new_bin_values['ANO'];
           new_bin_values2[0='NO', 1='YES'];
-          new_bin_values3[1='DA']"""
+          new_bin_values3[1='DA'];
+          -:e"""
 
 args2 = """WINDY=windy:e['TRUE'];
            SUNNY=outlook:e['sunny'];
@@ -166,7 +167,7 @@ args2 = """WINDY=windy:e['TRUE'];
            NOTE=note:s['hell|[0-9]'];
            BIRTHDAY=day:d/'%Y-%m-%d'[date=='2001-04-03']"""
 try:
-    formulas.parseString(args2, parseAll=True)
+    formulas.parseString(args, parseAll=True)
 except ParseException as e:
     print("========================================")
     print(e.lineno, e.col)

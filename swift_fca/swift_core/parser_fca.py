@@ -8,7 +8,7 @@ from .attributes_fca import (Attribute, AttrNumeric, AttrDate,
 from .date_parser_fca import DateParser
 from .grammars_fca import interval, numeric
 from .errors_fca import HeaderError, FormulaNamesError, FormulaSyntaxError, SequenceSyntaxError, LineError
-from .constants_fca import FileType
+from .constants_fca import FileType, Bival
 from .interval_fca import Interval, Intervals
 
 
@@ -75,6 +75,15 @@ class FormulaParser(Parser):
         cls = attribute_type[CLASS]
         next_args = attribute_type[NEXT]
 
+        true = Bival.true()
+        false = Bival.false()
+        bin_vals = tokens.get('new_bins')
+        if bin_vals:
+            if bin_vals.new_true:
+                true = bin_vals.new_true
+            if bin_vals.new_false:
+                false = bin_vals.new_false
+
         scale = tokens.scale
         # print(tokens.unpack)
         # print(tokens.new_bins == "")
@@ -94,6 +103,8 @@ class FormulaParser(Parser):
             curr_next_args['expr_pattern'] = scale
             index = self._parse_int(old)
             attribute = cls(index, new, **curr_next_args)
+            attribute.true = true
+            attribute.false = false
             self._attributes.append(attribute)
 
     def parse(self, str_args, max_attrs_i):
@@ -123,7 +134,7 @@ class FormulaParser(Parser):
                        Combine(num_val + op + var, adjacent=False) ^
                        Combine(num_val + op + var + op + num_val, adjacent=False))
         date_format = Optional(Suppress("F=")) + quoted_str
-        name = (Optional(Word(nums)) + Suppress("-") + Optional(Word(nums))).setParseAction(expand_interval) | Word(printables, excludeChars="[]-,=:;")
+        name = interval(max_attrs_i, expand_interval) | Word(printables, excludeChars="[]-,=:;")
         scale = num_scale | enum_scale | str_scale | date_scale
         typ = Or(CaselessLiteral("n") ^ CaselessLiteral("e") ^
                  CaselessLiteral("s") ^ Group(Literal("d") + Optional(Suppress("/") + date_format("date_format"), default="%Y-%m-%dT%H:%M:%S")))

@@ -24,6 +24,8 @@ class Attribute:
         self._values_rate = {}
         self._none_val = None
         self._none_val_count = 0
+        self._true = Bival.true()
+        self._false = Bival.false()
 
     @property
     def key(self):
@@ -56,6 +58,22 @@ class Attribute:
     @children.setter
     def children(self, children):
         self._children = children
+
+    @property
+    def true(self):
+        return self._true
+
+    @true.setter
+    def true(self, value):
+        self._true = value
+
+    @property
+    def false(self):
+        return self._false
+
+    @false.setter
+    def false(self, value):
+        self._false = value
 
     def process(self, value, none_val, scale, update):
         if self._expr_pattern and scale:

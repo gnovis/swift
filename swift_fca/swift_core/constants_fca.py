@@ -90,6 +90,11 @@ class Bival:
             return cls.true()
         return cls.false()
 
+    @classmethod
+    def reset(cls):
+        cls.true_val = '1'
+        cls.false_val = '0'
+
 
 class ShortCuts:
     CONVERT = "Ctrl+c"
