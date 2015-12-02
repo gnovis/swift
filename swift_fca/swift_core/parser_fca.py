@@ -85,12 +85,7 @@ class FormulaParser(Parser):
                 false = bin_vals.new_false
 
         scale = tokens.scale
-        # print(tokens.unpack)
-        # print(tokens.new_bins == "")
-        # try:
-        #     print(tokens.new_bins.new_false, tokens.new_bins.new_true)
-        # except:
-        #     pass
+        unpack = tokens.get('unpack', defaultValue=False)
 
         if len(old_names) != len(new_names):
             raise FormulaNamesError(old_names, new_names)
@@ -105,6 +100,7 @@ class FormulaParser(Parser):
             attribute = cls(index, new, **curr_next_args)
             attribute.true = true
             attribute.false = false
+            attribute.unpack = unpack
             self._attributes.append(attribute)
 
     def parse(self, str_args, max_attrs_i):
@@ -141,7 +137,7 @@ class FormulaParser(Parser):
         names = Group(delimitedList(name))
         new_old_names = (Optional(names + Suppress("="), default='') + names).setParseAction(self.clone_names)
         formula = (new_old_names +
-                   Optional(Or(Literal("[]")("unpack") ^
+                   Optional(Or(Literal("[]")("unpack").setParseAction(lambda t: True) ^
                                (Suppress("[") + bin_vals("new_bins") + Suppress("]")) ^
                                (Suppress(":") + typ("attr_type") +
                                 Optional(Suppress("[") + Optional(scale("scale")) + Suppress("]"))))))

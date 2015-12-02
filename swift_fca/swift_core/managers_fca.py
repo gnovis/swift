@@ -149,6 +149,7 @@ class Browser(ManagerFca):
 
             try:
                 prepared_line = self._data.prepare_line(line.strip(), self._curr_line_index, False)
+                prepared_line = list(map(lambda l: l[Data.PREPARED_VAL], prepared_line))
             except (LineError, AttrError) as e:
                 if self.skip_errors:
                     self.add_error(e)
@@ -191,9 +192,14 @@ class Convertor(ManagerFca):
     def read_info(self):
         self._counter = EstimateCounter(self._old_data.source.name, self, gui=self._gui)
         # get information from source data
-        self._old_data.get_attrs_info(self)
-        read_data = self.READ_DATA[self._source_ext + self._target_ext]
-        self._old_data.get_data_info(self, read=read_data)
+        unpack = self._old_data.get_attrs_info(self)
+        if unpack:
+            self._old_data.get_data_info(self, read=True)
+            self._old_data.unpack_attrs()
+        else:
+            read_data = self.READ_DATA[self._source_ext + self._target_ext]
+            self._old_data.get_data_info(self, read=read_data)
+
         if self._print_info:
             self._old_data.print_info()
         # this is for progress bar

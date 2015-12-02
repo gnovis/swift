@@ -140,7 +140,7 @@ typ = Or(CaselessLiteral("n") ^ CaselessLiteral("e") ^
 names = Group(delimitedList(name))
 new_old_names = (Optional(names + Suppress("="), default='') + names).setParseAction(clone_names)
 formula = (new_old_names +
-           Optional(Or(Literal("[]")("unpack") ^
+           Optional(Or(Literal("[]")("unpack").setParseAction(lambda t: True) ^
                        (Suppress("[") + bin_vals("new_bins") + Suppress("]")) ^
                        (Suppress(":") + typ("attr_type") +
                         Optional(Suppress("[") + Optional(scale("scale")) + Suppress("]"))))))

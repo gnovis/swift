@@ -26,6 +26,7 @@ class Attribute:
         self._none_val_count = 0
         self._true = Bival.true()
         self._false = Bival.false()
+        self._unpack = False
 
     @property
     def key(self):
@@ -34,6 +35,14 @@ class Attribute:
         if self._name:
             return self._name
         return str(self.index)
+
+    @property
+    def attr_pattern(self):
+        return self._attr_pattern
+
+    @property
+    def all_vals(self):
+        return list(self._values_rate.keys())
 
     @property
     def name(self):
@@ -74,6 +83,14 @@ class Attribute:
     @false.setter
     def false(self, value):
         self._false = value
+
+    @property
+    def unpack(self):
+        return self._unpack
+
+    @unpack.setter
+    def unpack(self, value):
+        self._unpack = value
 
     def process(self, value, none_val, scale, update):
         if self._expr_pattern and scale:

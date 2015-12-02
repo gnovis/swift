@@ -19,6 +19,11 @@ class Data:
     """Class data"""
 
     NONE_VAL = "?"
+    # bool_true and prepared_val are indexes of
+    # proccesed value and specific bool value owned by attribute
+
+    BOOL_TRUE = 1
+    PREPARED_VAL = 0
 
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
@@ -109,6 +114,7 @@ class Data:
             parser.parse(self.str_attrs, (len(self._header_attrs)-1))
             self._attributes = parser.attributes
 
+        must_read_data = False
         # attributes argument is not set -> only infomations from header will be used
         if not self._attributes:
             self._attributes = self._header_attrs
@@ -128,7 +134,10 @@ class Data:
                     attr.name = header_attr.name
 
                 merged.append(attr)
+                if attr.unpack:
+                    must_read_data = True
             self._attributes = merged
+        return must_read_data
 
     def get_header_info(self, manager=None):
         """
@@ -187,6 +196,22 @@ class Data:
             result.append([new_value, attr.true, attr.false])
         return result
 
+    def unpack_attrs(self):
+        unpacked = []
+        for attr in self._attributes:
+            if attr.unpack:
+                i = 0
+                for v in attr.all_vals:
+                    new = AttrEnum(attr.index, '{}_{}_{}'.format(attr.name, i, v),
+                                   attr_pattern=attr.attr_pattern,
+                                   expr_pattern=v)
+                    unpacked.append(new)
+                    i += 1
+            else:
+                unpacked.append(attr)
+        self._attributes = unpacked
+        self._attr_count = len(self._attributes)
+
     def write_line_to_file(self, line):
         """
         Aux function for write_line, only add \n to line and
@@ -200,7 +225,7 @@ class Data:
         Will write data to output in new format
         based on old_values - list of string values
         """
-        self.write_line_to_file(list(map(lambda l: l[0], prepered_line)))
+        self.write_line_to_file(list(map(lambda l: l[self.PREPARED_VAL], prepered_line)))
 
     def write_header(self, old_data):
         """This method should be rewritten in child class"""
@@ -484,7 +509,7 @@ class DataCxt(Data):
     def write_line(self, prepared_line):
         result = []
         for val in prepared_line:
-            if val[0] == val[1]:
+            if val[self.PREPARED_VAL] == val[self.BOOL_TRUE]:
                 result.append(self.CROSS)
             else:
                 result.append(self.DOT)
@@ -579,6 +604,6 @@ class DataDat(Data):
     def write_line(self, line):
         result = []
         for i, vals in enumerate(line):
-            if vals[0] == vals[1]:
+            if vals[self.PREPARED_VAL] == vals[self.BOOL_TRUE]:
                 result.append(str(i))
         self.write_line_to_file(result)
