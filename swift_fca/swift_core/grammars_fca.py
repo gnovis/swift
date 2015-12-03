@@ -26,6 +26,7 @@ def boolexpr(VAL=numeric()):
 
 
 def interval(end=0, func=lambda t: t):
-    INTERVAL = Optional(Word(nums), default=0) + Suppress("-") + Optional(Word(nums), default=end)
+    SEPARATOR = Suppress('-') | Suppress('*')
+    INTERVAL = Optional(Word(nums), default=0) + SEPARATOR + Optional(Word(nums), default=end)
     INTERVAL.setParseAction(func)
     return INTERVAL
