@@ -28,7 +28,6 @@ def convert(*args):
 
 
 def browse(*args):
-
     def get_line_format(line):
         max_len = len(max(line))
         return " ".join(["{:" + str(max_len) + "}"] * (len(header)))
@@ -71,7 +70,7 @@ def get_args():
                    "source_separator": RunParams.SOURCE_SEP,
                    "target_attributes": RunParams.SOURCE_ATTRS,
                    "source_no_header": RunParams.NFL,
-                   "none_value": RunParams.NONE_VALUE}
+                   "missing_value": RunParams.NONE_VALUE}
     TARGET_ARGS = {"target": RunParams.TARGET,
                    "target_format": RunParams.FORMAT,
                    "target_separator": RunParams.TARGET_SEP,
@@ -90,7 +89,7 @@ def get_args():
                         help="Separator which is used in source file. Default is ','.")
     parser.add_argument("-ta", "--target_attributes", help="Attributes Formula used for filtering, reordering and converting attributes.")
     parser.add_argument("-i", "--info", action='store_true', help="Print information about source file data.")
-    parser.add_argument("-nv", "--none_value", help="Character which is used in data as value for non-specified attribute.")
+    parser.add_argument("-mv", "--missing_value", help="Character which is used in data as value for non-specified attribute.")
     parser.add_argument("-snh", "--source_no_header",
                         action='store_false',
                         help="Attributes aren't specified on first line in csv data file.")
