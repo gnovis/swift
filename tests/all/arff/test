@@ -9,18 +9,18 @@ source_file=test.arff
 print_header $format
 
 # -> cxt
-$app $source_file -t arff.cxt -ta "$new_str_attrs" -to "$new_str_objects" -nv "$none_value"
+$app $source_file -t arff.cxt -ta "$new_str_attrs" -to "$new_str_objects" -mv "$none_value"
 print_test_info $format $CXT
 
 # -> csv
-$app $source_file -t arff.csv -nv "$none_value"
+$app $source_file -t arff.csv -mv "$none_value"
 print_test_info $format $CSV
 
 # -> dat
-$app $source_file -t arff.dat -ta "$new_str_attrs" -nv "$none_value"
+$app $source_file -t arff.dat -ta "$new_str_attrs" -mv "$none_value"
 print_test_info $format $DAT
 
 # -> data
-$app $source_file -t arff.data -cls "$classes" -nv "$none_value"
+$app $source_file -t arff.data -cls "$classes" -mv "$none_value"
 print_test_info $format $DATA
 

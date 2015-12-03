@@ -988,7 +988,7 @@ class SourceParamsDialog(ParamsDialog):
                         FileType.CSV_EXT: (RunParams.FORMAT, RunParams.SOURCE_SEP, RunParams.NFL,
                                            RunParams.SOURCE_ATTRS, RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS),
                         FileType.CXT_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS),
-                        FileType.DAT_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS),
+                        FileType.DAT_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS, RunParams.SOURCE_SEP),
                         FileType.DATA_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP, RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS),
                         FileType.NAMES_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP, RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS)}
 

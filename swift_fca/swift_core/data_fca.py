@@ -532,9 +532,9 @@ class DataDat(Data):
 
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
-                 separator=',', relation_name='', **kwargs):
+                 separator=' ', relation_name='', **kwargs):
         super().__init__(source, str_attrs, str_objects,
-                         ' ', relation_name)
+                         separator, relation_name)
 
     def get_data_header_info(self, manager):
         max_val = -1
@@ -546,9 +546,10 @@ class DataDat(Data):
             if manager.skip_line(i):
                 continue
             line_count += 1
-            splitted = line.split()
+            splitted = line.split(self.separator)
             updated_attrs = {}
             for col, val in enumerate(splitted):
+                val = val.strip()
                 try:
                     int_val = int(val)
                 except ValueError:
@@ -592,9 +593,10 @@ class DataDat(Data):
         pass
 
     def prepare_line(self, line, index, scale=True, update=False):
-        splitted = line.split()
+        splitted = line.split(self.separator)
         result = [Bival.false()] * (self._attr_count)
         for col, val in enumerate(splitted):
+            val = val.strip()
             try:
                 result[int(val)] = Bival.true()
             except ValueError:
