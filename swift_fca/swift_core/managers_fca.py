@@ -19,7 +19,6 @@ if App.gui:
 
 
 class ManagerFca(MANAGER_PARENT):
-
     CSV = FileType.CSV_EXT
     ARFF = FileType.ARFF_EXT
     DAT = FileType.DAT_EXT

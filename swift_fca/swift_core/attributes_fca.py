@@ -21,7 +21,7 @@ class Attribute:
         self._index = index
         self._attr_type = attr_type
         self._children = []
-        self._values_rate = {}
+        self._values_rate = OrderedDict()
         self._none_val = None
         self._none_val_count = 0
         self._true = Bival.true()
