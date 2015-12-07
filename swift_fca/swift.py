@@ -9,10 +9,10 @@ import traceback
 import itertools
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import SIGNAL
-from .swift_core.managers_fca import Browser, Convertor, Printer, BgWorker
+from .swift_core.managers_fca import Browser, Convertor, Printer
 from .swift_core.constants_fca import RunParams, FileType, ShortCuts
 from .swift_core.validator_fca import ConvertValidator
-from .swift_core.errors_fca import ErrorMessage
+from .swift_core.errors_fca import ErrorMessage, SwiftError
 import swift_fca.resources.resources_rc  # NOQA Resources file
 
 
@@ -391,6 +391,7 @@ class GuiSwift(QtGui.QWidget):
                 main_args = self.source_params
                 main_args[RunParams.SOURCE] = open(self.subst_ext(self.source), 'r')
                 printer = Printer(main_args, **self.source_params)
+                printer.gui = True
             except:
                 errors = traceback.format_exc()
                 self.show_dialog(errors=[errors])
@@ -478,7 +479,8 @@ class GuiSwift(QtGui.QWidget):
                     self.bg_worker.start()
 
             try:
-                convertor = Convertor(s_p, t_p, gui=True, **self.source_params)
+                convertor = Convertor(s_p, t_p, **self.source_params)
+                convertor.gui = True
             except:
                 errors = traceback.format_exc()
                 self.show_dialog(errors=[errors])
@@ -574,6 +576,7 @@ class GuiSwift(QtGui.QWidget):
             main_args = params
             main_args[RunParams.SOURCE] = open(self.subst_ext(source_file), 'r')
             browser = Browser(main_args, **params)
+            browser.gui = True
         except:
             errors = traceback.format_exc()
             self.show_dialog(errors=[errors])
@@ -1158,6 +1161,28 @@ class PBarDialog(QtGui.QProgressDialog):
 
     def update(self, *args):
         self.setValue(self.value() + 1)
+
+
+class BgWorker(QtCore.QThread):
+    def __init__(self, function, parent=None):
+        QtCore.QThread.__init__(self, parent)
+        self.function = function
+        self.errors = []
+
+    def push_error(self, error):
+        self.errors.append(error)
+
+    def get_errors(self):
+        return self.errors.copy()
+
+    def run(self):
+        try:
+            self.function(self)
+        except SwiftError as e:
+            self.push_error(str(e))
+        except:
+            msg = ErrorMessage.UNKNOWN_ERROR + traceback.format_exc()
+            self.push_error(msg)
 
 
 def main():

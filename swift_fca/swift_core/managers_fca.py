@@ -1,16 +1,25 @@
 from __future__ import print_function
 import os
-import traceback
 import sys
 import time
-from PyQt4 import QtCore
 from .data_fca import (Data, DataCsv, DataArff, DataDat, DataCxt, DataData)
-from .constants_fca import FileType, RunParams
+from .constants_fca import FileType, RunParams, App
 from .parser_fca import parse_intervals
-from .errors_fca import SwiftError, ArgError, ErrorMessage, LineError, AttrError
+from .errors_fca import ArgError, ErrorMessage, LineError, AttrError
 
 
-class ManagerFca(QtCore.QObject):
+class Fake:
+    pass
+
+
+MANAGER_PARENT = Fake
+if App.gui:
+    from PyQt4 import QtCore
+    MANAGER_PARENT = QtCore.QObject
+
+
+class ManagerFca(MANAGER_PARENT):
+
     CSV = FileType.CSV_EXT
     ARFF = FileType.ARFF_EXT
     DAT = FileType.DAT_EXT
@@ -31,16 +40,26 @@ class ManagerFca(QtCore.QObject):
                  DATA+DATA: False, DATA+CSV: False, DATA+ARFF: True, DATA+DAT: False, DATA+CXT: True}
 
     # Signals
-    next_percent = QtCore.pyqtSignal()
+    if App.gui:
+        next_percent = QtCore.pyqtSignal()
 
     def __init__(self, source, skipped_lines=None, skip_errors=False):
         super().__init__()
+        self._gui = False
         self._stop = False
         self._counter = None
         self._source_from_stdin = not source.seekable()
         self._skipped_lines = parse_intervals(skipped_lines)
         self._skip_errors = skip_errors
         self._errors = []
+
+    @property
+    def gui(self):
+        return self._gui
+
+    @gui.setter
+    def gui(self, value):
+        self._gui = value
 
     @property
     def stop(self):
@@ -72,7 +91,8 @@ class ManagerFca(QtCore.QObject):
         return self._skipped_lines.val_in_open_interval(i)
 
     def update_percent(self):
-        self.next_percent.emit()
+        if App.gui:
+            self.next_percent.emit()
 
     def update_counter(self, line, index):
         self._counter.update(line, index)
@@ -172,10 +192,9 @@ class Browser(ManagerFca):
 
 
 class Convertor(ManagerFca):
-    def __init__(self, old, new, print_info=False, gui=False,
+    def __init__(self, old, new, print_info=False,
                  skipped_lines=None, skip_errors=False, **kwargs):
         super().__init__(old[RunParams.SOURCE], skipped_lines, skip_errors)
-        self._gui = gui
         self._source_ext = self.get_extension(old[RunParams.SOURCE].name, old)
         self._target_ext = self.get_extension(new[RunParams.TARGET].name, new)
 
@@ -239,28 +258,6 @@ class Convertor(ManagerFca):
         self._new_data.source.close()
         source_file.close()
         self.print_formated_errors()
-
-
-class BgWorker(QtCore.QThread):
-    def __init__(self, function, parent=None):
-        QtCore.QThread.__init__(self, parent)
-        self.function = function
-        self.errors = []
-
-    def push_error(self, error):
-        self.errors.append(error)
-
-    def get_errors(self):
-        return self.errors.copy()
-
-    def run(self):
-        try:
-            self.function(self)
-        except SwiftError as e:
-            self.push_error(str(e))
-        except:
-            msg = ErrorMessage.UNKNOWN_ERROR + traceback.format_exc()
-            self.push_error(msg)
 
 
 class EstimateCounter():

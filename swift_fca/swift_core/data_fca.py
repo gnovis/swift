@@ -168,7 +168,8 @@ class Data:
 
                 if self._temp_source:
                     self._temp_source.write(line)
-                manager.update_counter(line, self.index_data_start)
+                if manager.gui:
+                    manager.update_counter(line, self.index_data_start)
 
             if self._temp_source:
                 self._source = self._temp_source
@@ -574,7 +575,9 @@ class DataDat(Data):
 
             if self._temp_source:
                 self._temp_source.write(line)
-            manager.update_counter(line, self.index_data_start)
+
+            if manager.gui:
+                manager.update_counter(line, self.index_data_start)
 
         if self._temp_source:
             self._source = self._temp_source

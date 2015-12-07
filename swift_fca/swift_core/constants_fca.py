@@ -1,5 +1,6 @@
 class App:
     NAME = 'swift'
+    gui = False
 
 
 class RunParams:
