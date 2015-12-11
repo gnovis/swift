@@ -4,9 +4,9 @@ from __future__ import print_function
 import argparse
 import sys
 import traceback
-from .swift_core.managers_fca import Convertor, Browser, Printer
+from .swift_core.managers_fca import Convertor, Browser, Printer, ManagerFca
 from .swift_core.constants_fca import RunParams, FileType, App
-from .swift_core.errors_fca import SwiftError, ErrorMessage, ErrorCode
+from .swift_core.errors_fca import SwiftError, ErrorMessage, ErrorCode, ArgError
 from .swift_core.validator_fca import ConvertValidator
 
 SOURCE = 0
@@ -112,8 +112,6 @@ def get_args():
                         help="Source file will be converted to target file, this is default option.")
     parser.add_argument("-{}".format(PREVIEW[0]), "--{}".format(PREVIEW), nargs='?', default=False, const=True,
                         help="Desired count of lines from source file will be displayed.")
-    parser.add_argument("-{}".format(EXPORT[0]), "--{}".format(EXPORT), nargs='?', default=False, const=True,
-                        help="Desired count of lines from source file will be scanned and informations about data will be exported to target file.")
     parser.add_argument("-sl", "--skipped_lines", help="Interval of lines which will be skipped in any operation.")
     parser.add_argument("-se", "--skip_errors", action="store_true", help="Skip broken lines, which cause an errors.")
 
@@ -140,6 +138,15 @@ def get_args():
                 if val:
                     action = ACTIONS[key]
                     action_arg = val
+
+    # this piece of code is for universal using -i --info
+    file_extension = None
+    try:
+        file_extension = ManagerFca.get_extension(target_args[RunParams.SOURCE].name, target_args)
+    except ArgError:
+        pass  # target file is stdout
+    if not file_extension and (RunParams.SOURCE_INFO in other_args):
+        action = ACTIONS[EXPORT]
 
     return action, source_args, target_args, other_args, action_arg
 
