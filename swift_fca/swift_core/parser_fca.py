@@ -134,7 +134,7 @@ class FormulaParser(Parser):
                                (Suppress("[") + bin_vals("new_bins") + Suppress("]")) ^
                                (Suppress(":") + typ("attr_type") +
                                 Optional(Suppress("[") + Optional(scale("scale")) + Suppress("]"))))))
-        formulas = delimitedList(formula, delim=";")
+        formulas = delimitedList(formula, delim=";") + Optional(Suppress(";"))
 
         formula.setParseAction(self._create_attribute)
 

@@ -33,6 +33,7 @@ Example: `"obj1, obj2, obj3, ... "`
 <str_scale> ::= "'" .+ "'"
 <date_scale> ::= ((<var> <op> <date_val>) | (<date_val> <op> <var>) |
                  (<date_val> <op> <var> <op> <date_val>))
+                 ("/" <date_format>)?
 <bin_vals> ::= ("0="? "'" .* "'" ",")? "1="? "'" .+ "'"
 <var> ::= [a-zA-Z_]+
 <op> ::= "<" | ">" | "<=" | ">=" | "=" | "!="
