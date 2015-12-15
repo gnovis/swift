@@ -1,4 +1,4 @@
-from pyparsing import (alphas, Combine, Or, Empty, CharsNotIn, ZeroOrMore, nums, LineEnd,
+from pyparsing import (Or, Empty, CharsNotIn, ZeroOrMore, nums, LineEnd,
                        Group, removeQuotes, Literal, restOfLine, lineno, ParseException,
                        Optional, delimitedList, printables, OneOrMore, Forward,
                        Suppress, Word, quotedString, CaselessLiteral)
@@ -6,7 +6,7 @@ from pyparsing import (alphas, Combine, Or, Empty, CharsNotIn, ZeroOrMore, nums,
 from .attributes_fca import (Attribute, AttrNumeric, AttrDate,
                              AttrEnum, AttrString)
 from .date_parser_fca import DateParser
-from .grammars_fca import interval, numeric
+from .grammars_fca import interval, numeric, boolexpr
 from .errors_fca import HeaderError, FormulaNamesError, FormulaSyntaxError, SequenceSyntaxError, LineError
 from .constants_fca import FileType, Bival
 from .interval_fca import Interval, Intervals
@@ -55,13 +55,16 @@ class FormulaParser(Parser):
 
     def _create_attribute(self, tokens):
 
-        def process_attr_type(attr_type):
+        def process_attr_type(tokens):
+            attr_type = tokens.attr_type
             cls = AttrDate
             next_args = {}
-            if type(attr_type) is str:
+            if type(attr_type) is str:  # attr_type is only identifier of class
                 cls = self.ATTR_CLASSES[attr_type]
-            else:
+            else:  # attr_type is list with attributes, currently only a date has attribute format
                 next_args = dict(date_format=attr_type[1])
+                if tokens.date_format_new:
+                    next_args['date_format'] = tokens.date_format_new[0]
             return [cls, next_args]
 
         NEW_NAMES = 0
@@ -71,7 +74,7 @@ class FormulaParser(Parser):
 
         old_names = tokens[OLD_NAMES]
         new_names = tokens[NEW_NAMES]
-        attribute_type = process_attr_type(tokens.attr_type)
+        attribute_type = process_attr_type(tokens)
         cls = attribute_type[CLASS]
         next_args = attribute_type[NEXT]
 
@@ -104,7 +107,6 @@ class FormulaParser(Parser):
             self._attributes.append(attribute)
 
     def parse(self, str_args, max_attrs_i):
-        # TODO use boolexpr for date and numeric scale (after testing new grammar)
         def expand_interval(tokens):
             val_from = int(tokens[0])
             val_to = int(tokens[1]) + 1
@@ -115,21 +117,12 @@ class FormulaParser(Parser):
         quoted_str = quotedString
         quoted_str.setParseAction(removeQuotes)
         comma = Suppress(",")
-        num_val = numeric()
-        op = Or(Literal("<") ^ Literal(">") ^
-                Literal("<=") ^ Literal(">=") ^
-                Literal("==") ^ Literal("!="))
-        var = Word(alphas + "_")
         bin_vals = Group(Optional((Suppress("0=") + quoted_str("new_false") + comma)) + Optional(Suppress("1=")) + quoted_str("new_true"))
-        date_scale = Or(Combine(var + op + date_val, adjacent=False) ^
-                        Combine(date_val + op + var, adjacent=False) ^
-                        Combine(date_val + op + var + op + date_val, adjacent=False))
+        date_format = Optional(Suppress(CaselessLiteral("F="))) + quoted_str
+        date_scale = boolexpr(date_val) + Optional(Suppress("/") + date_format)("date_format_new")
         str_scale = quoted_str
         enum_scale = quoted_str
-        num_scale = Or(Combine(var + op + num_val, adjacent=False) ^
-                       Combine(num_val + op + var, adjacent=False) ^
-                       Combine(num_val + op + var + op + num_val, adjacent=False))
-        date_format = Optional(Suppress("F=")) + quoted_str
+        num_scale = boolexpr(numeric())
         name = interval(max_attrs_i, expand_interval) | Word(printables, excludeChars="[]-,=:;")
         scale = num_scale | enum_scale | str_scale | date_scale
         typ = Or(CaselessLiteral("n") ^ CaselessLiteral("e") ^
