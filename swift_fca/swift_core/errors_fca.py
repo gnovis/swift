@@ -29,6 +29,7 @@ class ErrorCode(IntEnum):
     formula_key = 23
     keyboard_interrupt = 24
     missing_arg = 25
+    bival = 26
 
 
 class ErrorMessage:
@@ -162,3 +163,9 @@ class ArgError(SwiftError):
         if arg in self.ARGS:
             message = self.ARGS[arg]
         super().__init__(ErrorCode.arg_error, "Argument", message)
+
+
+class BivalError(SwiftError):
+    def __init__(self, val, true, false):
+        super().__init__(ErrorCode.bival, "Bivalent",
+                         "Invalid bivalent value in data - given: {}, expected: {}(=True) or {}(=False). Or scale formula is missing.".format(val, true, false))

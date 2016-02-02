@@ -10,7 +10,7 @@ from .attributes_fca import (Attribute, AttrEnum)
 from .object_fca import Object
 from .parser_fca import FormulaParser, ArffParser, DataParser
 from .constants_fca import Bival, FileType
-from .errors_fca import HeaderError, LineError, AttrError, InvalidValueError, FormulaKeyError
+from .errors_fca import HeaderError, LineError, AttrError, InvalidValueError, FormulaKeyError, BivalError
 
 
 class Data:
@@ -19,11 +19,12 @@ class Data:
     """Class data"""
 
     NONE_VAL = "?"
-    # bool_true and prepared_val are indexes of
+    # bool_true, bool_false and prepared_val are indexes of
     # proccesed value and specific bool value owned by attribute
 
-    BOOL_TRUE = 1
     PREPARED_VAL = 0
+    BOOL_TRUE = 1
+    BOOL_FALSE = 2
 
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
@@ -256,6 +257,14 @@ class Data:
         file_iter = iter(f)
         for i in range(line_i):
             next(file_iter)
+
+    def check_value_bival(self, values):
+        prepared_val = values[self.PREPARED_VAL]
+        true_val = values[self.BOOL_TRUE]
+        false_val = values[self.BOOL_FALSE]
+        if not ((prepared_val == true_val) or
+                (prepared_val == false_val)):
+            raise BivalError(prepared_val, true_val, false_val)
 
 
 class DataArff(Data):
@@ -509,8 +518,9 @@ class DataCxt(Data):
 
     def write_line(self, prepared_line):
         result = []
-        for val in prepared_line:
-            if val[self.PREPARED_VAL] == val[self.BOOL_TRUE]:
+        for vals in prepared_line:
+            self.check_value_bival(vals)
+            if vals[self.PREPARED_VAL] == vals[self.BOOL_TRUE]:
                 result.append(self.CROSS)
             else:
                 result.append(self.DOT)
@@ -609,6 +619,7 @@ class DataDat(Data):
     def write_line(self, line):
         result = []
         for i, vals in enumerate(line):
+            self.check_value_bival(vals)
             if vals[self.PREPARED_VAL] == vals[self.BOOL_TRUE]:
                 result.append(str(i))
         self.write_line_to_file(result)
