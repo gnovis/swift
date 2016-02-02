@@ -27,7 +27,7 @@ def convert(*args):
     convertor.convert()
 
 
-def browse(*args):
+def preview(*args):
     def get_line_format(line):
         max_len = len(max(line))
         return " ".join(["{:" + str(max_len) + "}"] * (len(header)))
@@ -63,7 +63,7 @@ def get_args():
     PREVIEW = 'preview'
     EXPORT = 'export'
 
-    ACTIONS = {CONVERT: convert, PREVIEW: browse, EXPORT: export}
+    ACTIONS = {CONVERT: convert, PREVIEW: preview, EXPORT: export}
 
     SOURCE_ARGS = {"source": RunParams.SOURCE,
                    "source_format": RunParams.FORMAT,
@@ -146,7 +146,8 @@ def get_args():
     except ArgError:
         pass  # target file is stdout
     if not file_extension and (RunParams.SOURCE_INFO in other_args):
-        action = ACTIONS[EXPORT]
+        if other_args[RunParams.SOURCE_INFO]:
+            action = ACTIONS[EXPORT]
 
     return action, source_args, target_args, other_args, action_arg
 
