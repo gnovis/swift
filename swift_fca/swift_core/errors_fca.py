@@ -30,6 +30,7 @@ class ErrorCode(IntEnum):
     keyboard_interrupt = 24
     missing_arg = 25
     bival = 26
+    broken_pipe = 27
 
 
 class ErrorMessage:

@@ -352,7 +352,7 @@ class DataCsv(Data):
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
                  separator=',', relation_name='', attrs_first_line=True,
-                 none_val=Data.NONE_VAL, **kwargs):
+                 none_val=None, **kwargs):
         self._attrs_first_line = attrs_first_line
         super().__init__(source, str_attrs, str_objects,
                          separator, relation_name, none_val)
@@ -440,9 +440,9 @@ class DataCxt(Data):
 
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
-                 separator='', relation_name='', none_val=Data.NONE_VAL, **kwargs):
+                 separator='', relation_name='', **kwargs):
         super().__init__(source, str_attrs, str_objects,
-                         separator, relation_name, none_val)
+                         separator, relation_name, None)
 
     sym_vals = {CROSS: Bival.true(), DOT: Bival.false()}
     vals_sym = {Bival.true(): CROSS, Bival.false(): DOT}
@@ -545,7 +545,7 @@ class DataDat(Data):
                  str_attrs=None, str_objects=None,
                  separator=' ', relation_name='', **kwargs):
         super().__init__(source, str_attrs, str_objects,
-                         separator, relation_name)
+                         separator, relation_name, None)
 
     def get_data_header_info(self, manager):
         max_val = -1
@@ -557,10 +557,9 @@ class DataDat(Data):
             if manager.skip_line(i):
                 continue
             line_count += 1
-            splitted = line.split(self.separator)
+            splitted = self.split_line(line)
             updated_attrs = {}
             for col, val in enumerate(splitted):
-                val = val.strip()
                 try:
                     int_val = int(val)
                 except ValueError:
@@ -606,10 +605,9 @@ class DataDat(Data):
         pass
 
     def prepare_line(self, line, index, scale=True, update=False):
-        splitted = line.split(self.separator)
+        splitted = self.split_line(line)
         result = [Bival.false()] * (self._attr_count)
         for col, val in enumerate(splitted):
-            val = val.strip()
             try:
                 result[int(val)] = Bival.true()
             except ValueError:
@@ -623,3 +621,12 @@ class DataDat(Data):
             if vals[self.PREPARED_VAL] == vals[self.BOOL_TRUE]:
                 result.append(str(i))
         self.write_line_to_file(result)
+
+    def split_line(self, line):
+        result = []
+        splitted = line.split(self.separator)
+        for val in splitted:
+            val = val.strip()
+            if val:
+                result.append(val)
+        return result

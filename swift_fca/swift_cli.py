@@ -161,6 +161,8 @@ def main():
         sys.exit(e.ident)
     except KeyboardInterrupt:
         sys.exit(ErrorCode.keyboard_interrupt)
+    except BrokenPipeError:  # NOQA
+        sys.exit(ErrorCode.broken_pipe)
     except:
         msg = ErrorMessage.UNKNOWN_ERROR + traceback.format_exc()
         print(msg, file=sys.stderr)

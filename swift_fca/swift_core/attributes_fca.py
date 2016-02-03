@@ -94,7 +94,7 @@ class Attribute:
 
     def process(self, value, none_val, scale, update):
         if self._expr_pattern and scale:
-            if value == none_val:  # result of scaling none value is False
+            if none_val and value == none_val:  # result of scaling none value is False
                 return Bival.false()
             return self.scale(value)
         if update:

@@ -101,8 +101,9 @@ args2 = """WINDY=windy:e['TRUE'];
            HUM=humidity.relative.day:n[70<=x<=80];
            NOTE=note:s['hell|[0-9]'];
            BIRTHDAY=day:d/'%Y-%m-%d'[date=='2001-04-03']"""
+args3 = "c:e['3']"
 try:
-    formulas.parseString(args, parseAll=True)
+    formulas.parseString(args3, parseAll=True)
 except ParseException as e:
     print("========================================")
     print(e.lineno, e.col)
