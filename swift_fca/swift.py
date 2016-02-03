@@ -10,7 +10,7 @@ import itertools
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import SIGNAL
 from .swift_core.managers_fca import Browser, Convertor, Printer
-from .swift_core.constants_fca import RunParams, FileType, ShortCuts
+from .swift_core.constants_fca import RunParams, FileType, ShortCuts, App
 from .swift_core.validator_fca import ConvertValidator
 from .swift_core.errors_fca import ErrorMessage, SwiftError
 import swift_fca.resources.resources_rc  # NOQA Resources file
@@ -115,7 +115,7 @@ class GuiSwift(QtGui.QWidget):
         btn_t_select = QtGui.QPushButton("Select")
         self.btn_s_params = QtGui.QPushButton("Settings")
         self.btn_t_params = QtGui.QPushButton("Settings")
-        self.btn_browse = QtGui.QPushButton("Browse")
+        self.btn_browse = QtGui.QPushButton("Preview")
         self.btn_export_info = QtGui.QPushButton("Export Info")
         self.btn_s_orig_data = QtGui.QPushButton("Original data")
         self.btn_t_orig_data = QtGui.QPushButton("Original data")
@@ -248,7 +248,7 @@ class GuiSwift(QtGui.QWidget):
         self.setLayout(grid)
 
         self.showMaximized()
-        self.setWindowTitle('Swift - FCA Converter')
+        self.setWindowTitle(App.TITLE)
         self.setWindowIcon(QtGui.QIcon(':swift_icon.svg'))
         self.show()
 
@@ -333,12 +333,14 @@ class GuiSwift(QtGui.QWidget):
     def select_source(self):
         """Slot for btn_s_select"""
         file_name = QtGui.QFileDialog.getOpenFileName(self, "Select source file", filter=self.file_filter)
-        self.line_source.setText(file_name)
+        if file_name:
+            self.line_source.setText(file_name)
 
     def select_target(self):
         """Slot for btn_t_select"""
         file_name = QtGui.QFileDialog.getSaveFileName(self, "Select target file", filter=self.file_filter)
-        self.line_target.setText(file_name)
+        if file_name:
+            self.line_target.setText(file_name)
 
     def change_source_params(self):
         """Slot for btn_s_params"""
@@ -987,13 +989,18 @@ class OriginalDataDialog(QtGui.QDialog):
 
 
 class SourceParamsDialog(ParamsDialog):
-    format_poss_args = {FileType.ARFF_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP, RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS),
-                        FileType.CSV_EXT: (RunParams.FORMAT, RunParams.SOURCE_SEP, RunParams.NFL,
+    format_poss_args = {FileType.ARFF_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP,
+                                            RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS, RunParams.NONE_VALUE),
+                        FileType.CSV_EXT: (RunParams.FORMAT, RunParams.SOURCE_SEP, RunParams.NFL, RunParams.NONE_VALUE,
                                            RunParams.SOURCE_ATTRS, RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS),
-                        FileType.CXT_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS),
-                        FileType.DAT_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS, RunParams.SOURCE_SEP),
-                        FileType.DATA_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP, RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS),
-                        FileType.NAMES_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP, RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS)}
+                        FileType.CXT_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SKIPPED_LINES,
+                                           RunParams.SKIP_ERRORS),
+                        FileType.DAT_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SKIPPED_LINES,
+                                           RunParams.SKIP_ERRORS, RunParams.SOURCE_SEP),
+                        FileType.DATA_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP,
+                                            RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS, RunParams.NONE_VALUE),
+                        FileType.NAMES_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP,
+                                             RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS, RunParams.NONE_VALUE)}
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -1003,8 +1010,9 @@ class SourceParamsDialog(ParamsDialog):
         seq_validator = QtGui.QRegExpValidator(seqregex)
 
         self.skip_lines = FormLine("Skip Lines", validator=seq_validator)
-        self.line_separator = FormLine("Separator", default_val=',')
+        self.line_separator = FormLine("Separator")
         self.line_str_attrs = FormLine("Attributes")
+        self.line_missing_val = FormLine("Missing Value")
         # checkbox
         self.cb_nfl = FormCheckBox('Attributes on first line')
         self.cb_skip_errors = FormCheckBox('Skip Errors', default_val=QtCore.Qt.Unchecked)
@@ -1013,6 +1021,7 @@ class SourceParamsDialog(ParamsDialog):
         self.widgets[RunParams.SOURCE_ATTRS] = self.line_str_attrs
         self.widgets[RunParams.SOURCE_SEP] = self.line_separator
         self.widgets[RunParams.SKIPPED_LINES] = self.skip_lines
+        self.widgets[RunParams.NONE_VALUE] = self.line_missing_val
         self.widgets[RunParams.SKIP_ERRORS] = self.cb_skip_errors
         self.widgets[RunParams.NFL] = self.cb_nfl
 
@@ -1031,7 +1040,7 @@ class TargetParamsDialog(ParamsDialog):
     def __init__(self, parent):
         super().__init__(parent)
         self.params = parent.target_params
-        self.line_separator = FormLine("Separator", default_val=',')
+        self.line_separator = FormLine("Separator")
         self.line_str_objects = FormLine("Objects")
         self.line_rel_name = FormLine("Relation Name")
         self.line_classes = FormLine("Classes")

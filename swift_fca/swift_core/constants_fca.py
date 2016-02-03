@@ -1,5 +1,7 @@
 class App:
     NAME = 'swift'
+    TITLE = "Swift - Relational Data Converter"
+    DESCRIPTION = 'Swift is a Relational Data Converter of data formats used in Formal Concept Analysis (FCA) and public repositories.'
     gui = False
 
 
@@ -46,6 +48,7 @@ class FileType:
 
     ALL_EXT = [CSV_EXT, ARFF_EXT, DAT_EXT, DATA_EXT, NAMES_EXT, CXT_EXT]
     ALL_REPR = [CSV_REPR, ARFF_REPR, DAT_REPR, DATA_REPR, NAMES_REPR, CXT_REPR]
+    ALL_REPR_NO_NAMES = [CSV_REPR, ARFF_REPR, DAT_REPR, DATA_REPR, CXT_REPR]
 
 
 class AttrType:

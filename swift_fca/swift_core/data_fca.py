@@ -10,7 +10,7 @@ from .attributes_fca import (Attribute, AttrEnum)
 from .object_fca import Object
 from .parser_fca import FormulaParser, ArffParser, DataParser
 from .constants_fca import Bival, FileType
-from .errors_fca import HeaderError, LineError, AttrError, InvalidValueError, FormulaKeyError, BivalError
+from .errors_fca import HeaderError, LineError, AttrError, InvalidValueError, FormulaKeyError, BivalError, NamesFileError
 
 
 class Data:
@@ -415,7 +415,10 @@ class DataData(Data):
 
     def get_header_info(self, manager=None):
         parser = DataParser()
-        parser.parse(self._get_name_file(self._source.name))
+        names_file = self._get_name_file(self._source.name)
+        if not os.path.isfile(names_file):
+            raise NamesFileError(names_file)
+        parser.parse(names_file)
         self._header_attrs = parser.attributes
 
     def _get_class_occur(self):

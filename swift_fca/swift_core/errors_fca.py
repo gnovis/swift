@@ -31,6 +31,7 @@ class ErrorCode(IntEnum):
     missing_arg = 25
     bival = 26
     broken_pipe = 27
+    names_file = 28
 
 
 class ErrorMessage:
@@ -170,3 +171,9 @@ class BivalError(SwiftError):
     def __init__(self, val, true, false):
         super().__init__(ErrorCode.bival, "Bivalent",
                          "Invalid bivalent value in data - given: {}, expected: {}(=True) or {}(=False). Or scale formula is missing.".format(val, true, false))
+
+
+class NamesFileError(SwiftError):
+    def __init__(self, file_name):
+        super().__init__(ErrorCode.names_file, "Names File",
+                         "File '{}' doesn't exist. Files with extensions '.data' and '.names' must be in the same directory.".format(file_name))

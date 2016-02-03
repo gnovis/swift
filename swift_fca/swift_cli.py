@@ -82,7 +82,7 @@ def get_args():
                   "skipped_lines": RunParams.SKIPPED_LINES,
                   "skip_errors": RunParams.SKIP_ERRORS}
 
-    parser = argparse.ArgumentParser(prog=App.NAME)
+    parser = argparse.ArgumentParser(prog=App.NAME, description=App.DESCRIPTION)
 
     parser.add_argument("source", nargs="?", type=argparse.FileType('r'), default=sys.stdin, help="Name of source file.")
     parser.add_argument("-ss", "--source_separator",
@@ -104,9 +104,9 @@ def get_args():
     parser.add_argument("-to", "--target_objects", help="Target file (new) objects. Only for CXT format.")
     parser.add_argument("-n", "--name", help="New name of relation.")
     parser.add_argument("-cls", "--classes", help="Classes seperated by commas - for C4.5 convert.")
-    parser.add_argument("-sf", "--source_format", type=str.lower, choices=FileType.ALL_REPR,
+    parser.add_argument("-sf", "--source_format", type=str.lower, choices=FileType.ALL_REPR_NO_NAMES,
                         help="Format of source file, must to be specified when source is standart input (stdin)")
-    parser.add_argument("-tf", "--target_format", type=str.lower, choices=FileType.ALL_REPR,
+    parser.add_argument("-tf", "--target_format", type=str.lower, choices=FileType.ALL_REPR_NO_NAMES,
                         help="Format of target file, must to be specified when target is standart output (stdout)")
     parser.add_argument("-{}".format(CONVERT[0]), "--{}".format(CONVERT), nargs='?', default=False, const=True,
                         help="Source file will be converted to target file, this is default option.")
