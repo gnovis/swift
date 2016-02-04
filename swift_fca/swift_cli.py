@@ -70,7 +70,8 @@ def get_args():
                    "source_separator": RunParams.SOURCE_SEP,
                    "target_attributes": RunParams.SOURCE_ATTRS,
                    "source_no_header": RunParams.NFL,
-                   "missing_value": RunParams.NONE_VALUE}
+                   "missing_value": RunParams.NONE_VALUE,
+                   "classes": RunParams.CLASSES}
     TARGET_ARGS = {"target": RunParams.TARGET,
                    "target_format": RunParams.FORMAT,
                    "target_separator": RunParams.TARGET_SEP,

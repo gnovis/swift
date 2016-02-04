@@ -24,3 +24,7 @@ print_test_info $format $ARFF
 # -> dat
 $app $source_file -t data.dat -ta "$new_str_attrs"
 print_test_info $format $DAT
+
+# -> data
+$app $source_file -t data.data -cls "$classes"
+print_test_info $format $DATA

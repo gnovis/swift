@@ -5,13 +5,13 @@ from .managers_fca import ManagerFca
 class ConvertValidator:
     PARAMS_FILTER = {'.arff.cxt': [[RunParams.SOURCE_ATTRS], []],
                      '.arff.dat': [[RunParams.SOURCE_ATTRS], []],
-                     '.arff.data': [[], [RunParams.CLASSES]],
+                     '.arff.data': [[RunParams.CLASSES], []],
                      '.csv.arff': [[RunParams.SOURCE_ATTRS], []],
                      '.csv.cxt': [[RunParams.SOURCE_ATTRS], []],
                      '.csv.dat': [[RunParams.SOURCE_ATTRS], []],
-                     '.csv.data': [[RunParams.SOURCE_ATTRS], [RunParams.CLASSES]],
-                     '.cxt.data': [[], [RunParams.CLASSES]],
-                     '.dat.data': [[], [RunParams.CLASSES]],
+                     '.csv.data': [[RunParams.SOURCE_ATTRS, RunParams.CLASSES], []],
+                     '.cxt.data': [[RunParams.CLASSES], []],
+                     '.dat.data': [[RunParams.CLASSES], []],
                      '.data.dat': [[RunParams.SOURCE_ATTRS], []],
                      '.data.cxt': [[RunParams.SOURCE_ATTRS], []]}
 

@@ -1,0 +1,9 @@
+green,blue,red.
+age: continuous.
+eye-color: blue,red,green,brown.
+height: continuous.
+weight: continuous.
+job: doctor,teacher,pilot,student.
+vegan: false.
+work: true,false.
+class: man,woman.

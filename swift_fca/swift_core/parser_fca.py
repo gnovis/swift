@@ -38,6 +38,19 @@ class Parser():
     def attributes(self):
         return self._attributes.copy()
 
+    @staticmethod
+    def expand_sequence_grammar(max_attrs_i):
+
+        def expand_interval(tokens):
+            val_from = int(tokens[0])
+            val_to = int(tokens[1]) + 1
+            result = list(map(str, range(val_from, val_to)))
+            return result
+
+        name = interval(max_attrs_i, expand_interval) | Word(printables, excludeChars="[]-,=:;")
+        names = delimitedList(name)
+        return names
+
 
 class FormulaParser(Parser):
 
@@ -107,11 +120,6 @@ class FormulaParser(Parser):
             self._attributes.append(attribute)
 
     def parse(self, str_args, max_attrs_i):
-        def expand_interval(tokens):
-            val_from = int(tokens[0])
-            val_to = int(tokens[1]) + 1
-            result = list(map(str, range(val_from, val_to)))
-            return result
 
         date_val = quotedString.copy()
         quoted_str = quotedString
@@ -123,11 +131,12 @@ class FormulaParser(Parser):
         str_scale = quoted_str
         enum_scale = quoted_str
         num_scale = boolexpr(numeric())
-        name = interval(max_attrs_i, expand_interval) | Word(printables, excludeChars="[]-,=:;")
+        # name = interval(max_attrs_i, expand_interval) | Word(printables, excludeChars="[]-,=:;")
         scale = num_scale | enum_scale | str_scale | date_scale
         typ = Or(CaselessLiteral("n") ^ CaselessLiteral("e") ^
                  CaselessLiteral("s") ^ Group(Literal("d") + Optional(Suppress("/") + date_format("date_format"), default="%Y-%m-%dT%H:%M:%S")))
-        names = Group(delimitedList(name))
+        # names = Group(delimitedList(name))
+        names = Group(self.expand_sequence_grammar(max_attrs_i))
         new_old_names = (Optional(names + Suppress("="), default='') + names).setParseAction(self.clone_names)
         formula = (new_old_names +
                    Optional(Or(Literal("[]")("unpack").setParseAction(lambda t: True) ^
@@ -380,5 +389,16 @@ def parse_intervals(string):
                         Word(nums)("num").setParseAction(lambda t: Interval(t.num, t.num)))
     try:
         return Intervals(seq.parseString(string, parseAll=True).asList())
+    except ParseException as e:
+        raise SequenceSyntaxError(e.lineno, e.col, e.line, e)
+
+
+def parse_sequence(str_to_parse, max_attrs_i):
+    if not str_to_parse:
+        return []
+    seq = Parser.expand_sequence_grammar(max_attrs_i)
+
+    try:
+        return seq.parseString(str_to_parse, parseAll=True).asList()
     except ParseException as e:
         raise SequenceSyntaxError(e.lineno, e.col, e.line, e)

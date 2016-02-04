@@ -33,10 +33,10 @@ class ManagerFca(MANAGER_PARENT):
 
     # source+target -> read / don't read
     READ_DATA = {CSV+CSV: False, CSV+ARFF: True, CSV+DAT: False, CSV+CXT: True, CSV+DATA: True,
-                 ARFF+ARFF: False, ARFF+DAT: False, ARFF+CXT: True, ARFF+DATA: False, ARFF+CSV: False,
-                 DAT+DAT: True, DAT+CXT: True, DAT+DATA: True, DAT+CSV: True, DAT+ARFF: True,
+                 ARFF+ARFF: False, ARFF+DAT: False, ARFF+CXT: True, ARFF+DATA: True, ARFF+CSV: False,
+                 DAT+DAT: True, DAT+CXT: True, DAT+DATA: False, DAT+CSV: True, DAT+ARFF: True,
                  CXT+CXT: False, CXT+DATA: False, CXT+CSV: False, CXT+ARFF: False, CXT+DAT: False,
-                 DATA+DATA: False, DATA+CSV: False, DATA+ARFF: True, DATA+DAT: False, DATA+CXT: True}
+                 DATA+DATA: True, DATA+CSV: False, DATA+ARFF: True, DATA+DAT: False, DATA+CXT: True}
 
     # Signals
     if App.gui:
@@ -167,7 +167,7 @@ class Browser(ManagerFca):
                 continue
 
             try:
-                prepared_line = self._data.prepare_line(line.strip(), self._curr_line_index, False)
+                prepared_line, classes = self._data.prepare_line(line.strip(), self._curr_line_index, False)
                 prepared_line = list(map(lambda l: l[Data.PREPARED_VAL], prepared_line))
             except (LineError, AttrError) as e:
                 if self.skip_errors:
@@ -244,7 +244,7 @@ class Convertor(ManagerFca):
             if self.skip_line(i):
                 continue
             try:
-                prepared_line = self._old_data.prepare_line(line, i)
+                prepared_line, classes = self._old_data.prepare_line(line, i)
             except (LineError, AttrError) as e:
                 if self.skip_errors:
                     self.add_error(e)
@@ -252,7 +252,7 @@ class Convertor(ManagerFca):
                 raise e
             if not prepared_line:  # line is comment
                 continue
-            self._new_data.write_line(prepared_line)
+            self._new_data.write_line(prepared_line, classes)
             self._counter.update(line, self._old_data.index_data_start)
         self._new_data.source.close()
         source_file.close()

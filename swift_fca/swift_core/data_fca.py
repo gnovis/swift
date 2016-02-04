@@ -8,9 +8,28 @@ from collections import OrderedDict
 
 from .attributes_fca import (Attribute, AttrEnum)
 from .object_fca import Object
-from .parser_fca import FormulaParser, ArffParser, DataParser
+from .parser_fca import FormulaParser, ArffParser, DataParser, parse_sequence
 from .constants_fca import Bival, FileType
 from .errors_fca import HeaderError, LineError, AttrError, InvalidValueError, FormulaKeyError, BivalError, NamesFileError
+
+
+class Class:
+    def __init__(self, key):
+        self._key = key
+        self._values = []
+
+    @property
+    def key(self):
+        return self._key
+
+    @property
+    def values(self):
+        return self._values.copy()
+
+    def update_values(self, val):
+        val = str(val)
+        if val not in self._values:
+            self._values.append(val)
 
 
 class Data:
@@ -28,7 +47,7 @@ class Data:
 
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
-                 separator=',', relation_name='', none_val=NONE_VAL):
+                 separator=',', relation_name='', none_val=NONE_VAL, classes=""):
         """
         str_ before param name means that it is
         string representation and must be parsed
@@ -53,6 +72,10 @@ class Data:
         self._attributes = []
         # dictionary where keys are keys of attribute (name (if possible read them from file) and index) and values are indexes of values in row data
         self._template_attrs = {}
+        # list of attributes, which are marked as classes
+        self._classes = []
+        # list if identifiers of attributes which are classes, sequence is parsed in get_attrs_info e.g "2-5, foo" -> [2, 3, 4, 5, foo]
+        self._classes_keys_sequence = classes
 
         if self.str_objects:
             splitted = self.ss_str(self._str_objects, ',')
@@ -88,18 +111,24 @@ class Data:
 
     @property
     def obj_count(self):
-        """Does not depends on objects property"""
         return self._obj_count
 
     @property
     def attr_count(self):
-        """Does not depends on attributes property"""
+        """is counted in method: get_header_info or get_attrs_info"""
         return self._attr_count
+
+    @property
+    def classes(self):
+        return self._classes.copy()
 
     def get_attrs_info(self, manager):
 
         # create header attributes and fill _header_attrs slot
         self.get_header_info(manager)
+        self._classes_keys_sequence = parse_sequence(self._classes_keys_sequence, len(self._header_attrs)-1)
+        for key in self._classes_keys_sequence:
+            self._classes.append(Class(key))
 
         # fill dictionary which is used for filtering attributes in prepare_line function,
         # keys are indexes and names of all attributes (given from header), values are indexes of attributes in line (object)
@@ -138,6 +167,8 @@ class Data:
                 if attr.unpack:
                     must_read_data = True
             self._attributes = merged
+
+        self._attr_count = len(self._attributes)
         return must_read_data
 
     def get_header_info(self, manager=None):
@@ -149,7 +180,6 @@ class Data:
     def get_data_info(self, manager, read=False):
         """Get much as possible information about data"""
 
-        self._attr_count = len(self._attributes)
         if read:
             for index, line in enumerate(self.source):
                 if manager.stop or manager.skip_rest_lines(index):
@@ -183,7 +213,7 @@ class Data:
         if not isinstance(values, list):
             values = self.ss_str(values, self.separator)
         if not values:
-            return values
+            return values, None
         result = []
         for attr in self._attributes:
             index = self._template_attrs[attr.key]
@@ -196,7 +226,16 @@ class Data:
                 raise AttrError(line_i+1, ",".join(values), index+1, values[index], e)
 
             result.append([new_value, attr.true, attr.false])
-        return result
+
+        # TODO handle exception when key is invalid
+        classes_values = []
+        for cls in self._classes:
+            index = self._template_attrs[cls.key]
+            val = values[index]
+            cls.update_values(val)
+            classes_values.append(val)
+
+        return result, classes_values
 
     def unpack_attrs(self):
         unpacked = []
@@ -222,12 +261,15 @@ class Data:
         line += '\n'
         self._source.write(line)
 
-    def write_line(self, prepered_line):
+    def write_line(self, prepered_line, classes=None):
         """
         Will write data to output in new format
         based on old_values - list of string values
         """
-        self.write_line_to_file(list(map(lambda l: l[self.PREPARED_VAL], prepered_line)))
+        vals = list(map(lambda l: l[self.PREPARED_VAL], prepered_line))
+        if classes:
+            vals.extend(classes)
+        self.write_line_to_file(vals)
 
     def write_header(self, old_data):
         """This method should be rewritten in child class"""
@@ -295,9 +337,9 @@ class DataArff(Data):
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
                  separator=',', relation_name='',
-                 none_val=Data.NONE_VAL, **kwargs):
+                 none_val=Data.NONE_VAL, classes="", **kwargs):
         super().__init__(source, str_attrs, str_objects,
-                         separator, relation_name, none_val)
+                         separator, relation_name, none_val, classes)
         self._parser = ArffParser(separator)
 
     NUMERIC = "numeric"
@@ -352,10 +394,10 @@ class DataCsv(Data):
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
                  separator=',', relation_name='', attrs_first_line=True,
-                 none_val=None, **kwargs):
+                 none_val=None, classes="", **kwargs):
         self._attrs_first_line = attrs_first_line
         super().__init__(source, str_attrs, str_objects,
-                         separator, relation_name, none_val)
+                         separator, relation_name, none_val, classes)
 
     def write_header(self, old_data):
         if self._attrs_first_line:
@@ -393,21 +435,18 @@ class DataData(Data):
 
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
-                 separator=',', relation_name='', classes="", none_val=Data.NONE_VAL, **kwargs):
+                 separator=',', relation_name='', none_val=Data.NONE_VAL, classes="", **kwargs):
         super().__init__(source, str_attrs, str_objects,
-                         separator, relation_name, none_val)
-        self._classes = list(reversed(self.ss_str(classes, self._separator)))
-
-    def write_line(self, prepared_line):
-        if self._classes:
-            prepared_line.append([self._classes.pop(), Bival.true(), Bival.false()])
-        super().write_line(prepared_line)
+                         separator, relation_name, none_val, classes)
+        self._class = None
 
     def write_header(self, old_data):
-        names_file = self._get_name_file(self._source.name)
+        if old_data.classes:
+            self._class = old_data.classes[0]  # only first class is excepted by c4.5 format
 
+        names_file = self._get_name_file(self._source.name)
         with open(names_file, 'w') as f:
-            f.write(self._get_class_occur() + ".\n")
+            f.write(self.separator.join(self._class.values) + ".\n")
             for attr in old_data.attributes:
                 line = (str(attr.name) + ': '
                         + attr.data_repr(self.separator) + '.\n')
@@ -420,13 +459,6 @@ class DataData(Data):
             raise NamesFileError(names_file)
         parser.parse(names_file)
         self._header_attrs = parser.attributes
-
-    def _get_class_occur(self):
-        occur = []
-        for c in self._classes:
-            if c not in occur:
-                occur.append(c)
-        return self.separator.join(occur)
 
     """return file name with suffix .names"""
     def _get_name_file(self, source):
@@ -443,9 +475,9 @@ class DataCxt(Data):
 
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
-                 separator='', relation_name='', **kwargs):
+                 separator='', relation_name='', classes="", **kwargs):
         super().__init__(source, str_attrs, str_objects,
-                         separator, relation_name, None)
+                         separator, relation_name, None, classes)
 
     sym_vals = {CROSS: Bival.true(), DOT: Bival.false()}
     vals_sym = {Bival.true(): CROSS, Bival.false(): DOT}
@@ -490,7 +522,9 @@ class DataCxt(Data):
         # no lines shoud be skipped, because skip was done by next() above!
 
     def get_data_info(self, manager, read=False):
-        pass
+        for cls in self._classes:
+            cls.update_values(Bival.true())
+            cls.update_values(Bival.false())
 
     def prepare_line(self, line, index, scale=True, update=False):
         splitted = list(line.strip())
@@ -519,7 +553,7 @@ class DataCxt(Data):
         for attr in attrs_to_write:
             target.write(attr.name + '\n')
 
-    def write_line(self, prepared_line):
+    def write_line(self, prepared_line, classes=None):
         result = []
         for vals in prepared_line:
             self.check_value_bival(vals)
@@ -546,9 +580,9 @@ class DataDat(Data):
 
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
-                 separator=' ', relation_name='', **kwargs):
+                 separator=' ', relation_name='', classes="", **kwargs):
         super().__init__(source, str_attrs, str_objects,
-                         separator, relation_name, None)
+                         separator, relation_name, None, classes)
 
     def get_data_header_info(self, manager):
         max_val = -1
@@ -605,7 +639,9 @@ class DataDat(Data):
         self.get_data_header_info(manager)
 
     def get_data_info(self, manager, read=False):
-        pass
+        for cls in self._classes:
+            cls.update_values(Bival.true())
+            cls.update_values(Bival.false())
 
     def prepare_line(self, line, index, scale=True, update=False):
         splitted = self.split_line(line)
@@ -617,7 +653,7 @@ class DataDat(Data):
                 raise LineError(self.FORMAT, index+1, col+1, line, self.ERROR_DESCRIPTION.format(val))
         return super().prepare_line(result, index, scale, update)
 
-    def write_line(self, line):
+    def write_line(self, line, classes=None):
         result = []
         for i, vals in enumerate(line):
             self.check_value_bival(vals)

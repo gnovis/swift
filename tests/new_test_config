@@ -5,7 +5,7 @@ app="../../../swift-cli.py"
 new_str_attrs="WINDY=windy:e['TRUE']; SUNNY=outlook:e['sunny']; FOG_DUP, FOG=fog_bival, fog_bival; TEMP=temperature:n[x>80]; HUM=humidity.relative.day:n[70<=x<=80]; NOTE=note:s['hell|[0-9]']; BIRTHDAY=day:d/F='%Y-%m-%d'[date=='2001-04-03']"  
 new_str_attrs_indexes="WINDY=4:e['TRUE']; SUNNY=1:e['sunny']; ORDER=6; TEMP=2:n[x>80]; HUM=3:n[70<=x<=80]; NOTE=0:s['hell|[0-9]']; BIRTHDAY=7:d/'%Y-%m-%d'[date=='2001-04-03']"  
 new_str_objects="0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13"
-classes="Monday, Friday, Friday, Sunday, Theusday, Theusday, Wednesday, Theusday, Monday, Sunday, Suterday, Wednesday, Monday, Sunday"
+classes="1"
 test_sep="====================================================================================="
 
 ARFF=ARFF
