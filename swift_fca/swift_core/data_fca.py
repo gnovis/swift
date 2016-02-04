@@ -268,7 +268,7 @@ class Data:
         """
         vals = list(map(lambda l: l[self.PREPARED_VAL], prepered_line))
         if classes:
-            vals.extend(classes)
+            vals.extend(classes)  # TODO Zkontrolovat jestli to nebude davat spatne vzsledky napr pri prevodu arff -> csv kdyz zadam -cls
         self.write_line_to_file(vals)
 
     def write_header(self, old_data):
@@ -572,7 +572,106 @@ class DataCxt(Data):
                 return line
 
 
-class DataDat(Data):
+# class DataDat(Data):
+#     """Data format for FCALGS"""
+#
+#     FORMAT = FileType.DAT
+#     ERROR_DESCRIPTION = "Invalid value: '{}'. Value must be integer."
+#
+#     def __init__(self, source,
+#                  str_attrs=None, str_objects=None,
+#                  separator=' ', relation_name='', classes="", **kwargs):
+#         super().__init__(source, str_attrs, str_objects,
+#                          separator, relation_name, None, classes)
+#
+#     def get_data_header_info(self, manager):
+#         max_val = -1
+#         line_count = 0
+#         attributes = OrderedDict()
+#         for i, line in enumerate(self.source):
+#             if manager.stop or manager.skip_rest_lines(i):
+#                 break
+#             if manager.skip_line(i):
+#                 continue
+#             line_count += 1
+#             splitted = self.split_line(line)
+#             updated_attrs = {}
+#             for col, val in enumerate(splitted):
+#                 try:
+#                     int_val = int(val)
+#                 except ValueError:
+#                     e = LineError(self.FORMAT, i+1, col+1, line, self.ERROR_DESCRIPTION.format(val))
+#                     if manager.skip_errors:
+#                         manager.add_error(e)
+#                         continue
+#                     raise e
+#                 if int_val > max_val:
+#                     max_val = int_val
+#
+#                 if int_val not in attributes:
+#                     attributes[int_val] = AttrEnum(int_val, str(int_val)).update(Bival.false(), self._none_val, step=line_count-1)
+#                 attributes[int_val].update(Bival.true(), self._none_val)
+#                 updated_attrs[int_val] = attributes[int_val]
+#
+#             for i in range(max_val + 1):
+#                 if i not in attributes:
+#                     attributes[i] = AttrEnum(i, str(i)).update(Bival.false(), self._none_val, step=line_count-1)
+#                 if i not in updated_attrs:
+#                     attributes[i].update(Bival.false(), self._none_val)
+#
+#             if self._temp_source:
+#                 self._temp_source.write(line)
+#
+#             if manager.gui:
+#                 manager.update_counter(line, self.index_data_start)
+#
+#         if self._temp_source:
+#             self._source = self._temp_source
+#         self._source.seek(0)
+#
+#         self._attr_count = max_val + 1
+#         self._obj_count = line_count
+#
+#         sorted_attrs = OrderedDict(sorted(attributes.items(), key=lambda t: t))
+#         self._header_attrs = list(sorted_attrs.values())
+#
+#     def get_header_info(self, manager=None):
+#         self.get_data_header_info(manager)
+#
+#     def get_data_info(self, manager, read=False):
+#         for cls in self._classes:
+#             cls.update_values(Bival.true())
+#             cls.update_values(Bival.false())
+#
+#     def prepare_line(self, line, index, scale=True, update=False):
+#         splitted = self.split_line(line)
+#         result = [Bival.false()] * (self._attr_count)
+#         for col, val in enumerate(splitted):
+#             try:
+#                 result[int(val)] = Bival.true()
+#             except ValueError:
+#                 raise LineError(self.FORMAT, index+1, col+1, line, self.ERROR_DESCRIPTION.format(val))
+#         return super().prepare_line(result, index, scale, update)
+#
+#     def write_line(self, line, classes=None):
+#         result = []
+#         for i, vals in enumerate(line):
+#             self.check_value_bival(vals)
+#             if vals[self.PREPARED_VAL] == vals[self.BOOL_TRUE]:
+#                 result.append(str(i))
+#         self.write_line_to_file(result)
+#
+#     def split_line(self, line):
+#         result = []
+#         splitted = line.split(self.separator)
+#         for val in splitted:
+#             val = val.strip()
+#             if val:
+#                 result.append(val)
+#         return result
+
+
+class DataDatBase(Data):
     """Data format for FCALGS"""
 
     FORMAT = FileType.DAT
@@ -594,7 +693,7 @@ class DataDat(Data):
             if manager.skip_line(i):
                 continue
             line_count += 1
-            splitted = self.split_line(line)
+            splitted = self.parse_line(line)
             updated_attrs = {}
             for col, val in enumerate(splitted):
                 try:
@@ -643,23 +742,26 @@ class DataDat(Data):
             cls.update_values(Bival.true())
             cls.update_values(Bival.false())
 
-    def prepare_line(self, line, index, scale=True, update=False):
-        splitted = self.split_line(line)
+    def get_prepared_indexes(self, str_indexes, index, line):
+        splitted = self.split_line(str_indexes)
         result = [Bival.false()] * (self._attr_count)
         for col, val in enumerate(splitted):
             try:
                 result[int(val)] = Bival.true()
             except ValueError:
                 raise LineError(self.FORMAT, index+1, col+1, line, self.ERROR_DESCRIPTION.format(val))
-        return super().prepare_line(result, index, scale, update)
+        return result
 
-    def write_line(self, line, classes=None):
+    def prepare_line(self, values, index, scale=True, update=False):
+        return super().prepare_line(values, index, scale, update)
+
+    def prepare_write_line(self, line):
         result = []
         for i, vals in enumerate(line):
             self.check_value_bival(vals)
             if vals[self.PREPARED_VAL] == vals[self.BOOL_TRUE]:
                 result.append(str(i))
-        self.write_line_to_file(result)
+        return result
 
     def split_line(self, line):
         result = []
@@ -669,3 +771,61 @@ class DataDat(Data):
             if val:
                 result.append(val)
         return result
+
+
+class DataDat(DataDatBase):
+
+    def parse_line(self, line):
+        return self.split_line(line)
+
+    def prepare_line(self, line, index, scale=True, update=False):
+        result = self.get_prepared_indexes(line, index, line)
+        return super().prepare_line(result, index, scale, update)
+
+    def write_line(self, line, classes=None):
+        result = self.prepare_write_line(line)
+        self.write_line_to_file(result)
+
+
+class DataDtl(DataDatBase):
+    def __init__(self, source,
+                 str_attrs=None, str_objects=None,
+                 separator=' ', relation_name='', classes="", class_sep='|', **kwargs):
+        super().__init__(source, str_attrs, str_objects,
+                         separator, relation_name, None, classes)
+        self._classes_from_source_file = OrderedDict()
+        self._class_sep = class_sep
+
+    def parse_line(self, line):
+        indexes, classes = self.get_indexes_classes(line)
+        for cls in self.split_line(classes):
+            if cls not in self._classes_from_source_file:
+                self._classes_from_source_file[cls] = AttrEnum(None, cls)
+            self._classes_from_source_file[cls].update(cls, self._none_val)
+        return self.split_line(indexes)
+
+    def get_indexes_classes(self, line):
+        indexes, sep, classes = line.partition(self._class_sep)  # TODO make | as parameter
+        return indexes, classes
+
+    def prepare_line(self, line, index, scale=True, update=False):
+        str_indexes, classes = self.get_indexes_classes(line)
+        result = self.get_prepared_indexes(str_indexes, index, line)
+        result.extend(classes)
+        return super().prepare_line(result, index, scale, update)
+
+    def write_line(self, line, classes=None):
+        prepared = self.prepare_write_line(line)
+        str_line = self.separator.join(prepared) + self._class_sep
+        if classes:
+            str_classes = self.separator.join(classes)
+            str_line += str_classes
+        str_line += '\n'
+        self._source.write(str_line)
+
+    def get_data_header_info(self, manager):
+        super().get_data_header_info(self, manager)
+        for cls in self._classes_from_source_file.values():
+            cls.index = self._attr_count - 1
+            self._attr_count += 1
+            self._header_attrs.append(cls)

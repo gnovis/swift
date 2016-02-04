@@ -56,6 +56,10 @@ class Attribute:
     def index(self):
         return self._index
 
+    @index.setter
+    def index(self, value):
+        self._index = value
+
     @property
     def attr_type(self):
         return self._attr_type

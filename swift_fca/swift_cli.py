@@ -104,7 +104,8 @@ def get_args():
                         help="Separator which will be used in target file. Default is ','.")
     parser.add_argument("-to", "--target_objects", help="Target file (new) objects. Only for CXT format.")
     parser.add_argument("-n", "--name", help="New name of relation.")
-    parser.add_argument("-cls", "--classes", help="Classes seperated by commas - for C4.5 convert.")
+    parser.add_argument("-cls", "--classes", help="""Intervals (e.g 5-8) or keys, seperated by commas.
+                        For determine, which attribute will be used as class. Compulsory for coversion: -> C4.5 and -> DTL.""")
     parser.add_argument("-sf", "--source_format", type=str.lower, choices=FileType.ALL_REPR_NO_NAMES,
                         help="Format of source file, must to be specified when source is standart input (stdin)")
     parser.add_argument("-tf", "--target_format", type=str.lower, choices=FileType.ALL_REPR_NO_NAMES,
