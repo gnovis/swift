@@ -62,6 +62,7 @@ class Data:
         self._index_data_start = 0
         self._obj_count = 0
         self._attr_count = 0
+        self._attr_count_no_classes = 0
         self._temp_source = None
         if not self.source.seekable():
             self._temp_source = tempfile.TemporaryFile(mode='w+t', dir='./')
@@ -119,6 +120,11 @@ class Data:
         return self._attr_count
 
     @property
+    def attr_count_no_classes(self):
+        """is counted in method: get_header_info or get_attrs_info"""
+        return self._attr_count_no_classes
+
+    @property
     def classes(self):
         return self._classes.copy()
 
@@ -163,12 +169,20 @@ class Data:
                 if attr.index is not None and str(attr.index) == attr.name:
                     attr.name = header_attr.name
 
+                attr.is_class = header_attr.is_class
+
                 merged.append(attr)
                 if attr.unpack:
                     must_read_data = True
             self._attributes = merged
 
-        self._attr_count = len(self._attributes)
+        # Counting attributes
+        self._attr_count_no_classes = 0
+        self._attr_count = 0
+        for attr in self._attributes:
+            if not attr.is_class:
+                self._attr_count_no_classes += 1
+            self._attr_count += 1
         return must_read_data
 
     def get_header_info(self, manager=None):
@@ -744,7 +758,7 @@ class DataDatBase(Data):
 
     def get_prepared_indexes(self, str_indexes, index, line):
         splitted = self.split_line(str_indexes)
-        result = [Bival.false()] * (self._attr_count)
+        result = [Bival.false()] * (self._attr_count_no_classes)
         for col, val in enumerate(splitted):
             try:
                 result[int(val)] = Bival.true()
@@ -755,13 +769,13 @@ class DataDatBase(Data):
     def prepare_line(self, values, index, scale=True, update=False):
         return super().prepare_line(values, index, scale, update)
 
-    def prepare_write_line(self, line):
+    def write_line(self, line, classes=None):
         result = []
         for i, vals in enumerate(line):
             self.check_value_bival(vals)
             if vals[self.PREPARED_VAL] == vals[self.BOOL_TRUE]:
                 result.append(str(i))
-        return result
+        self.write_line_to_file(result)
 
     def split_line(self, line):
         result = []
@@ -774,7 +788,6 @@ class DataDatBase(Data):
 
 
 class DataDat(DataDatBase):
-
     def parse_line(self, line):
         return self.split_line(line)
 
@@ -782,50 +795,70 @@ class DataDat(DataDatBase):
         result = self.get_prepared_indexes(line, index, line)
         return super().prepare_line(result, index, scale, update)
 
-    def write_line(self, line, classes=None):
-        result = self.prepare_write_line(line)
-        self.write_line_to_file(result)
-
 
 class DataDtl(DataDatBase):
+    FORMAT = FileType.DTL
+    """
+    DAT format with classes defined behind the char '|'
+    example:
+
+    0 1 2 3 4|a bb
+    1 2 3 4|b bb
+    2 3 4|a aa
+    3 4|a bb
+    4|b aa
+
+    Note: Class can't be same as value for true/false (default is 0/1) !! If so, unexpected behavior may occur.
+    """
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
                  separator=' ', relation_name='', classes="", class_sep='|', **kwargs):
-        super().__init__(source, str_attrs, str_objects,
-                         separator, relation_name, None, classes)
+        super().__init__(source, str_attrs, str_objects, separator, relation_name, classes)
         self._classes_from_source_file = OrderedDict()
         self._class_sep = class_sep
 
     def parse_line(self, line):
         indexes, classes = self.get_indexes_classes(line)
-        for cls in self.split_line(classes):
-            if cls not in self._classes_from_source_file:
-                self._classes_from_source_file[cls] = AttrEnum(None, cls)
-            self._classes_from_source_file[cls].update(cls, self._none_val)
+        for i, cls in enumerate(self.split_line(classes)):
+            if i not in self._classes_from_source_file:
+                self._classes_from_source_file[i] = AttrEnum(None, "class{}".format(i+1))
+                self._classes_from_source_file[i].is_class = True
+            # Update pro statistiku bude fungovat pouze kdyz budou vsechny tridy u kazdeho objektu
+            self._classes_from_source_file[i].update(cls, self._none_val)
         return self.split_line(indexes)
 
     def get_indexes_classes(self, line):
         indexes, sep, classes = line.partition(self._class_sep)  # TODO make | as parameter
-        return indexes, classes
+        return indexes, classes.strip()
 
     def prepare_line(self, line, index, scale=True, update=False):
         str_indexes, classes = self.get_indexes_classes(line)
         result = self.get_prepared_indexes(str_indexes, index, line)
-        result.extend(classes)
+        result.extend(self.split_line(classes))
         return super().prepare_line(result, index, scale, update)
 
     def write_line(self, line, classes=None):
-        prepared = self.prepare_write_line(line)
-        str_line = self.separator.join(prepared) + self._class_sep
+
+        cls_values = []  # classes vals readed from source file
+        indexes = []
+        for i, vals in enumerate(line):
+            if vals[self.PREPARED_VAL] == vals[self.BOOL_TRUE]:
+                indexes.append(str(i))
+            if vals[self.PREPARED_VAL] != vals[self.BOOL_TRUE] and vals[self.PREPARED_VAL] != vals[self.BOOL_FALSE]:
+                cls_values.append(vals[self.PREPARED_VAL])
+
+        str_line = self.separator.join(indexes) + self._class_sep
         if classes:
-            str_classes = self.separator.join(classes)
-            str_line += str_classes
+            cls_values.extend(classes)
+        str_classes = self.separator.join(cls_values)
+        str_line += str_classes
         str_line += '\n'
         self._source.write(str_line)
 
     def get_data_header_info(self, manager):
-        super().get_data_header_info(self, manager)
+        super().get_data_header_info(manager)
+        next_index = self._attr_count
         for cls in self._classes_from_source_file.values():
-            cls.index = self._attr_count - 1
-            self._attr_count += 1
+            cls.index = next_index
+            next_index += 1
             self._header_attrs.append(cls)

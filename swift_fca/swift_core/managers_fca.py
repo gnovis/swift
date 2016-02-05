@@ -2,7 +2,7 @@ from __future__ import print_function
 import os
 import sys
 import time
-from .data_fca import (Data, DataCsv, DataArff, DataDat, DataCxt, DataData)
+from .data_fca import Data, DataCsv, DataArff, DataDat, DataCxt, DataData, DataDtl
 from .constants_fca import FileType, RunParams, App
 from .parser_fca import parse_intervals
 from .errors_fca import ArgError, ErrorMessage, LineError, AttrError
@@ -24,19 +24,22 @@ class ManagerFca(MANAGER_PARENT):
     DAT = FileType.DAT_EXT
     CXT = FileType.CXT_EXT
     DATA = FileType.DATA_EXT
+    DTL = FileType.DTL_EXT
 
     EXTENSIONS = {CSV: DataCsv,
                   ARFF: DataArff,
                   DAT: DataDat,
                   CXT: DataCxt,
-                  DATA: DataData}
+                  DATA: DataData,
+                  DTL: DataDtl}
 
     # source+target -> read / don't read
-    READ_DATA = {CSV+CSV: False, CSV+ARFF: True, CSV+DAT: False, CSV+CXT: True, CSV+DATA: True,
-                 ARFF+ARFF: False, ARFF+DAT: False, ARFF+CXT: True, ARFF+DATA: True, ARFF+CSV: False,
-                 DAT+DAT: True, DAT+CXT: True, DAT+DATA: False, DAT+CSV: True, DAT+ARFF: True,
-                 CXT+CXT: False, CXT+DATA: False, CXT+CSV: False, CXT+ARFF: False, CXT+DAT: False,
-                 DATA+DATA: True, DATA+CSV: False, DATA+ARFF: True, DATA+DAT: False, DATA+CXT: True}
+    READ_DATA = {CSV+CSV: False, CSV+ARFF: True, CSV+DAT: False, CSV+CXT: True, CSV+DATA: True, CSV+DTL: True,
+                 ARFF+ARFF: False, ARFF+DAT: False, ARFF+CXT: True, ARFF+DATA: True, ARFF+CSV: False, ARFF+DTL: True,
+                 DAT+DAT: True, DAT+CXT: True, DAT+DATA: True, DAT+CSV: True, DAT+ARFF: True, DAT+DTL: True,
+                 DTL+DTL: True, DTL+CXT: True, DTL+DATA: True, DTL+CSV: True, DTL+ARFF: True, DTL+DAT: True,
+                 CXT+CXT: False, CXT+DATA: True, CXT+CSV: False, CXT+ARFF: False, CXT+DAT: False, CXT+DTL: True,
+                 DATA+DATA: True, DATA+CSV: False, DATA+ARFF: True, DATA+DAT: False, DATA+CXT: True, DATA+DTL: True}
 
     # Signals
     if App.gui:

@@ -31,6 +31,7 @@ class FileType:
     CXT = 3
     DATA = 4
     NAMES = 5
+    DTL = 6
 
     CSV_EXT = ".csv"
     ARFF_EXT = ".arff"
@@ -38,6 +39,7 @@ class FileType:
     CXT_EXT = ".cxt"
     DATA_EXT = ".data"
     NAMES_EXT = ".names"
+    DTL_EXT = ".dtl"
 
     CSV_REPR = "csv"
     ARFF_REPR = "arff"
@@ -45,10 +47,11 @@ class FileType:
     CXT_REPR = "cxt"
     DATA_REPR = "data"
     NAMES_REPR = "names"
+    DTL_REPR = "dtl"
 
-    ALL_EXT = [CSV_EXT, ARFF_EXT, DAT_EXT, DATA_EXT, NAMES_EXT, CXT_EXT]
-    ALL_REPR = [CSV_REPR, ARFF_REPR, DAT_REPR, DATA_REPR, NAMES_REPR, CXT_REPR]
-    ALL_REPR_NO_NAMES = [CSV_REPR, ARFF_REPR, DAT_REPR, DATA_REPR, CXT_REPR]
+    ALL_EXT = [CSV_EXT, ARFF_EXT, DAT_EXT, DATA_EXT, NAMES_EXT, CXT_EXT, DTL_EXT]
+    ALL_REPR = [CSV_REPR, ARFF_REPR, DAT_REPR, DATA_REPR, NAMES_REPR, CXT_REPR, DTL_REPR]
+    ALL_REPR_NO_NAMES = [CSV_REPR, ARFF_REPR, DAT_REPR, DATA_REPR, CXT_REPR, DTL_REPR]
 
 
 class AttrType:

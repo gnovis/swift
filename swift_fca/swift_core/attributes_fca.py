@@ -27,6 +27,7 @@ class Attribute:
         self._true = Bival.true()
         self._false = Bival.false()
         self._unpack = False
+        self._is_class = False
 
     @property
     def key(self):
@@ -51,6 +52,14 @@ class Attribute:
     @name.setter
     def name(self, value):
         self._name = value
+
+    @property
+    def is_class(self):
+        return self._is_class
+
+    @is_class.setter
+    def is_class(self, value):
+        self._is_class = bool(value)
 
     @property
     def index(self):
