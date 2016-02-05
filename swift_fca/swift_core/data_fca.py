@@ -128,6 +128,9 @@ class Data:
     def classes(self):
         return self._classes.copy()
 
+    def update_classes_by_values_from_attrs(self):
+        pass
+
     def get_attrs_info(self, manager):
 
         # create header attributes and fill _header_attrs slot
@@ -135,6 +138,9 @@ class Data:
         self._classes_keys_sequence = parse_sequence(self._classes_keys_sequence, len(self._header_attrs)-1)
         for key in self._classes_keys_sequence:
             self._classes.append(Class(key))
+
+        # This method is defined only in DataDtl class for updating classes values.
+        self.update_classes_by_values_from_attrs()
 
         # fill dictionary which is used for filtering attributes in prepare_line function,
         # keys are indexes and names of all attributes (given from header), values are indexes of attributes in line (object)
@@ -460,7 +466,8 @@ class DataData(Data):
 
         names_file = self._get_name_file(self._source.name)
         with open(names_file, 'w') as f:
-            f.write(self.separator.join(self._class.values) + ".\n")
+            if self._class:
+                f.write(self.separator.join(self._class.values) + ".\n")
             for attr in old_data.attributes:
                 line = (str(attr.name) + ': '
                         + attr.data_repr(self.separator) + '.\n')
@@ -584,105 +591,6 @@ class DataCxt(Data):
             self.current_line += 1
             if line:
                 return line
-
-
-# class DataDat(Data):
-#     """Data format for FCALGS"""
-#
-#     FORMAT = FileType.DAT
-#     ERROR_DESCRIPTION = "Invalid value: '{}'. Value must be integer."
-#
-#     def __init__(self, source,
-#                  str_attrs=None, str_objects=None,
-#                  separator=' ', relation_name='', classes="", **kwargs):
-#         super().__init__(source, str_attrs, str_objects,
-#                          separator, relation_name, None, classes)
-#
-#     def get_data_header_info(self, manager):
-#         max_val = -1
-#         line_count = 0
-#         attributes = OrderedDict()
-#         for i, line in enumerate(self.source):
-#             if manager.stop or manager.skip_rest_lines(i):
-#                 break
-#             if manager.skip_line(i):
-#                 continue
-#             line_count += 1
-#             splitted = self.split_line(line)
-#             updated_attrs = {}
-#             for col, val in enumerate(splitted):
-#                 try:
-#                     int_val = int(val)
-#                 except ValueError:
-#                     e = LineError(self.FORMAT, i+1, col+1, line, self.ERROR_DESCRIPTION.format(val))
-#                     if manager.skip_errors:
-#                         manager.add_error(e)
-#                         continue
-#                     raise e
-#                 if int_val > max_val:
-#                     max_val = int_val
-#
-#                 if int_val not in attributes:
-#                     attributes[int_val] = AttrEnum(int_val, str(int_val)).update(Bival.false(), self._none_val, step=line_count-1)
-#                 attributes[int_val].update(Bival.true(), self._none_val)
-#                 updated_attrs[int_val] = attributes[int_val]
-#
-#             for i in range(max_val + 1):
-#                 if i not in attributes:
-#                     attributes[i] = AttrEnum(i, str(i)).update(Bival.false(), self._none_val, step=line_count-1)
-#                 if i not in updated_attrs:
-#                     attributes[i].update(Bival.false(), self._none_val)
-#
-#             if self._temp_source:
-#                 self._temp_source.write(line)
-#
-#             if manager.gui:
-#                 manager.update_counter(line, self.index_data_start)
-#
-#         if self._temp_source:
-#             self._source = self._temp_source
-#         self._source.seek(0)
-#
-#         self._attr_count = max_val + 1
-#         self._obj_count = line_count
-#
-#         sorted_attrs = OrderedDict(sorted(attributes.items(), key=lambda t: t))
-#         self._header_attrs = list(sorted_attrs.values())
-#
-#     def get_header_info(self, manager=None):
-#         self.get_data_header_info(manager)
-#
-#     def get_data_info(self, manager, read=False):
-#         for cls in self._classes:
-#             cls.update_values(Bival.true())
-#             cls.update_values(Bival.false())
-#
-#     def prepare_line(self, line, index, scale=True, update=False):
-#         splitted = self.split_line(line)
-#         result = [Bival.false()] * (self._attr_count)
-#         for col, val in enumerate(splitted):
-#             try:
-#                 result[int(val)] = Bival.true()
-#             except ValueError:
-#                 raise LineError(self.FORMAT, index+1, col+1, line, self.ERROR_DESCRIPTION.format(val))
-#         return super().prepare_line(result, index, scale, update)
-#
-#     def write_line(self, line, classes=None):
-#         result = []
-#         for i, vals in enumerate(line):
-#             self.check_value_bival(vals)
-#             if vals[self.PREPARED_VAL] == vals[self.BOOL_TRUE]:
-#                 result.append(str(i))
-#         self.write_line_to_file(result)
-#
-#     def split_line(self, line):
-#         result = []
-#         splitted = line.split(self.separator)
-#         for val in splitted:
-#             val = val.strip()
-#             if val:
-#                 result.append(val)
-#         return result
 
 
 class DataDatBase(Data):
@@ -825,7 +733,9 @@ class DataDtl(DataDatBase):
                 self._classes_from_source_file[i].is_class = True
             # Update pro statistiku bude fungovat pouze kdyz budou vsechny tridy u kazdeho objektu
             self._classes_from_source_file[i].update(cls, self._none_val)
-        return self.split_line(indexes)
+
+        splitted_indexes = self.split_line(indexes)
+        return splitted_indexes
 
     def get_indexes_classes(self, line):
         indexes, sep, classes = line.partition(self._class_sep)  # TODO make | as parameter
@@ -854,6 +764,16 @@ class DataDtl(DataDatBase):
         str_line += str_classes
         str_line += '\n'
         self._source.write(str_line)
+
+    def get_data_info(self, manager, read=False):
+        pass
+
+    def update_classes_by_values_from_attrs(self):
+        for cls in self._classes:
+            for attr in self._header_attrs:
+                if cls.key == attr.name or cls.key == str(attr.index):
+                    for val in attr.values:
+                        cls.update_values(val)
 
     def get_data_header_info(self, manager):
         super().get_data_header_info(manager)

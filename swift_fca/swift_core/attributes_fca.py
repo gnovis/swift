@@ -257,6 +257,10 @@ class AttrEnum(Attribute):
                          attr_pattern, expr_pattern)
         self._values = values.copy()
 
+    @property
+    def values(self):
+        return self._values.copy()
+
     def scale(self, value):
         return super().scale(value == self._expr_pattern)
 
