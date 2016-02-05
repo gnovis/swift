@@ -1,0 +1,34 @@
+#!/bin/bash
+
+source ../../new_test_config
+
+format=$DTL
+source_file=test.dtl
+new_str_attrs="note=0; outlook=1; temperature=2; humidity=3; windy=4; play=5:e['a']; foo=class2:e"
+new_str_attrs2="note=0; outlook=1; temperature=2; humidity=3; windy=4; play=5:e['a']; foo=class2:e['bb']"
+
+print_header $format
+
+# -> csv
+$app $source_file -t dtl.csv -ta "$new_str_attrs"
+print_test_info $format $CSV
+
+# -> arff
+$app $source_file -t dtl.arff -ta "$new_str_attrs"
+print_test_info $format $ARFF
+
+# -> cxt
+$app $source_file -t dtl.cxt -ta "$new_str_attrs2" -to "$new_str_objects"
+print_test_info $format $CXT
+
+# -> data
+$app $source_file -t dtl.data -ta "$new_str_attrs" -cls "$classes"
+print_test_info $format $DATA
+
+# -> dat
+$app $source_file -t dtl.dat -ta "$new_str_attrs2"
+print_test_info $format $DAT
+
+# -> dtl
+$app $source_file -t dtl.dtl -ta "1,2,class2"
+print_test_info $format $DTL

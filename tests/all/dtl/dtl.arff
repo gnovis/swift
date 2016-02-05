@@ -1,0 +1,16 @@
+@relation 
+
+@attribute note { 1,0 }
+@attribute outlook { 1,0 }
+@attribute temperature { 1,0 }
+@attribute humidity { 1,0 }
+@attribute windy { 1,0 }
+@attribute play { 1,0 }
+@attribute foo { bb,aa }
+
+@data
+1,1,1,1,1,1,bb
+0,1,1,1,1,0,bb
+0,0,1,1,1,1,aa
+0,0,0,1,1,1,bb
+0,0,0,0,1,0,aa

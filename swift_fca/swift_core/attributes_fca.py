@@ -148,7 +148,7 @@ class Attribute:
         return result.strip()
 
     def arff_repr(self, sep):
-        return '{ ' + Bival.false() + sep + Bival.true() + ' }'
+        return '{ ' + Bival.true() + sep + Bival.false() + ' }'
 
     def data_repr(self, sep):
         return Bival.false() + sep + Bival.true()
@@ -259,7 +259,10 @@ class AttrEnum(Attribute):
 
     @property
     def values(self):
-        return self._values.copy()
+        if self._expr_pattern:  # definitely scaling
+            return [Bival.true(), Bival.false()]
+        else:
+            return self._values.copy()
 
     def scale(self, value):
         return super().scale(value == self._expr_pattern)
@@ -271,10 +274,10 @@ class AttrEnum(Attribute):
         return self
 
     def arff_repr(self, sep):
-        return '{ ' + sep.join(self._values) + ' }'
+        return '{ ' + sep.join(self.values) + ' }'
 
     def data_repr(self, sep):
-        return sep.join(self._values)
+        return sep.join(self.values)
 
 
 class AttrString(Attribute):

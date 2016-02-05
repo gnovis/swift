@@ -129,6 +129,9 @@ class Data:
         return self._classes.copy()
 
     def update_classes_by_values_from_attrs(self):
+        """
+        This method is defined only in DataDtl class for updating classes values.
+        """
         pass
 
     def get_attrs_info(self, manager):
@@ -139,7 +142,7 @@ class Data:
         for key in self._classes_keys_sequence:
             self._classes.append(Class(key))
 
-        # This method is defined only in DataDtl class for updating classes values.
+        # Just for Dtl classes update
         self.update_classes_by_values_from_attrs()
 
         # fill dictionary which is used for filtering attributes in prepare_line function,
@@ -177,18 +180,18 @@ class Data:
 
                 attr.is_class = header_attr.is_class
 
+                if (type(header_attr) is AttrEnum) and (type(attr) is AttrEnum):
+                    attr_header_values = header_attr.values
+                    if attr_header_values and not attr.values:
+                        for val in attr_header_values:
+                            attr.update(val, self._none_val)
+
                 merged.append(attr)
                 if attr.unpack:
                     must_read_data = True
             self._attributes = merged
 
-        # Counting attributes
-        self._attr_count_no_classes = 0
-        self._attr_count = 0
-        for attr in self._attributes:
-            if not attr.is_class:
-                self._attr_count_no_classes += 1
-            self._attr_count += 1
+        self._attr_count = len(self._attributes)
         return must_read_data
 
     def get_header_info(self, manager=None):
@@ -782,3 +785,7 @@ class DataDtl(DataDatBase):
             cls.index = next_index
             next_index += 1
             self._header_attrs.append(cls)
+
+        for ha in self._header_attrs:
+            if not ha._is_class:
+                self._attr_count_no_classes += 1
