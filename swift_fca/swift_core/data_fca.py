@@ -192,6 +192,10 @@ class Data:
             self._attributes = merged
 
         self._attr_count = len(self._attributes)
+        for ha in self._header_attrs:
+            if not ha._is_class:
+                self._attr_count_no_classes += 1
+
         return must_read_data
 
     def get_header_info(self, manager=None):
@@ -785,7 +789,3 @@ class DataDtl(DataDatBase):
             cls.index = next_index
             next_index += 1
             self._header_attrs.append(cls)
-
-        for ha in self._header_attrs:
-            if not ha._is_class:
-                self._attr_count_no_classes += 1

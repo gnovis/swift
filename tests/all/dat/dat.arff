@@ -1,11 +1,11 @@
 @relation 
 
-@attribute note { 0,1 }
-@attribute outlook { 0,1 }
-@attribute temperature { 0,1 }
-@attribute humidity { 0,1 }
-@attribute windy { 0,1 }
-@attribute play { 0,1 }
+@attribute note { 1,0 }
+@attribute outlook { 1,0 }
+@attribute temperature { 1,0 }
+@attribute humidity { 1,0 }
+@attribute windy { 1,0 }
+@attribute play { 1,0 }
 
 @data
 0,1,1,1,0,1
