@@ -84,7 +84,7 @@ class GuiSwift(QtGui.QWidget):
         self.line_source.setObjectName('line_source')
         self.line_target = QtGui.QLineEdit()
         self.line_target.setObjectName('line_target')
-        regexp_ext = QtCore.QRegExp('^.+\.(arff|data|names|dat|cxt|csv)$')
+        regexp_ext = QtCore.QRegExp('^.+\.({})$'.format("|".join(FileType.ALL_REPR)))
         regexp_all = QtCore.QRegExp('^.+$')
         self.line_ext_validator = QtGui.QRegExpValidator(regexp_ext)
         self.line_all_validator = QtGui.QRegExpValidator(regexp_all)
@@ -127,7 +127,7 @@ class GuiSwift(QtGui.QWidget):
         f.setPointSize(12)
         self.btn_convert.setFont(f)
 
-        self.file_filter = "FCA files (*.arff *.cxt *.data *.names *.dat *.csv);;All(*)"
+        self.file_filter = "{} files ({});;All(*)".format(App.NAME, " ".join(map(lambda v: "*.{}".format(v), FileType.ALL_REPR)))
 
         open_orig = lambda path: OriginalDataDialog(path, self)
 
@@ -145,11 +145,11 @@ class GuiSwift(QtGui.QWidget):
         tooltip_format = "({})\n{}"
         btn_s_select.setToolTip(
             tooltip_format.format(ShortCuts.SOURCE_FILE,
-                                  "Select existing data file in one of the format: ARFF, DATA, CSV, DAT, CXT"))
+                                  "Select existing data file in one of the format: {}.".format(", ".join(FileType.ALL_REPR))))
         btn_t_select.setToolTip(
             tooltip_format.format(ShortCuts.TARGET_FILE,
                                   ("Select name for new data file, supported formats: " +
-                                   "ARFF, DATA, CSV, DAT, CXT.\nThis file will be created or rewrited by converted data.")))
+                                   "{}.\nThis file will be created or rewrited by converted data.".format(", ".join(FileType.ALL_REPR)))))
 
         self.btn_s_orig_data.setToolTip(
             tooltip_format.format(ShortCuts.SOURCE_ORIG_DATA,
@@ -201,7 +201,7 @@ class GuiSwift(QtGui.QWidget):
 
         # Status Bar
         self.status_bar = QtGui.QStatusBar(self)
-        self.status_bar.showMessage("Welcome in Swift FCA Converter", self.STATUS_MESSAGE_DURRATION)
+        self.status_bar.showMessage("Welcome in {}".format(App.TITLE), self.STATUS_MESSAGE_DURRATION)
 
         # Layout
         hbox_source = QtGui.QHBoxLayout()
@@ -1014,7 +1014,7 @@ class SourceParamsDialog(ParamsDialog):
         self.line_str_attrs = FormLine("Attributes")
         self.line_missing_val = FormLine("Missing Value")
         # checkbox
-        self.cb_nfl = FormCheckBox('Attributes on first line')
+        self.cb_nfl = FormCheckBox('Header Line')
         self.cb_skip_errors = FormCheckBox('Skip Errors', default_val=QtCore.Qt.Unchecked)
 
         # layout
@@ -1044,7 +1044,7 @@ class TargetParamsDialog(ParamsDialog):
         self.line_str_objects = FormLine("Objects")
         self.line_rel_name = FormLine("Relation Name")
         self.line_classes = FormLine("Classes")
-        self.cb_nfl = FormCheckBox('Attributes on first line')
+        self.cb_nfl = FormCheckBox('Header Line')
         # placeholders
         self.line_str_objects.setPlaceholderText("obj1_name, obj2_name, obj3_name")
         self.line_classes.setPlaceholderText("cls1_name, cls2_name, cls3_name")

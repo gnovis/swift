@@ -690,7 +690,7 @@ class DataDatBase(Data):
             self.check_value_bival(vals)
             if vals[self.PREPARED_VAL] == vals[self.BOOL_TRUE]:
                 result.append(str(i))
-        self.write_line_to_file(result)
+        return result
 
     def split_line(self, line):
         result = []
@@ -709,6 +709,10 @@ class DataDat(DataDatBase):
     def prepare_line(self, line, index, scale=True, update=False):
         result = self.get_prepared_indexes(line, index, line)
         return super().prepare_line(result, index, scale, update)
+
+    def write_line(self, line, classes=None):
+        to_write = super().write_line(line, classes)
+        self.write_line_to_file(to_write)
 
 
 class DataDtl(DataDatBase):
@@ -755,20 +759,10 @@ class DataDtl(DataDatBase):
         return super().prepare_line(result, index, scale, update)
 
     def write_line(self, line, classes=None):
-
-        cls_values = []  # classes vals readed from source file
-        indexes = []
-        for i, vals in enumerate(line):
-            if vals[self.PREPARED_VAL] == vals[self.BOOL_TRUE]:
-                indexes.append(str(i))
-            if vals[self.PREPARED_VAL] != vals[self.BOOL_TRUE] and vals[self.PREPARED_VAL] != vals[self.BOOL_FALSE]:
-                cls_values.append(vals[self.PREPARED_VAL])
-
+        indexes = super().write_line(line, classes)
         str_line = self.separator.join(indexes) + self._class_sep
         if classes:
-            cls_values.extend(classes)
-        str_classes = self.separator.join(cls_values)
-        str_line += str_classes
+            str_line += self.separator.join(classes)
         str_line += '\n'
         self._source.write(str_line)
 

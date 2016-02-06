@@ -30,5 +30,5 @@ $app $source_file -t dtl.dat -ta "$new_str_attrs2"
 print_test_info $format $DAT
 
 # -> dtl
-$app $source_file -t dtl.dtl -ta "1,2,class2"
+$app $source_file -t dtl.dtl -ta "1,2" -cls "class2"
 print_test_info $format $DTL
