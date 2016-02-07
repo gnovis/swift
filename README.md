@@ -10,7 +10,7 @@ Converter of data formats used in Formal Concept Analysis and public repositorie
 * [CXT](http://www.upriss.org.uk/fca/fcafileformats.html#Burmeister)
 
 ## Options
-
+<pre>
 usage: swift [-h] [-ss SOURCE_SEPARATOR] [-ta TARGET_ATTRIBUTES] [-i]
              [-mv MISSING_VALUE] [-snh] [-tnh] [-t [TARGET]]
              [-ts TARGET_SEPARATOR] [-to TARGET_OBJECTS] [-n NAME]
@@ -78,6 +78,7 @@ optional arguments:
   -tcs TARGET_CLS_SEPARATOR, --target_cls_separator TARGET_CLS_SEPARATOR
                         Separator which separates attributes and classes in
                         target (will be written) C4.5 file format.
+</pre>
 <!---
 ### A. Object Names
 List of object names sepeprated by: ",", separator inside string isn't allowed.  
