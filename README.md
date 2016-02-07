@@ -40,7 +40,7 @@ Example: `"obj1, obj2, obj3, ... "`
 <date_val> ::= "'" .+ "'"
 ```
 *Notes: Every token can be surrounded by any amount of white spaces. In grammar are white spaces omitted because of better readability.*  
-
+<!---
 **Attributes**  
 Attributes are compound of formulas separated by: ","  
 
@@ -65,7 +65,7 @@ Valid syntax of formula is also: `new_attr=old_attr[]`, in this case result of s
 `regular_expression`: must be surrounded by quotes. Supported syntax is described here: [python regex](https://docs.python.org/2/library/re.html)  
 For Scaling is used `re.RegexObject.search` method.  
 Description from [documentation](https://docs.python.org/2/library/re.html#re.RegexObject.search):  
-> Scan through string looking for a location where this regular expression produces a match, and return a corresponding MatchObject instance (Scaling return True). Return None if no position in the string matches the pattern (Scaling return False)  
+Scan through string looking for a location where this regular expression produces a match, and return a corresponding MatchObject instance (Scaling return True). Return None if no position in the string matches the pattern (Scaling return False)  
 
 **Numeric Attribute**  
 `attributes = n, bool_expression`  
@@ -97,7 +97,7 @@ Example:
 
 ### C. Others
 e.g separator, classes,  ...
-
+-->
 
 ## Requirements
 * [python3](https://www.python.org/)
