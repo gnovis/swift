@@ -22,6 +22,7 @@ class RunParams:
     LINE_COUNT = 'line_count'
     SKIPPED_LINES = 'skipped_lines'
     SKIP_ERRORS = 'skip_errors'
+    CLS_SEPARATOR = 'cls_separator'
 
 
 class FileType:

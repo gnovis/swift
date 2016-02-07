@@ -71,14 +71,15 @@ def get_args():
                    "target_attributes": RunParams.SOURCE_ATTRS,
                    "source_no_header": RunParams.NFL,
                    "missing_value": RunParams.NONE_VALUE,
-                   "classes": RunParams.CLASSES}
+                   "classes": RunParams.CLASSES,
+                   "source_cls_separator": RunParams.CLS_SEPARATOR}
     TARGET_ARGS = {"target": RunParams.TARGET,
                    "target_format": RunParams.FORMAT,
                    "target_separator": RunParams.TARGET_SEP,
                    "target_objects": RunParams.TARGET_OBJECTS,
                    "name": RunParams.RELATION_NAME,
                    "target_no_header": RunParams.NFL,
-                   "classes": RunParams.CLASSES}
+                   "target_cls_separator": RunParams.CLS_SEPARATOR}
     OTHER_ARGS = {"info": RunParams.SOURCE_INFO,
                   "skipped_lines": RunParams.SKIPPED_LINES,
                   "skip_errors": RunParams.SKIP_ERRORS}
@@ -116,6 +117,8 @@ def get_args():
                         help="Desired count of lines from source file will be displayed.")
     parser.add_argument("-sl", "--skipped_lines", help="Interval of lines which will be skipped in any operation.")
     parser.add_argument("-se", "--skip_errors", action="store_true", help="Skip broken lines, which cause an errors.")
+    parser.add_argument("-scs", "--source_cls_separator", help="Separator which separates attributes and classes in source (will be read) C4.5 file format.")
+    parser.add_argument("-tcs", "--target_cls_separator", help="Separator which separates attributes and classes in target (will be written) C4.5 file format.")
 
     args = parser.parse_args()
 

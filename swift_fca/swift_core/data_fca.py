@@ -727,14 +727,13 @@ class DataDtl(DataDatBase):
     3 4|a bb
     4|b aa
 
-    Note: Class can't be same as value for true/false (default is 0/1) !! If so, unexpected behavior may occur.
     """
     def __init__(self, source,
                  str_attrs=None, str_objects=None,
-                 separator=' ', relation_name='', classes="", class_sep='|', **kwargs):
+                 separator=' ', relation_name='', classes="", cls_separator='|', **kwargs):
         super().__init__(source, str_attrs, str_objects, separator, relation_name, classes)
         self._classes_from_source_file = OrderedDict()
-        self._class_sep = class_sep
+        self._class_sep = cls_separator
 
     def parse_line(self, line):
         indexes, classes = self.get_indexes_classes(line)
@@ -749,7 +748,7 @@ class DataDtl(DataDatBase):
         return splitted_indexes
 
     def get_indexes_classes(self, line):
-        indexes, sep, classes = line.partition(self._class_sep)  # TODO make | as parameter
+        indexes, sep, classes = line.partition(self._class_sep)
         return indexes, classes.strip()
 
     def prepare_line(self, line, index, scale=True, update=False):

@@ -16,22 +16,23 @@ class ErrorCode(IntEnum):
     csv_line = 10
     dat_line = 11
     cxt_line = 12
-    formula_syntax = 13
-    formula_names = 14
-    sequence_syntax = 15
-    date_val = 16
-    numeric_val = 17
-    string_val = 18
-    nominal_val = 19
-    date_syntax = 20
-    date_value_format = 21
-    formula_regex = 22
-    formula_key = 23
-    keyboard_interrupt = 24
-    missing_arg = 25
-    bival = 26
-    broken_pipe = 27
-    names_file = 28
+    dtl_line = 13
+    formula_syntax = 14
+    formula_names = 15
+    sequence_syntax = 16
+    date_val = 17
+    numeric_val = 18
+    string_val = 19
+    nominal_val = 20
+    date_syntax = 21
+    date_value_format = 22
+    formula_regex = 23
+    formula_key = 24
+    keyboard_interrupt = 25
+    missing_arg = 26
+    bival = 27
+    broken_pipe = 28
+    names_file = 29
 
 
 class ErrorMessage:
@@ -93,7 +94,8 @@ class LineError(ParseError):
              FileType.DATA: [ErrorCode.data_line, HEADER_FORMAT.format(FileType.DATA_REPR, NAME)],
              FileType.CSV: [ErrorCode.csv_line, HEADER_FORMAT.format(FileType.CSV_REPR, NAME)],
              FileType.DAT: [ErrorCode.dat_line, HEADER_FORMAT.format(FileType.DAT_REPR, NAME)],
-             FileType.CXT: [ErrorCode.cxt_line, HEADER_FORMAT.format(FileType.CXT_REPR, NAME)]}
+             FileType.CXT: [ErrorCode.cxt_line, HEADER_FORMAT.format(FileType.CXT_REPR, NAME)],
+             FileType.DTL: [ErrorCode.dtl_line, HEADER_FORMAT.format(FileType.DTL_REPR, NAME)]}
 
     def __init__(self, file_type, row_no, col_no, line, message):
         super().__init__(row_no, col_no, line.strip(), message, *self.TYPES[file_type])
