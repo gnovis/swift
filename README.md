@@ -9,13 +9,80 @@ Converter of data formats used in Formal Concept Analysis and public repositorie
 * [DAT](http://fcalgs.sourceforge.net/format.html)
 * [CXT](http://www.upriss.org.uk/fca/fcafileformats.html#Burmeister)
 
-## Arguments
+## Options
 
+usage: swift [-h] [-ss SOURCE_SEPARATOR] [-ta TARGET_ATTRIBUTES] [-i]
+             [-mv MISSING_VALUE] [-snh] [-tnh] [-t [TARGET]]
+             [-ts TARGET_SEPARATOR] [-to TARGET_OBJECTS] [-n NAME]
+             [-cls CLASSES] [-sf {csv,arff,dat,data,cxt,dtl}]
+             [-tf {csv,arff,dat,data,cxt,dtl}] [-c [CONVERT]] [-p [PREVIEW]]
+             [-sl SKIPPED_LINES] [-se] [-scs SOURCE_CLS_SEPARATOR]
+             [-tcs TARGET_CLS_SEPARATOR]
+             [source]
+
+Swift is a Relational Data Converter of data formats used in Formal Concept
+Analysis (FCA) and public repositories.
+
+positional arguments:
+  source                Name of source file.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -ss SOURCE_SEPARATOR, --source_separator SOURCE_SEPARATOR
+                        Separator which is used in source file. Default is
+                        ','.
+  -ta TARGET_ATTRIBUTES, --target_attributes TARGET_ATTRIBUTES
+                        Attributes Formula used for filtering, reordering and
+                        converting attributes.
+  -i, --info            Print information about source file data.
+  -mv MISSING_VALUE, --missing_value MISSING_VALUE
+                        Character which is used in data as value for non-
+                        specified attribute.
+  -snh, --source_no_header
+                        Attributes aren't specified on first line in csv data
+                        file.
+  -tnh, --target_no_header
+                        Attributes wont't be specified on first line in csv
+                        data file.
+  -t [TARGET], --target [TARGET]
+                        Name of target file.
+  -ts TARGET_SEPARATOR, --target_separator TARGET_SEPARATOR
+                        Separator which will be used in target file. Default
+                        is ','.
+  -to TARGET_OBJECTS, --target_objects TARGET_OBJECTS
+                        Target file (new) objects. Only for CXT format.
+  -n NAME, --name NAME  New name of relation.
+  -cls CLASSES, --classes CLASSES
+                        Intervals (e.g 5-8) or keys, seperated by commas. For
+                        determine, which attribute will be used as class.
+                        Compulsory for coversion: -> C4.5 and -> DTL.
+  -sf {csv,arff,dat,data,cxt,dtl}, --source_format {csv,arff,dat,data,cxt,dtl}
+                        Format of source file, must to be specified when
+                        source is standart input (stdin)
+  -tf {csv,arff,dat,data,cxt,dtl}, --target_format {csv,arff,dat,data,cxt,dtl}
+                        Format of target file, must to be specified when
+                        target is standart output (stdout)
+  -c [CONVERT], --convert [CONVERT]
+                        Source file will be converted to target file, this is
+                        default option.
+  -p [PREVIEW], --preview [PREVIEW]
+                        Desired count of lines from source file will be
+                        displayed.
+  -sl SKIPPED_LINES, --skipped_lines SKIPPED_LINES
+                        Interval of lines which will be skipped in any
+                        operation.
+  -se, --skip_errors    Skip broken lines, which cause an errors.
+  -scs SOURCE_CLS_SEPARATOR, --source_cls_separator SOURCE_CLS_SEPARATOR
+                        Separator which separates attributes and classes in
+                        source (will be read) C4.5 file format.
+  -tcs TARGET_CLS_SEPARATOR, --target_cls_separator TARGET_CLS_SEPARATOR
+                        Separator which separates attributes and classes in
+                        target (will be written) C4.5 file format.
+<!---
 ### A. Object Names
 List of object names sepeprated by: ",", separator inside string isn't allowed.  
 Example: `"obj1, obj2, obj3, ... "`  
-
-### B. Attributes  
+### A. Target Attributes - specification of scale/copy formula
 
 #### Grammar (BNF with [regular expressions](https://docs.python.org/2/library/re.html))
 
@@ -40,7 +107,6 @@ Example: `"obj1, obj2, obj3, ... "`
 <date_val> ::= "'" .+ "'"
 ```
 *Notes: Every token can be surrounded by any amount of white spaces. In grammar are white spaces omitted because of better readability.*  
-<!---
 **Attributes**  
 Attributes are compound of formulas separated by: ","  
 
