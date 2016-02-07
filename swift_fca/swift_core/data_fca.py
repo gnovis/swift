@@ -294,8 +294,6 @@ class Data:
         based on old_values - list of string values
         """
         vals = list(map(lambda l: l[self.PREPARED_VAL], prepered_line))
-        if classes:
-            vals.extend(classes)  # TODO Zkontrolovat jestli to nebude davat spatne vzsledky napr pri prevodu arff -> csv kdyz zadam -cls
         self.write_line_to_file(vals)
 
     def write_header(self, old_data):
@@ -346,16 +344,6 @@ class DataArff(Data):
     @ATTRIBUTE <attribute-name> <attribute-type>
     @DATA
     <obj1-attr1>, <obj2-attr2> ....
-
-    Sample:
-    =======
-    @RELATION iris
-    @ATTRIBUTE sepallength  NUMERIC
-    @ATTRIBUTE petalwidth   STRING
-    @ATTRIBUTE class        {Iris-setosa,Iris-versicolor,Iris-virginica}
-    @ATTRIBUTE timestamp DATE yyyy-MM-dd HH:mm:ss
-    @DATA
-    5, lot, Iris-versicolor, 2001-04-03 12:12:12
 
     """
 
@@ -487,6 +475,12 @@ class DataData(Data):
             raise NamesFileError(names_file)
         parser.parse(names_file)
         self._header_attrs = parser.attributes
+
+    def write_line(self, prepered_line, classes=None):
+        vals = list(map(lambda l: l[self.PREPARED_VAL], prepered_line))
+        if classes:
+            vals.extend(classes)
+        self.write_line_to_file(vals)
 
     """return file name with suffix .names"""
     def _get_name_file(self, source):
@@ -718,7 +712,7 @@ class DataDat(DataDatBase):
 class DataDtl(DataDatBase):
     FORMAT = FileType.DTL
     """
-    DAT format with classes defined behind the char '|'
+    DAT format with classes defined behind the char '|' (default, can be changed)
     example:
 
     0 1 2 3 4|a bb
@@ -741,7 +735,7 @@ class DataDtl(DataDatBase):
             if i not in self._classes_from_source_file:
                 self._classes_from_source_file[i] = AttrEnum(None, "class{}".format(i+1))
                 self._classes_from_source_file[i].is_class = True
-            # Update pro statistiku bude fungovat pouze kdyz budou vsechny tridy u kazdeho objektu
+            # All classes must be on every line, otherwise update won't work correctly
             self._classes_from_source_file[i].update(cls, self._none_val)
 
         splitted_indexes = self.split_line(indexes)

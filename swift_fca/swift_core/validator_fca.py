@@ -17,8 +17,8 @@ class ConvertValidator:
 
     SOURCE_ARGS_DISPLAY = {RunParams.SOURCE: "Source file",
                            RunParams.SOURCE_SEP: "Source separator",
-                           RunParams.SOURCE_ATTRS: "Source attributes",
-                           RunParams.NFL: "Attributes on first line"}
+                           RunParams.SOURCE_ATTRS: "Target attributes",
+                           RunParams.NFL: "Header Line"}
     TARGET_ARGS_DISPLAY = {RunParams.TARGET: "Target file",
                            RunParams.TARGET_SEP: "Target separator",
                            RunParams.TARGET_OBJECTS: "Target objects",
