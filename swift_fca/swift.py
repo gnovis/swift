@@ -938,6 +938,14 @@ class OriginalDataDialog(QtGui.QDialog):
         self.source = source_path
         self.source = open(source_path, 'r')
         self.data_view.setPlainText(self.load_next(self.load_count))
+
+        palette = self.data_view.palette()
+        self.bg_hightlight = QtGui.QColor(QtCore.Qt.blue).lighter(160)
+        self.fg_highlight = QtGui.QColor(QtCore.Qt.black)
+        palette.setColor(QtGui.QPalette.Highlight, self.bg_hightlight)
+        palette.setColor(QtGui.QPalette.HighlightedText, self.fg_highlight)
+        self.data_view.setPalette(palette)
+
         self.show()
 
     def init_ui(self):
@@ -953,11 +961,23 @@ class OriginalDataDialog(QtGui.QDialog):
 
         self.line = QtGui.QLineEdit()
         self.line.setStyleSheet('QLineEdit { background-color: %s }' % '#ffffff')
-        btn_find = QtGui.QPushButton("Find")
-        btn_find.clicked.connect(self.find)
+        self.line.setPlaceholderText('Find in text')
+        btn_find = QtGui.QToolButton()
+        btn_find_prev = QtGui.QToolButton()
+        btn_find.setToolTip("Next")
+        btn_find_prev.setToolTip("Previous")
+        btn_find.setArrowType(QtCore.Qt.RightArrow)
+        btn_find_prev.setArrowType(QtCore.Qt.LeftArrow)
+        btn_highlight = QtGui.QPushButton("Highlight All")
+        btn_find.clicked.connect(self.find_next)
+        btn_find_prev.clicked.connect(self.find_prev)
+        btn_highlight.clicked.connect(self.highlight_all)
+
         hbox = QtGui.QHBoxLayout()
         hbox.addWidget(self.line)
+        hbox.addWidget(btn_find_prev)
         hbox.addWidget(btn_find)
+        hbox.addWidget(btn_highlight)
         hbox.addWidget(buttons)
         vbox.addLayout(hbox)
 
@@ -965,8 +985,28 @@ class OriginalDataDialog(QtGui.QDialog):
         self.setWindowTitle(self.source_path)
         self.setWindowModality(QtCore.Qt.NonModal)
 
-    def find(self):
-        self.data_view.find(self.line.text())
+    def find_next(self):
+        was_found = self.data_view.find(self.line.text())
+        if not was_found:
+            self.data_view.moveCursor(QtGui.QTextCursor.Start)
+            self.data_view.find(self.line.text())
+
+    def find_prev(self):
+        was_found = self.data_view.find(self.line.text(), QtGui.QTextDocument.FindBackward)
+        if not was_found:
+            self.data_view.moveCursor(QtGui.QTextCursor.End)
+            self.data_view.find(self.line.text(), QtGui.QTextDocument.FindBackward)
+
+    def highlight_all(self):
+        extra_selections = []
+        self.data_view.moveCursor(QtGui.QTextCursor.Start)
+        while self.data_view.find(self.line.text()):
+            selection = QtGui.QTextEdit.ExtraSelection()
+            selection.format.setBackground(self.bg_hightlight)
+            selection.format.setForeground(self.fg_highlight)
+            selection.cursor = self.data_view.textCursor()
+            extra_selections.append(selection)
+        self.data_view.setExtraSelections(extra_selections)
 
     def reject(self):
         self.source.close()
