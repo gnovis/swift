@@ -105,7 +105,8 @@ class Bival:
 
 
 class ShortCuts:
-    CONVERT = "Ctrl+c"
+    CONVERT = "Ctrl+s, Ctrl+c"
+    COPY = "Ctrl+c"
     BROWSE = "Ctrl+b"
     EXPORT = "Ctrl+e"
     SOURCE_FILE = "Ctrl+s, Ctrl+f"

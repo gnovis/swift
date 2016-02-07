@@ -131,7 +131,7 @@ class GuiSwift(QtGui.QWidget):
 
         open_orig = lambda path: OriginalDataDialog(path, self)
 
-        # self.convert_shortcut = QtGui.QShortcut(QtGui.QKeySequence(ShortCuts.CONVERT), self.btn_convert, self.convert)
+        self.convert_shortcut = QtGui.QShortcut(QtGui.QKeySequence(ShortCuts.CONVERT), self.btn_convert, self.convert)
         self.select_source_shortcut = QtGui.QShortcut(QtGui.QKeySequence(ShortCuts.SOURCE_FILE), btn_s_select, self.select_source)
         self.select_target_shortcut = QtGui.QShortcut(QtGui.QKeySequence(ShortCuts.TARGET_FILE), btn_t_select, self.select_target)
         self.source_settings_shortcut = QtGui.QShortcut(QtGui.QKeySequence(ShortCuts.SOURCE_SETTINGS), self.btn_s_params, self.change_source_params)
@@ -140,46 +140,10 @@ class GuiSwift(QtGui.QWidget):
         self.target_origin_shortcut = QtGui.QShortcut(QtGui.QKeySequence(ShortCuts.TARGET_ORIG_DATA), self.btn_t_orig_data, lambda: open_orig(self._target))
         self.browse_shortcut = QtGui.QShortcut(QtGui.QKeySequence(ShortCuts.BROWSE), self.btn_browse, self.browse_source)
         self.export_shortcut = QtGui.QShortcut(QtGui.QKeySequence(ShortCuts.EXPORT), self.btn_export_info, self.export_info)
-
-        def foo():
-            if self.table_view_source.hasFocus():
-                selection = self.table_view_source.selectionModel()
-                indexes = selection.selectedIndexes()
-
-                first = indexes[0]
-                c_min = first.column()
-                c_max = first.column()
-                r_min = first.row()
-                r_max = first.row()
-
-                for i in indexes:
-                    row = i.row()
-                    col = i.column()
-                    if row > r_max:
-                        r_max = row
-                    if row < r_min:
-                        r_min = row
-                    if col > c_max:
-                        c_max = col
-                    if col < c_min:
-                        c_min = col
-                cols = c_max - c_min + 1
-                rows = r_max - r_min + 1
-
-                result_cols = [" "] * cols
-                result_table = [result_cols.copy() for i in range(rows)]
-
-                for ind in indexes:
-                    result_table[ind.row()-r_min][ind.column()-c_min] = ind.data()
-
-                str_res = ""
-                for r in result_table:
-                    str_res += " ".join(r)
-                    str_res += "\n"
-                cb = QtGui.QApplication.clipboard()
-                cb.setText(str_res.rstrip())
-
-        self.convert_shortcut = QtGui.QShortcut(QtGui.QKeySequence(ShortCuts.CONVERT), self.table_view_source, foo)
+        self.copy_source_shortcut = QtGui.QShortcut(QtGui.QKeySequence(ShortCuts.COPY), self.table_view_source,
+                                                    lambda: self.copy_table_data(self.table_view_source), context=QtCore.Qt.WidgetShortcut)
+        self.copy_target_shortcut = QtGui.QShortcut(QtGui.QKeySequence(ShortCuts.COPY), self.table_view_target,
+                                                    lambda: self.copy_table_data(self.table_view_target), context=QtCore.Qt.WidgetShortcut)
 
         # Buttons tool-tip
         tooltip_format = "({})\n{}"
@@ -654,6 +618,43 @@ class GuiSwift(QtGui.QWidget):
             else:
                 set_validator(self.line_ext_validator)
 
+    def copy_table_data(self, table):
+        selection = table.selectionModel()
+        indexes = selection.selectedIndexes()
+        if indexes:
+            first = indexes[0]
+            c_min = first.column()
+            c_max = first.column()
+            r_min = first.row()
+            r_max = first.row()
+
+            for i in indexes:
+                row = i.row()
+                col = i.column()
+                if row > r_max:
+                    r_max = row
+                if row < r_min:
+                    r_min = row
+                if col > c_max:
+                    c_max = col
+                if col < c_min:
+                    c_min = col
+            cols = c_max - c_min + 1
+            rows = r_max - r_min + 1
+
+            result_cols = [" "] * cols
+            result_table = [result_cols.copy() for i in range(rows)]
+
+            for ind in indexes:
+                result_table[ind.row()-r_min][ind.column()-c_min] = ind.data()
+
+            str_res = ""
+            for r in result_table:
+                str_res += " ".join(r)
+                str_res += "\n"
+            cb = QtGui.QApplication.clipboard()
+            cb.setText(str_res.rstrip())
+
 
 class SwiftTableModel(QtCore.QAbstractTableModel):
     def __init__(self, parent, *args):
@@ -980,8 +981,10 @@ class OriginalDataDialog(QtGui.QDialog):
         self.data_view.setPlainText(self.load_next(self.load_count))
 
         palette = self.data_view.palette()
-        self.bg_hightlight = QtGui.QColor(QtCore.Qt.blue).lighter(160)
-        self.fg_highlight = QtGui.QColor(QtCore.Qt.black)
+        bg_color = QtGui.QApplication.palette().color(QtGui.QPalette.Highlight)
+        fg_color = QtGui.QApplication.palette().color(QtGui.QPalette.HighlightedText)
+        self.bg_hightlight = QtGui.QColor(bg_color)
+        self.fg_highlight = QtGui.QColor(fg_color)
         palette.setColor(QtGui.QPalette.Highlight, self.bg_hightlight)
         palette.setColor(QtGui.QPalette.HighlightedText, self.fg_highlight)
         self.data_view.setPalette(palette)
