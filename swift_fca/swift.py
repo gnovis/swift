@@ -976,6 +976,8 @@ class OriginalDataDialog(QtGui.QDialog):
 
         self.init_ui()
 
+        self.hl = Highlighter(self.data_view.document())
+
         self.source = source_path
         self.source = open(source_path, 'r')
         self.data_view.setPlainText(self.load_next(self.load_count))
@@ -1275,6 +1277,71 @@ class BgWorker(QtCore.QThread):
         except:
             msg = ErrorMessage.UNKNOWN_ERROR + traceback.format_exc()
             self.push_error(msg)
+
+
+class Highlighter(QtGui.QSyntaxHighlighter):
+    def __init__(self, parent=None):
+        super(Highlighter, self).__init__(parent)
+
+        keywordFormat = QtGui.QTextCharFormat()
+        keywordFormat.setForeground(QtCore.Qt.darkGreen)
+        keywordFormat.setFontWeight(QtGui.QFont.Bold)
+        keywordPatterns = ["@attribute", "@data", "@relation", "@end", "B"]
+        self.highlightingRules = [(QtCore.QRegExp(pattern), keywordFormat)
+                                  for pattern in keywordPatterns]
+
+        typesFormat = QtGui.QTextCharFormat()
+        typesFormat.setForeground(QtCore.Qt.darkYellow)
+        typesFormat.setFontWeight(QtGui.QFont.Bold)
+        typesPatterns = ["numeric", "NUMERIC", "string", "STRING", "date", "DATE", "relational", "RELATIONAL", "\\{", "\\}"]
+        self.highlightingRules.extend([(QtCore.QRegExp(pattern), typesFormat)
+                                       for pattern in typesPatterns])
+
+        singleLineCommentFormat = QtGui.QTextCharFormat()
+        singleLineCommentFormat.setForeground(QtCore.Qt.red)
+        self.highlightingRules.append((QtCore.QRegExp("%[^\n]*"), singleLineCommentFormat))
+
+        self.multiLineCommentFormat = QtGui.QTextCharFormat()
+        self.multiLineCommentFormat.setForeground(QtCore.Qt.red)
+
+        quotationFormat = QtGui.QTextCharFormat()
+        quotationFormat.setForeground(QtCore.Qt.darkGreen)
+        self.highlightingRules.append((QtCore.QRegExp("\".*\""), quotationFormat))
+
+        # functionFormat = QtGui.QTextCharFormat()
+        # functionFormat.setFontItalic(True)
+        # functionFormat.setForeground(QtCore.Qt.blue)
+        # self.highlightingRules.append((QtCore.QRegExp("\\b[A-Za-z0-9_]+\s+(?=\\{)"), functionFormat))
+
+        self.commentStartExpression = QtCore.QRegExp("/\\*")
+        self.commentEndExpression = QtCore.QRegExp("\\*/")
+
+    def highlightBlock(self, text):
+        for pattern, format in self.highlightingRules:
+            expression = QtCore.QRegExp(pattern)
+            index = expression.indexIn(text)
+            while index >= 0:
+                length = expression.matchedLength()
+                self.setFormat(index, length, format)
+                index = expression.indexIn(text, index + length)
+
+        self.setCurrentBlockState(0)
+
+        startIndex = 0
+        if self.previousBlockState() != 1:
+            startIndex = self.commentStartExpression.indexIn(text)
+
+        while startIndex >= 0:
+            endIndex = self.commentEndExpression.indexIn(text, startIndex)
+
+            if endIndex == -1:
+                self.setCurrentBlockState(1)
+                commentLength = len(text) - startIndex
+            else:
+                commentLength = endIndex - startIndex + self.commentEndExpression.matchedLength()
+
+            self.setFormat(startIndex, commentLength, self.multiLineCommentFormat)
+            startIndex = self.commentStartExpression.indexIn(text, startIndex + commentLength)
 
 
 def main():
