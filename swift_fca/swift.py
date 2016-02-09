@@ -986,7 +986,8 @@ class OriginalDataDialog(QtGui.QDialog):
 
         self.init_ui()
 
-        self.hl = Highlighter(self.get_extension(source_path, args), self.data_view.document())
+        self.hl = Highlighter(self.get_extension(source_path, args),
+                              self.data_view.document(), **args)
 
         self.source = source_path
         self.source = open(source_path, 'r')
@@ -1087,14 +1088,34 @@ class OriginalDataDialog(QtGui.QDialog):
 
 
 class Highlighter(QtGui.QSyntaxHighlighter):
-    def __init__(self, ext, parent=None):
+    def __init__(self, ext, parent=None, separator=",", none_val="?", cls_separator="|", **kwargs):
         super(Highlighter, self).__init__(parent)
 
-        self.green = QtGui.QColor("#1f7a1f")
-        self.brown = QtGui.QColor("#663200")
-        self.red = QtGui.QColor("#990000")
-        self.orange = QtGui.QColor("#e65c00")
-        self.violet = QtGui.QColor("#b30048")
+        self.separator = separator
+        self.none_val = none_val
+        self.cls_separator = cls_separator
+
+        self.keyword_format = QtGui.QTextCharFormat()
+        self.keyword_format.setForeground(QtCore.Qt.darkBlue)
+        self.keyword_format.setFontWeight(QtGui.QFont.Bold)
+
+        self.types_format = QtGui.QTextCharFormat()
+        self.types_format.setForeground(QtCore.Qt.blue)
+        self.types_format.setFontWeight(QtGui.QFont.Bold)
+
+        self.comment_format = QtGui.QTextCharFormat()
+        self.comment_format.setForeground(QtCore.Qt.gray)
+
+        self.class_format = QtGui.QTextCharFormat()
+        self.class_format.setForeground(QtCore.Qt.darkMagenta)
+
+        self.sep_format = QtGui.QTextCharFormat()
+        self.sep_format.setFontWeight(QtGui.QFont.Bold)
+        self.sep_format.setForeground(QtCore.Qt.darkBlue)
+
+        self.mv_format = QtGui.QTextCharFormat()
+        self.mv_format.setForeground(QtCore.Qt.darkRed)
+        self.mv_format.setFontWeight(QtGui.QFont.Bold)
 
         self.highlightingRules = self.get_hl_rules(ext)
 
@@ -1109,121 +1130,60 @@ class Highlighter(QtGui.QSyntaxHighlighter):
         return rules[ext]()
 
     def get_arff(self):
-
-        keywordFormat = QtGui.QTextCharFormat()
-        keywordFormat.setForeground(self.green)
-        keywordFormat.setFontWeight(QtGui.QFont.Bold)
         keywordPatterns = ["@attribute", "@data", "@relation", "@end"]
-        highlightingRules = [(QtCore.QRegExp(pattern), keywordFormat) for pattern in keywordPatterns]
-
-        typesFormat = QtGui.QTextCharFormat()
-        typesFormat.setForeground(self.orange)
-        typesFormat.setFontWeight(QtGui.QFont.Bold)
+        highlightingRules = [(QtCore.QRegExp(pattern), self.keyword_format) for pattern in keywordPatterns]
         typesPatterns = ["numeric", "NUMERIC", "string", "STRING", "date", "DATE", "relational", "RELATIONAL", "\\{", "\\}"]
-        highlightingRules.extend([(QtCore.QRegExp(pattern), typesFormat) for pattern in typesPatterns])
+        highlightingRules.extend([(QtCore.QRegExp(pattern), self.types_format) for pattern in typesPatterns])
+        highlightingRules.append((QtCore.QRegExp("^%[^\n]*"), self.comment_format))
 
-        singleLineCommentFormat = QtGui.QTextCharFormat()
-        singleLineCommentFormat.setForeground(self.brown)
-        highlightingRules.append((QtCore.QRegExp("^%[^\n]*"), singleLineCommentFormat))
-
-        quotationFormat = QtGui.QTextCharFormat()
-        quotationFormat.setForeground(self.red)
-        highlightingRules.append((QtCore.QRegExp("\".*\""), quotationFormat))
-        highlightingRules.append((QtCore.QRegExp("\'[^\"\']*\'"), quotationFormat))
-
-        # functionFormat = QtGui.QTextCharFormat()
-        # functionFormat.setFontItalic(True)
-        # functionFormat.setForeground(QtCore.Qt.blue)
-        # highlightingRules.append((QtCore.QRegExp("\\b[A-Za-z0-9_]+\s+(?=\\{)"), functionFormat))
-
+        highlightingRules.append((QtCore.QRegExp("\{}".format(self.none_val)), self.mv_format))
+        highlightingRules.append((QtCore.QRegExp("\{}".format(self.separator)), self.sep_format))
         return highlightingRules
 
     def get_csv(self):
         highlightingRules = []
-        quotationFormat = QtGui.QTextCharFormat()
-        quotationFormat.setForeground(self.red)
-        highlightingRules.append((QtCore.QRegExp("\".*\""), quotationFormat))
-        highlightingRules.append((QtCore.QRegExp("\'[^\"\']*\'"), quotationFormat))
+        highlightingRules.append((QtCore.QRegExp("\{}".format(self.none_val)), self.mv_format))
+        highlightingRules.append((QtCore.QRegExp("\{}".format(self.separator)), self.sep_format))
         return highlightingRules
 
     def get_data(self):
         highlightingRules = []
-
-        quotationFormat = QtGui.QTextCharFormat()
-        quotationFormat.setForeground(self.red)
-        highlightingRules.append((QtCore.QRegExp("\".*\""), quotationFormat))
-        highlightingRules.append((QtCore.QRegExp("\'[^\"\']*\'"), quotationFormat))
-
-        classFormat = QtGui.QTextCharFormat()
-        classFormat.setForeground(self.violet)
-        highlightingRules.append((QtCore.QRegExp("\w+\.?$"), classFormat))
-
+        highlightingRules.append((QtCore.QRegExp("\w+\.?$"), self.class_format))
+        highlightingRules.append((QtCore.QRegExp("\{}".format(self.none_val)), self.mv_format))
+        highlightingRules.append((QtCore.QRegExp("\{}".format(self.separator)), self.sep_format))
         return highlightingRules
 
     def get_names(self):
-
-        keywordFormat = QtGui.QTextCharFormat()
-        keywordFormat.setForeground(self.green)
-        keywordFormat.setFontWeight(QtGui.QFont.Bold)
         keywordPatterns = ["\.", ":"]
-        highlightingRules = [(QtCore.QRegExp(pattern), keywordFormat) for pattern in keywordPatterns]
-
-        typesFormat = QtGui.QTextCharFormat()
-        typesFormat.setForeground(self.orange)
-        typesFormat.setFontWeight(QtGui.QFont.Bold)
+        highlightingRules = [(QtCore.QRegExp(pattern), self.keyword_format) for pattern in keywordPatterns]
         typesPatterns = ["continuous", "discrete", "ignore"]
-        highlightingRules.extend([(QtCore.QRegExp(pattern), typesFormat) for pattern in typesPatterns])
-
-        singleLineCommentFormat = QtGui.QTextCharFormat()
-        singleLineCommentFormat.setForeground(self.brown)
-        highlightingRules.append((QtCore.QRegExp("\|[^\n]*"), singleLineCommentFormat))
-
-        clsFormat = QtGui.QTextCharFormat()
-        clsFormat.setForeground(self.violet)
-        highlightingRules.append((QtCore.QRegExp("^[^:|]+\.?"), clsFormat))
-
-        quotationFormat = QtGui.QTextCharFormat()
-        quotationFormat.setForeground(self.red)
-        highlightingRules.append((QtCore.QRegExp("\".*\""), quotationFormat))
-        highlightingRules.append((QtCore.QRegExp("\'[^\"\']*\'"), quotationFormat))
+        highlightingRules.extend([(QtCore.QRegExp(pattern), self.types_format) for pattern in typesPatterns])
+        highlightingRules.append((QtCore.QRegExp("\|[^\n]*"), self.comment_format))
+        highlightingRules.append((QtCore.QRegExp("^[^:|.]+"), self.class_format))
+        highlightingRules.append((QtCore.QRegExp("\{}".format(self.separator)), self.sep_format))
 
         functionFormat = QtGui.QTextCharFormat()
-        functionFormat.setForeground(self.green)
+        functionFormat.setForeground(QtCore.Qt.darkBlue)
         highlightingRules.append((QtCore.QRegExp("\\b[A-Za-z0-9_-]+\s*(?=\\:)"), functionFormat))
 
         return highlightingRules
 
     def get_dat(self):
+        highlightingRules = []
+        highlightingRules.append((QtCore.QRegExp("\{}".format(self.separator)), self.sep_format))
         return []
 
     def get_cxt(self):
-
         highlightingRules = []
-        keywordFormat = QtGui.QTextCharFormat()
-        keywordFormat.setForeground(self.green)
-        keywordFormat.setFontWeight(QtGui.QFont.Bold)
-        highlightingRules.append((QtCore.QRegExp("^B$"), keywordFormat))
-
-        trueFormat = QtGui.QTextCharFormat()
-        trueFormat.setForeground(self.violet)
-        trueFormat.setFontWeight(QtGui.QFont.Bold)
-        highlightingRules.append((QtCore.QRegExp("X"), trueFormat))
-
-        falseFormat = QtGui.QTextCharFormat()
-        falseFormat.setForeground(self.brown)
-        falseFormat.setFontWeight(QtGui.QFont.Bold)
-        highlightingRules.append((QtCore.QRegExp("\."), falseFormat))
-
+        highlightingRules.append((QtCore.QRegExp("^B$"), self.keyword_format))
+        highlightingRules.append((QtCore.QRegExp("X"), self.types_format))
+        highlightingRules.append((QtCore.QRegExp("\."), self.types_format))
         return highlightingRules
 
     def get_dtl(self):
-
         highlightingRules = []
-
-        classFormat = QtGui.QTextCharFormat()
-        classFormat.setForeground(self.violet)
-        highlightingRules.append((QtCore.QRegExp("\|.*$"), classFormat))
-
+        highlightingRules.append((QtCore.QRegExp("\{}.*$".format(self.cls_separator)), self.class_format))
+        highlightingRules.append((QtCore.QRegExp("\{}".format(self.separator)), self.sep_format))
         return highlightingRules
 
     def highlightBlock(self, text):
@@ -1246,6 +1206,8 @@ class SourceParamsDialog(ParamsDialog):
                                            RunParams.SKIP_ERRORS),
                         FileType.DAT_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SKIPPED_LINES,
                                            RunParams.SKIP_ERRORS, RunParams.SOURCE_SEP),
+                        FileType.DTL_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SKIPPED_LINES,
+                                           RunParams.SKIP_ERRORS, RunParams.SOURCE_SEP, RunParams.CLS_SEPARATOR),
                         FileType.DATA_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP,
                                             RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS, RunParams.NONE_VALUE),
                         FileType.NAMES_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP,
@@ -1262,6 +1224,7 @@ class SourceParamsDialog(ParamsDialog):
         self.line_separator = FormLine("Separator")
         self.line_str_attrs = FormLine("Attributes")
         self.line_missing_val = FormLine("Missing Value")
+        self.line_cls_separator = FormLine("Class separator")
         # checkbox
         self.cb_nfl = FormCheckBox('Header Line')
         self.cb_skip_errors = FormCheckBox('Skip Errors', default_val=QtCore.Qt.Unchecked)
@@ -1269,6 +1232,7 @@ class SourceParamsDialog(ParamsDialog):
         # layout
         self.widgets[RunParams.SOURCE_ATTRS] = self.line_str_attrs
         self.widgets[RunParams.SOURCE_SEP] = self.line_separator
+        self.widgets[RunParams.CLS_SEPARATOR] = self.line_cls_separator
         self.widgets[RunParams.SKIPPED_LINES] = self.skip_lines
         self.widgets[RunParams.NONE_VALUE] = self.line_missing_val
         self.widgets[RunParams.SKIP_ERRORS] = self.cb_skip_errors
