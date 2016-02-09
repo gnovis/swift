@@ -1,7 +1,3 @@
-"""
-GUI application for Swift FCA
-"""
-
 import sys
 import collections
 import os.path
