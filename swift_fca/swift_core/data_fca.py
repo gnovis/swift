@@ -461,8 +461,10 @@ class DataData(Data):
 
         names_file = self._get_name_file(self._source.name)
         with open(names_file, 'w') as f:
+            cls_to_write = []
             if self._class:
-                f.write(self.separator.join(self._class.values) + ".\n")
+                cls_to_write = self._class.values
+            f.write(self.separator.join(cls_to_write) + ".\n")
             for attr in old_data.attributes:
                 line = (str(attr.name) + ': '
                         + attr.data_repr(self.separator) + '.\n')

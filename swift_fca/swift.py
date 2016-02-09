@@ -1167,7 +1167,7 @@ class Highlighter(QtGui.QSyntaxHighlighter):
     def get_dat(self):
         highlightingRules = []
         highlightingRules.append((QtCore.QRegExp("\{}".format(self.separator)), self.sep_format))
-        return []
+        return highlightingRules
 
     def get_cxt(self):
         highlightingRules = []
