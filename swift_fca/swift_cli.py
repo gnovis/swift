@@ -29,7 +29,7 @@ def convert(*args):
 
 def preview(*args):
     def get_line_format(line):
-        max_len = len(max(line))
+        max_len = len(max(line, key=len))
         return " ".join(["{:" + str(max_len) + "}"] * (len(header)))
 
     def disp_line(line, index):
