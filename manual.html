@@ -131,7 +131,7 @@
 		</code></pre>
 		has the following meaning: old-names refer to attributes in the source file by using their names (if are available) or indexes. New-names define new names of attributes used in the target file. If new-names are omitted, attributes in the target file have the same names as in the source file. New-names and old-names must have the same length, otherwise error is produced.
 		<p>
-		The interval determines range of indexes. If the lower bound is omitted, indexes range is from zero to upper bound. If the upper bound is omitted, indexes range is from upper bound to maximum index of attribute in the target file. If both upper and lower bounds are omitted, indexes range is from zero to maximum index of the attribute in the source file (for this case has been added alis "*", which has the same meaning as "-").
+		The interval determines range of indexes. If the lower bound is omitted, indexes range is from zero to upper bound. If the upper bound is omitted, indexes range is from lower bound to the maximum index of attribute in the target file. If both upper and lower bounds are omitted, indexes range is from zero to the maximum index of the attribute in the source file (for this case has been added alis "*", which has the same meaning as "-").
 		</p>
 		Examples (seven attributes in source file):
 		<table>
