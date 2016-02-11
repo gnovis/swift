@@ -66,16 +66,17 @@
 	</table>
 
 	<h2>DESCRIPTION</h2>
-	Swift - Relational Data Converter is a program for converting data files in six different formats:
+	Swift - Relational Data Converter is a program for converting data files in six different formats.
+	<h3 id="formats">Swift formats</h3>
 	<ul>
 		<li><a href="https://en.wikipedia.org/wiki/Comma-separated_values">CSV</a> (.csv)</li>
 		<li><a href="http://weka.wikispaces.com/ARFF+%28stable+version%29">ARFF</a> (.arff)</li>
 		<li><a href="http://www.upriss.org.uk/fca/fcafileformats.html#Burmeister">Burmaister</a> (.cxt)</li>
-		<li><a href="http://www.cs.washington.edu/dm/vfml/appendixes/c45.htm">C4.5</a> (.data, .names)</li>
+		<li><a href="http://www.cs.washington.edu/dm/vfml/appendixes/c45.htm">C4.5</a> (.data)</li>
 		<li><a href="http://fcalgs.sourceforge.net/format.html">FIMI</a> (.dat)</li>
 		<li>DTL (.dtl)</li>
 	</ul>
-	All accepted formats are text and can be converted with each other, it means 36 possible conversions. Swift is focused on working with table data where rows represent objects (instances) and columns their attributes (properties). Beside data conversion, program supports also:
+	All accepted formats are text and can be converted with each other, it means 36 possible conversions. Swift is focused on working with a table data where rows represent objects (instances) and columns their attributes (properties). Beside the data conversion, program supports also:
 	<ul>
 		<li><b>Filtering</b> - changing column order, changing columns occurrences, skipping columns and rows.</li>
 		<li><b>Scaling</b>  - necessary for conversion multivalent formats (such as CSV, ARFF, C4.5) to bivalent formats (such as Burmeister, FIMI, DTL), but can be used for any converssion.</li>
@@ -85,14 +86,81 @@
 	All operations work with data of any size, only limitation is a space of hard drive (not RAM).
 
 	<p>
-	Swift provides Command-line interface (swift-cli.py script) and also Graphical user interface (swift.py), which is described in a seperate <a href="#gui">GUI Manual</a> section. For quick use without useless reading, go to <a href="#tips">tips and tricks</a> section which contains examples of common use cases.
+	Swift provides Command-line interface (swift-cli.py) and also Graphical user interface (swift.py), which is described in a seperate <a href="#gui">GUI Manual</a> section. For quick use without useless reading, go to <a href="#tips">tips and tricks</a> section which contains examples of common use cases.
 	</p>
 	<h3>Positional arguments</h3>
 	<dl>
-		<dt>source</dt>
-		<dd>Name of source file</dd>
+		<dt><b>source</b></dt>
+		<dd>
+		The name of the file (program reads and processes this file) in one of the <a href="#formats">swift formats</a>. The <i>source</i> must ends with one of the extenssion mentioned in the list of <a href="#formats">swift formats</a> or the optional <i>--source_format</i> argument must be used. If the <i>source</i> is ommited or if it equals to "-", the program reads the input from the <i>stdin</i>.
+		</dd>
 	</dl>
 	<h3>Optional arguments</h3>
+	<dl>
+		<dt><b>-h, --help</b></dt>
+		<dd>Print the help message to the <i>stdout</i> and exit.</dd>
+	</dl>
+	<dl>
+		<dt><b>-t</b> target, <b>--target</b> target</dt>
+		<dd>
+		The name of the file (program writes to this file) in one of the <a href="#formats">swift formats</a>. The <i>--target</i> must ends with one of the extenssion mentioned in the list of <a href="#formats">swift formats</a> or the optional <i>--target_format</i> argument must be used. If the <i>--target</i> is omitted or if it equals to "-", the program writes the input to the <i>stdout</i>.
+		</dd>
+	</dl>
+	<dl>
+		<dt><b>-ta </b>target_attributes, <b>--target_attributes</b> target_attributes</dt>
+		<dd>
+		The list of <code>formulas</code> seperated by ";",
+		<pre><code>
+			formulas ::= formula | (formula ";" formulas)
+		</code></pre>
+		where <code>formula</code> is the definition of attribute in the target file. The <code>formula</code> is of the form:
+		<pre><code>
+			formula ::= (new-names "=")? old-names ((":" type ("[" scale "]")?) | "[]")?
+		</code></pre>
+		The first part of the formula:
+		<pre><code>
+			(new-names "=")? old-names
+		</code></pre>
+		where new-names and old-names are the lists of names seperated by ",":
+		<pre><code>
+			names ::= name | (name "," names)
+		</code></pre>
+		where name is the word or the interval:
+		<pre><code>
+			name ::= \w+ | ((\d+)? "-" (\d+)?) | "*"
+		</code></pre>
+		has the following meaning: old-names refer to attributes in the source file by using their names (if are available) or indexes. New-names define new names of attributes used in the target file. If new-names are omitted, attributes in the target file have the same names as in the source file. New-names and old-names must have the same length, otherwise error is produced.
+		<p>
+		The interval determines range of indexes. If the lower bound is omitted, indexes range is from zero to upper bound. If the upper bound is omitted, indexes range is from upper bound to maximum index of attribute in the target file. If both upper and lower bounds are omitted, indexes range is from zero to maximum index of the attribute in the source file (for this case has been added alis "*", which has the same meaning as "-").
+		</p>
+		Examples (seven attributes in source file):
+		<table>
+			<tr><td>
+			<code>4-6 produces: 4, 5, 6</code>
+			</td></tr>
+
+			<tr><td>
+			<code>-5 produces: 0, 1, 2, 3, 4, 5</code>
+			</td></tr>
+
+			<tr><td>
+			<code>4- produces: 4, 5, 6, 7</code>
+			</td></tr>
+
+			<tr><td>
+			<code>- produces: 0, 1, 2, 3, 4, 5, 6, 7</code>
+			</td></tr>
+
+			<tr><td>
+			<code>* produces: 0, 1, 2, 3, 4, 5, 6, 7</code>
+			</td></tr>
+		</table>
+		</dd>
+	</dl>
+	<dl>
+		<dt><b></b></dt>
+		<dd></dd>
+	</dl>
 
 	<h2 id="tips">TIPS AND TRICKS</h2>
 	<h2 id="gui">GUI MANUAL</h2>
