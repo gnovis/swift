@@ -75,13 +75,26 @@
 		<li><a href="http://fcalgs.sourceforge.net/format.html">FIMI</a> (.dat)</li>
 		<li>DTL (.dtl)</li>
 	</ul>
-	All accepted formats are text and can be converted with each other, it means 36 possible conversions. Swift is focused on working with table data where rows represent objects (instances) and columns their attributes (properties). Beside data conversion, program supports also filtering, scaling (which is necessary for conversion multivalent formats such as CSV to bivalent formats such as Burmeister), analyzing (produces statistics of data) and providing preview of data. All operations work with data of any size, only limitation is a space of hard drive (not RAM).
+	All accepted formats are text and can be converted with each other, it means 36 possible conversions. Swift is focused on working with table data where rows represent objects (instances) and columns their attributes (properties). Beside data conversion, program supports also:
+	<ul>
+		<li><b>Filtering</b> - changing column order, changing columns occurrences, skipping columns and rows.</li>
+		<li><b>Scaling</b>  - necessary for conversion multivalent formats (such as CSV, ARFF, C4.5) to bivalent formats (such as Burmeister, FIMI, DTL), but can be used for any converssion.</li>
+		<li><b>Analyzing</b> - produces statistics of data.</li>
+		<li><b>Preview</b> of data parts.</li>
+	</ul>
+	All operations work with data of any size, only limitation is a space of hard drive (not RAM).
 
 	<p>
-	Swift provides Command-line interface, which can be started using swift-cli.py script and also Graphical user interface, which is described in a <a href="#gui">GUI Manual</a> section and can be started by using swift.py script. For quick use without useless reading, go to <a href="#tips">tips and tricks</a> section which contains examples of common use cases.
+	Swift provides Command-line interface (swift-cli.py script) and also Graphical user interface (swift.py), which is described in a seperate <a href="#gui">GUI Manual</a> section. For quick use without useless reading, go to <a href="#tips">tips and tricks</a> section which contains examples of common use cases.
 	</p>
+	<h3>Positional arguments</h3>
+	<dl>
+		<dt>source</dt>
+		<dd>Name of source file</dd>
+	</dl>
+	<h3>Optional arguments</h3>
 
-	<h2 id="tips">Tips And Tricks</h2>
-	<h2 id="gui">GUI Manual</h2>
+	<h2 id="tips">TIPS AND TRICKS</h2>
+	<h2 id="gui">GUI MANUAL</h2>
 </body>
 </html>
