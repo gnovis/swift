@@ -12,45 +12,45 @@
 	<h2>SYNOPSIS</h2>
 	<table>
 		<tr>
-			<td><b>swift-cli</b></td>
+			<td><b>swift-cli.py</b></td>
 			<td>
-				 [-h] [-ss SOURCE_SEPARATOR] [-ta TARGET_ATTRIBUTES] [-i]
+				[<b>-h</b>] [<b>-ss</b> source_separator] [<b>-ta</b> target_attributes] [<b>-i</b>]
 			</td>
 		</tr>
 		<tr>
 			<td></td>
 			<td>
-	             [-mv MISSING_VALUE] [-snh] [-tnh] [-t [TARGET]]
+	             [<b>-mv</b> missing_value] [<b>-snh</b>] [<b>-tnh</b>] [<b>-t</b> [target]]
 			</td>
 		</tr>
 		<tr>
 			<td></td>
 			<td>
-	             [-ts TARGET_SEPARATOR] [-to TARGET_OBJECTS] [-n NAME]
+	             [<b>-ts</b> target_separator] [<b>-to</b> target_objects] [<b>-n</b> name]
 			</td>
 		</tr>
 		<tr>
 			<td></td>
 			<td>
-	             [-cls CLASSES] [-sf {csv,arff,dat,data,cxt,dtl}]
+	             [<b>-cls</b> classes] [<b>-sf</b> {csv,arff,dat,data,cxt,dtl}]
 			</td>
 		</tr>
 		<tr>
 			<td></td>
 			<td>
-	             [-tf {csv,arff,dat,data,cxt,dtl}] [-c [CONVERT]] [-p [PREVIEW]]
+	             [<b>-tf</b> {csv,arff,dat,data,cxt,dtl}] [<b>-c</b> [convert]] [<b>-p</b> [preview]]
 			</td>
 		</tr>
 		<tr>
 			<td></td>
 			<td>
-	             [-sl SKIPPED_LINES] [-se] [-scs SOURCE_CLS_SEPARATOR]
+	             [<b>-sl</b> skipped_lines] [<b>-se</b>] [<b>-scs</b> source_cls_separator]
 			</td>
 		</tr>
 		<tr>
 			<td></td>
 			<td>
-	             [-tcs TARGET_CLS_SEPARATOR]
+	             [<b>-tcs</b> target_cls_separator]
 			</td>
 		</tr>
 		<tr>
@@ -59,18 +59,29 @@
 	             [source]
 			</td>
 		</tr>
+		<tr>
+			<td><b>swift.py</b></td>
+			<td></td>
+		</tr>
 	</table>
 
 	<h2>DESCRIPTION</h2>
 	Swift - Relational Data Converter is a program for converting data files in six different formats:
 	<ul>
-		<li>CSV (.csv)</li>
-		<li>ARFF (.arff)</li>
-		<li>Burmaister (.cxt)</li>
-		<li>C4.5 (.data, .names)</li>
-		<li>FIMI (.dat)</li>
+		<li><a href="https://en.wikipedia.org/wiki/Comma-separated_values">CSV</a> (.csv)</li>
+		<li><a href="http://weka.wikispaces.com/ARFF+%28stable+version%29">ARFF</a> (.arff)</li>
+		<li><a href="http://www.upriss.org.uk/fca/fcafileformats.html#Burmeister">Burmaister</a> (.cxt)</li>
+		<li><a href="http://www.cs.washington.edu/dm/vfml/appendixes/c45.htm">C4.5</a> (.data, .names)</li>
+		<li><a href="http://fcalgs.sourceforge.net/format.html">FIMI</a> (.dat)</li>
 		<li>DTL (.dtl)</li>
 	</ul>
-	All formats are briefly described below. Every format can be converted with each other, it means 36 possible conversions.
+	All accepted formats are text and can be converted with each other, it means 36 possible conversions. Swift is focused on working with table data where rows represent objects (instances) and columns their attributes (properties). Beside data conversion, program supports also filtering, scaling (which is necessary for conversion multivalent formats such as CSV to bivalent formats such as Burmeister), analyzing (produces statistics of data) and providing preview of data. All operations work with data of any size, only limitation is a space of hard drive (not RAM).
+
+	<p>
+	Swift provides Command-line interface, which can be started using swift-cli.py script and also Graphical user interface, which is described in a <a href="#gui">GUI Manual</a> section and can be started by using swift.py script. For quick use without useless reading, go to <a href="#tips">tips and tricks</a> section which contains examples of common use cases.
+	</p>
+
+	<h2 id="tips">Tips And Tricks</h2>
+	<h2 id="gui">GUI Manual</h2>
 </body>
 </html>
