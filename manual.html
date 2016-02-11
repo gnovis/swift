@@ -155,6 +155,56 @@
 			<code>* produces: 0, 1, 2, 3, 4, 5, 6, 7</code>
 			</td></tr>
 		</table>
+		<p>The second optional part of the formula</p>
+		<pre><code>
+			((":" type ("[" scale "]")?) | "[]")?
+		</code></pre>
+		is composed of the attribute type
+		<pre><code>
+			type ::= "n" | "e" | "s" | ("d" ("/" date_format)?)
+			date_format ::= "F="? "'" .+ "'"
+		</code></pre>
+		where characters are aliases of data types:
+		<ul>
+			<li>n = numeric - all real numbers</li>
+			<li>e = enumeration - finite set of named values</li>
+			<li>s = string - word</li>
+			<li>d = date - the default date format is ISO-8601 which combines date and time: YYYY-MM-DDThh:mm:ss. For using different date formats must be used <a href="https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior">python format codes</a>,</li>
+		</ul>
+		<p>optional definition of scale:</p>
+		<pre><code>
+			scale ::= num_scale | enum_scale | str_scale | date_scale | bin_vals
+		</code></pre>
+		The scale is an expression which is evaluated with a value of the attribute. Result of evaluation is True or False represented as 0 and 1.
+		<p>The <i>numeric scale</i></p>
+		<pre><code>
+			num_scale ::= (var op num_val) | (num_val op var) | (num_val op var op num_val)
+		</code></pre>
+		where variables
+		<pre><code>
+			var ::= [a-zA-Z_]+
+		</code></pre>
+		represents the current value of the scale evaluation and operations have the same meaning as in many programing languages such as C or Python.
+		<pre><code>
+			op ::= "<" | ">" | "<=" | ">=" | "==" | "!="
+		</code></pre>
+		Examples of numeric scales (variable is x): <code>x!=10, 5<=x<=10, 50==x </code>
+		<p>The <i>enumeration scale</i></p>
+		<pre><code>
+			enum_scale ::= "'" \w+ "'"
+		</code></pre>
+		is the on of the value of enumeration, which must be quoted. If the value of the attribute is the completely same as the scale, the result of the scaling is True, otherwise False.
+		<p>The <i>string scale</i></p>
+		<pre><code>
+			str_scale ::= "'" .+ "'"
+		</code></pre>
+		is a quoted <a href="https://docs.python.org/2/library/re.html"> python regular expression</a>. If some substring of the scaled value is matched witch expression, result of scaling is True, otherwise False.
+		<p>Example of the string scale: <code>"foo[+-*]*bar"</code>, which matches "hellfoobar", "foo--barxyz" ... but doesn't match "foo/bar" ...</p>
+		<p>The <i>date scale</i></p>
+		<pre><code>
+			date_scale ::= ((var op date_val) | (date_val op var) | (date_val op var op date_val))
+		</code></pre>
+		is the exactly same expression as numeric scale, but values must be dates in date formats.
 		</dd>
 	</dl>
 	<dl>
