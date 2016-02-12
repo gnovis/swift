@@ -263,6 +263,7 @@ c y
 			num_val ::= int ("." number?)? ("e" int)?
 			int ::= ("+" | "-")? \d+
 		</code></pre>
+		If the <i>--target_attributes</i> argument is omitted, all attributes readed from the <i>source</i> are processed.
 		<p></p>
 		</dd>
 
@@ -279,6 +280,37 @@ c y
 
 		<dt><b>-i, --info</b></dt>
 		<dd>
+		Prints the statistics of the <i>source</i> and for its each processed attribute. Statistics is of the form:
+		<pre>
+			Relation name:
+			Objects count:
+			Attributes count:
+			====================
+
+			name:
+			index:
+			type: string/enumeration
+			values appearance:
+			    value: occurences-count/total-count = %
+				.
+				.
+				.
+
+			name:
+			index:
+			type: numeric/date
+			max: , min:
+			values appearance:
+			    value: occurences-count/total-count = %
+				.
+				.
+				.
+
+			.
+			.
+			.
+		</pre>
+		The <i>--info</i> may be used as single action (the statistics is printed to the <i>stdout</i>) or in parallel with the conversion (if <i>--target</i> is <i>stdout</i>, the new file named same as the <i>source</i>, but with extenssion .info is produced). The usage <i>--info</i> in parallel with conversion is useful for the saving time if both actions are required.
 		<p></p>
 		</dd>
 
