@@ -109,15 +109,15 @@
 	<dl>
 		<dt><b>-ta </b>target_attributes, <b>--target_attributes</b> target_attributes</dt>
 		<dd>
-		The list of <code>formulas</code> seperated by ";",
+		The list of formulas seperated by ";",
 		<pre><code>
 			formulas ::= formula | (formula ";" formulas)
 		</code></pre>
-		where <code>formula</code> is the definition of attribute in the target file. The <code>formula</code> is of the form:
+		where formula is the definition of attribute in the target file. The formula is of the form:
 		<pre><code>
 			formula ::= (new-names "=")? old-names ((":" type ("[" scale "]")?) | "[]")?
 		</code></pre>
-		The first part of the formula:
+		<u>The first part</u> of the formula:
 		<pre><code>
 			(new-names "=")? old-names
 		</code></pre>
@@ -155,11 +155,11 @@
 			<code>* produces: 0, 1, 2, 3, 4, 5, 6, 7</code>
 			</td></tr>
 		</table>
-		<p>The second optional part of the formula</p>
+		<p><u>The second optional part</u> of the formula</p>
 		<pre><code>
 			((":" type ("[" scale "]")?) | "[]")?
 		</code></pre>
-		is composed of the attribute type
+		is composed of the attribute type,
 		<pre><code>
 			type ::= "n" | "e" | "s" | ("d" ("/" date_format)?)
 			date_format ::= "F="? "'" .+ "'"
@@ -171,40 +171,99 @@
 			<li>s = string - word</li>
 			<li>d = date - the default date format is ISO-8601 which combines date and time: YYYY-MM-DDThh:mm:ss. For using different date formats must be used <a href="https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior">python format codes</a>,</li>
 		</ul>
-		<p>optional definition of scale:</p>
+		<p>optional definition of the scale and the <a href="#unpack">binary unpacking</a>.</p>
 		<pre><code>
 			scale ::= num_scale | enum_scale | str_scale | date_scale | bin_vals
 		</code></pre>
 		The scale is an expression which is evaluated with a value of the attribute. Result of evaluation is True or False represented as 0 and 1.
-		<p>The <i>numeric scale</i></p>
+		<p>In the <i>numeric scale</i>,</p>
 		<pre><code>
 			num_scale ::= (var op num_val) | (num_val op var) | (num_val op var op num_val)
 		</code></pre>
-		where variables
+		the numeric value is of the form:
+		<pre><code>
+			num_val ::= int ("." number?)? ("e" int)?
+			int ::= ("+" | "-")? \d+
+		</code></pre>
+		Examples of numeric value: <code>5, -10, +47, 2.46, -2.31, +98.31, -78.4e-48, 3e8</code>
 		<pre><code>
 			var ::= [a-zA-Z_]+
 		</code></pre>
-		represents the current value of the scale evaluation and operations have the same meaning as in many programing languages such as C or Python.
+		Variables (the form above) represent the current value of the scale evaluation and operations have the same meaning as in many programing languages such as C or Python.
 		<pre><code>
 			op ::= "<" | ">" | "<=" | ">=" | "==" | "!="
 		</code></pre>
-		Examples of numeric scales (variable is x): <code>x!=10, 5<=x<=10, 50==x </code>
+		Examples of numeric scales (variable is x): <code>x!=10.3, -5<=x<=10, 50==x </code>
 		<p>The <i>enumeration scale</i></p>
 		<pre><code>
 			enum_scale ::= "'" \w+ "'"
 		</code></pre>
-		is the on of the value of enumeration, which must be quoted. If the value of the attribute is the completely same as the scale, the result of the scaling is True, otherwise False.
+		is the one of the value of enumeration, which must be quoted. If the value of the attribute is the exactly same as the scale, the result of the scaling is True, otherwise False.
 		<p>The <i>string scale</i></p>
 		<pre><code>
 			str_scale ::= "'" .+ "'"
 		</code></pre>
-		is a quoted <a href="https://docs.python.org/2/library/re.html"> python regular expression</a>. If some substring of the scaled value is matched witch expression, result of scaling is True, otherwise False.
+		is a quoted <a href="https://docs.python.org/2/library/re.html"> python regular expression</a>. If the regular expression matches any substring of the scaled value, result of scaling is True, otherwise False.
 		<p>Example of the string scale: <code>"foo[+-*]*bar"</code>, which matches "hellfoobar", "foo--barxyz" ... but doesn't match "foo/bar" ...</p>
 		<p>The <i>date scale</i></p>
 		<pre><code>
 			date_scale ::= ((var op date_val) | (date_val op var) | (date_val op var op date_val))
 		</code></pre>
 		is the exactly same expression as numeric scale, but values must be dates in valid date format.
+		<p>The <i>binary values</i></p>
+		<pre><code>
+			bin_vals ::= ("0="? "'" .* "'" ",")? "1="? "'" .+ "'"
+		</code></pre>
+		allow to define new <i>binary values</i> for some bivalent attribute. The default values are 1 (True) and 0 (False). This can be useful for the conversion from multivalent format (which contains bivalent attribute, but values are different from 0 and 1) to bivalent format, without useless scaling (because values are bivalent already). Note that, this way is semantically the same as using enumeration for bivalent attribute, but use of <i>binary values</i> is prefered because is more time-efficient.
+		<p id="unpack">
+		The alternative to the scale is the <i>binary unpacking</i> (the total binarization) of the attribute, which can be used by "[]", writed just behind the names. This creates new attribute for every single value of the old attribute. Every new attribute is ot type enumeration with the scale: value. The order of new attributes is the same as the order of values in template attribute. If <i>binary unpacking</i> is used for more attributes, for example for two attribites, then every new attribute of the first old attribute has lower index then any of new attribute of the second old attribute.
+		</p>
+		<p>Example - <i>binary unpacking</i> of two attributes:</p>
+		<table>
+			<tr>
+				<td>input
+<pre>
+a x
+b y
+b z
+a x
+c y
+</pre>
+				</td>
+				<td></td>
+				<td>output
+<pre>
+1 0 0  1 0 0
+0 1 0  0 1 0
+0 1 0  0 0 1
+1 0 0  1 0 0
+0 0 1  0 1 0
+</pre>
+				</td>
+			</tr>
+		</table>
+		<p>Complete grammar of the <b>--target_attributes</b> argument:</p>
+		<pre><code>
+			formulas ::= formula | (formula ";" formulas)
+			formula ::= (names "=")? names ((":" type ("[" scale "]")?) | "[]")?
+			names ::= name | (name "," names)
+			type ::= "n" | "e" | "s" | ("d" ("/" date_format)?)
+			scale ::= num_scale | enum_scale | str_scale | date_scale | bin_vals
+			name ::= \w+ | ((\d+)? "-" (\d+)?) | "*"
+			date_format ::= "F="? "'" .+ "'"
+			num_scale ::= (var op num_val) | (num_val op var) |
+			              (num_val op var op num_val)
+			enum_scale ::= "'" \w+ "'"
+			str_scale ::= "'" .+ "'"
+			date_scale ::= ((var op date_val) | (date_val op var) |
+			                (date_val op var op date_val))
+			bin_vals ::= ("0="? "'" .* "'" ",")? "1="? "'" .+ "'"
+			var ::= [a-zA-Z_]+
+			op ::= "<" | ">" | "<=" | ">=" | "==" | "!="
+			date_val ::= "'" .+ "'"
+			num_val ::= int ("." number?)? ("e" int)?
+			int ::= ("+" | "-")? \d+
+		</code></pre>
 		</dd>
 	</dl>
 	<dl>
