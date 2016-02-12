@@ -204,7 +204,11 @@ class Convertor(ManagerFca):
         self._target_cls = self.get_data_class(self._target_ext)
         self._old_data = self._source_cls(**old)
         self._new_data = self._target_cls(**new)
+
         self._print_info = print_info
+        self._info_file = sys.stdout
+        if new[RunParams.TARGET].name == sys.stdout.name and print_info:
+            self._info_file = open("{}.info".format(os.path.splitext(old[RunParams.SOURCE].name)[0]), "w")
 
     @property
     def source_line_count(self):
@@ -219,10 +223,12 @@ class Convertor(ManagerFca):
             self._old_data.unpack_attrs()
         else:
             read_data = self.READ_DATA[self._source_ext + self._target_ext]
+            if self._print_info:
+                read_data = True
             self._old_data.get_data_info(self, read=read_data)
 
         if self._print_info:
-            self._old_data.print_info()
+            self._old_data.print_info(self._info_file)
         # this is for progress bar
         self._source_line_count = self._old_data.obj_count
 

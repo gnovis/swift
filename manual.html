@@ -38,7 +38,7 @@
 		<tr>
 			<td></td>
 			<td>
-	             [<b>-tf</b> {csv,arff,dat,data,cxt,dtl}] [<b>-c</b> [convert]] [<b>-p</b> [preview]]
+	             [<b>-tf</b> {csv,arff,dat,data,cxt,dtl}] [<b>-c</b> [rows_count]] [<b>-p</b> [rows_count]]
 			</td>
 		</tr>
 		<tr>
@@ -98,15 +98,14 @@
 	<h3>Optional arguments</h3>
 	<dl>
 		<dt><b>-h, --help</b></dt>
-		<dd>Print the help message to the <i>stdout</i> and exit.</dd>
-	</dl>
-	<dl>
+		<dd>Print the help message to the <i>stdout</i> and exit.<p></p></dd>
+
 		<dt><b>-t</b> target, <b>--target</b> target</dt>
 		<dd>
 		The name of the file (program writes to this file) in one of the <a href="#formats">swift formats</a>. The <i>--target</i> must ends with one of the extenssion mentioned in the list of <a href="#formats">swift formats</a> or the optional <i>--target_format</i> argument must be used. If the <i>--target</i> is omitted or if it equals to "-", the program writes the input to the <i>stdout</i>.
+		<p></p>
 		</dd>
-	</dl>
-	<dl>
+
 		<dt><b>-ta </b>target_attributes, <b>--target_attributes</b> target_attributes</dt>
 		<dd>
 		The list of formulas seperated by ";",
@@ -242,7 +241,7 @@ c y
 				</td>
 			</tr>
 		</table>
-		<p>Complete grammar of the <b>--target_attributes</b> argument:</p>
+		<p>Complete grammar of the <i>--target_attributes</i> argument:</p>
 		<pre><code>
 			formulas ::= formula | (formula ";" formulas)
 			formula ::= (names "=")? names ((":" type ("[" scale "]")?) | "[]")?
@@ -264,11 +263,29 @@ c y
 			num_val ::= int ("." number?)? ("e" int)?
 			int ::= ("+" | "-")? \d+
 		</code></pre>
+		<p></p>
 		</dd>
-	</dl>
-	<dl>
-		<dt><b></b></dt>
-		<dd></dd>
+
+		<dt><b>-c</b> [rows_count], <b>--convert</b> [rows_count]</dt>
+		<dd>
+			Converts the <i>source</i> to the <i>--target</i>. The optional argument rows_count defines how many rows of data should be processed.
+		<p></p>
+		</dd>
+
+		<dt><b>-p</b> [rows_count], <b>--preview</b> [rows_count]</dt>
+		<dd>Prints desired count of rows from the <i>source</i> table data in to the <i>stdout</i>. The default amount of printed rows is 20, but this value can be changed by using the optional argument rows_count.
+		<p></p>
+		</dd>
+
+		<dt><b>-i, --info</b></dt>
+		<dd>
+		<p></p>
+		</dd>
+
+		<dt></dt>
+		<dd>
+		<p></p>
+		</dd>
 	</dl>
 
 	<h2 id="tips">TIPS AND TRICKS</h2>
