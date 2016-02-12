@@ -92,7 +92,7 @@
 	<dl>
 		<dt><b>source</b></dt>
 		<dd>
-		The name of the file (program reads and processes this file) in one of the <a href="#formats">swift formats</a>. The <i>source</i> must ends with one of the extenssion mentioned in the list of <a href="#formats">swift formats</a> or the optional <i>--source_format</i> argument must be used. If the <i>source</i> is ommited or if it equals to "-", the program reads the input from the <i>stdin</i>.
+		The name of the file (program reads and processes this file) in one of the <a href="#formats">swift formats</a>. The <i>source</i> must ends with one of the extension mentioned in the list of <a href="#formats">swift formats</a> or the optional <i>--source_format</i> argument must be used. If the <i>source</i> is ommited or if it equals to "-", the program reads the input from the <i>stdin</i>.
 		</dd>
 	</dl>
 	<h3>Optional arguments</h3>
@@ -102,7 +102,7 @@
 
 		<dt><b>-t</b> target, <b>--target</b> target</dt>
 		<dd>
-		The name of the file (program writes to this file) in one of the <a href="#formats">swift formats</a>. The <i>--target</i> must ends with one of the extenssion mentioned in the list of <a href="#formats">swift formats</a> or the optional <i>--target_format</i> argument must be used. If the <i>--target</i> is omitted or if it equals to "-", the program writes the input to the <i>stdout</i>.
+		The name of the file (program writes to this file) in one of the <a href="#formats">swift formats</a>. The <i>--target</i> must ends with one of the extension mentioned in the list of <a href="#formats">swift formats</a> or the optional <i>--target_format</i> argument must be used. If the <i>--target</i> is omitted or if it equals to "-", the program writes the input to the <i>stdout</i>.
 		<p></p>
 		</dd>
 
@@ -310,14 +310,30 @@ c y
 			.
 			.
 		</pre>
-		The <i>--info</i> may be used as single action (the statistics is printed to the <i>stdout</i>) or in parallel with the conversion (if <i>--target</i> is <i>stdout</i>, the new file named same as the <i>source</i>, but with extenssion .info is produced). The usage <i>--info</i> in parallel with conversion is useful for the saving time if both actions are required.
+		The <i>--info</i> may be used as single action (the statistics is printed to the <i>stdout</i>) or in parallel with the conversion (if <i>--target</i> is <i>stdout</i>, the new file named same as the <i>source</i>, but with extension .info is produced). The usage <i>--info</i> in parallel with conversion is useful for the saving time if both actions are required.
 		<p></p>
 		</dd>
 
-		<dt></dt>
+		<dt><b>-sf</b> {csv,arff,dat,data,cxt,dtl},
+			<b>--source_format</b> {csv,arff,dat,data,cxt,dtl}</dt>
+		<dd>
+		Specifies the <i>source</i> format using the extension. If the <i>source</i> doesn't have the extension, the <i>--source_format</i> is required. If the <i>source</i> has the extension and <i>--source_format</i> is also used, the <i>--source_format</i> overwrites the <i>source</i> extension.
+		<p></p>
+		</dd>
+
+		<dt><b>-tf</b> {csv,arff,dat,data,cxt,dtl},
+			<b>--target_format</b> {csv,arff,dat,data,cxt,dtl}</dt>
+		<dd>
+		Specifies the <i>--target</i> format using the extension. If the <i>--target</i> doesn't have the extension, the <i>--target_format</i> is required. If the <i>--target</i> has the extension and <i>--target_format</i> is also used, the <i>--target_format</i> overwrites the <i>--target</i> extension.
+		<p></p>
+		</dd>
+
+		<dt><b></b>
+			<b></b></dt>
 		<dd>
 		<p></p>
 		</dd>
+
 	</dl>
 
 	<h2 id="tips">TIPS AND TRICKS</h2>
