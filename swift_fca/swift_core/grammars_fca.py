@@ -7,10 +7,9 @@ def numeric():
     plusorminus = Literal('+') | Literal('-')
     number = Word(nums)
     integer = Combine(Optional(plusorminus) + number)
-    floatnumber = Combine(integer +
-                          Optional(point + Optional(number)) +
-                          Optional(e + integer))
-    numeric = number | floatnumber
+    numeric = Combine(integer +
+                      Optional(point + Optional(number)) +
+                      Optional(e + integer))
     return numeric
 
 
