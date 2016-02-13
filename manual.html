@@ -2,6 +2,25 @@
 <html>
 	<head>
 		<title>Swift</title>
+		<style>
+		body {
+			margin-left:50px;
+			margin-right:50px;
+			margin-top:30px;
+			margin-bottom:30px;
+		}
+		pre {
+			border-style: solid;
+			border-width: 1px;
+			border-color: #b3b3b3;
+			padding: 10px;
+			max-width: 640px;
+			background-color: #e6e6e6;
+		}
+		h1, h2, h3, h4 {color:#001a4d}
+		b {color: #003399}
+		a {color: #003399}
+</style>
 	</head>
 <body>
 	<h1>Swift</h1>
@@ -99,25 +118,15 @@
 		<dt><b>-ta </b>target_attributes, <b>--target_attributes</b> target_attributes</dt>
 		<dd>
 		The list of formulas seperated by ";",
-		<pre><code>
-			formulas ::= formula | (formula ";" formulas)
-		</code></pre>
+		<pre><code>formulas ::= formula | (formula ";" formulas)</code></pre>
 		where formula is the definition of attribute in the target file. The formula is of the form:
-		<pre><code>
-			formula ::= (new-names "=")? old-names ((":" type ("[" scale "]")?) | "[]")?
-		</code></pre>
+		<pre><code>formula ::= (new-names "=")? old-names ((":" type ("[" scale "]")?) | "[]")?</code></pre>
 		<u>The first part</u> of the formula:
-		<pre><code>
-			(new-names "=")? old-names
-		</code></pre>
+		<pre><code>(new-names "=")? old-names</code></pre>
 		where new-names and old-names are the lists of names seperated by ",":
-		<pre><code>
-			names ::= name | (name "," names)
-		</code></pre>
+		<pre><code>names ::= name | (name "," names)</code></pre>
 		where name is the word or the interval:
-		<pre><code>
-			name ::= \w+ | ((\d+)? "-" (\d+)?) | "*"
-		</code></pre>
+		<pre><code>name ::= \w+ | ((\d+)? "-" (\d+)?) | "*"</code></pre>
 		has the following meaning: old-names refer to attributes in the source file by using their names (if are available) or indexes. New-names define new names of attributes used in the target file. If new-names are omitted, attributes in the target file have the same names as in the source file. New-names and old-names must have the same length, otherwise error is produced.
 		<p>
 		The interval determines range of indexes. If the lower bound is omitted, indexes range is from zero to upper bound. If the upper bound is omitted, indexes range is from lower bound to the maximum index of attribute in the target file. If both upper and lower bounds are omitted, indexes range is from zero to the maximum index of the attribute in the source file (for this case has been added alis "*", which has the same meaning as "-").
@@ -145,14 +154,10 @@
 			</td></tr>
 		</table>
 		<p><u>The second optional part</u> of the formula</p>
-		<pre><code>
-			((":" type ("[" scale "]")?) | "[]")?
-		</code></pre>
+		<pre><code>((":" type ("[" scale "]")?) | "[]")?</code></pre>
 		is composed of the attribute type,
-		<pre><code>
-			type ::= "n" | "e" | "s" | ("d" ("/" date_format)?)
-			date_format ::= "F="? "'" .+ "'"
-		</code></pre>
+		<pre><code>type ::= "n" | "e" | "s" | ("d" ("/" date_format)?)
+date_format ::= "F="? "'" .+ "'"</code></pre>
 		where characters are aliases of data types:
 		<ul>
 			<li>n = numeric - all real numbers</li>
@@ -161,48 +166,30 @@
 			<li>d = date - the default date format is ISO-8601 which combines date and time: YYYY-MM-DDThh:mm:ss. For using different date formats must be used <a href="https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior">python format codes</a>,</li>
 		</ul>
 		<p>optional definition of the scale and the <a href="#unpack">binary unpacking</a>.</p>
-		<pre><code>
-			scale ::= num_scale | enum_scale | str_scale | date_scale | bin_vals
-		</code></pre>
+		<pre><code>scale ::= num_scale | enum_scale | str_scale | date_scale | bin_vals</code></pre>
 		The scale is an expression which is evaluated with a value of the attribute. Result of evaluation is True or False represented as 0 and 1.
 		<p>In the <i>numeric scale</i>,</p>
-		<pre><code>
-			num_scale ::= (var op num_val) | (num_val op var) | (num_val op var op num_val)
-		</code></pre>
+		<pre><code>num_scale ::= (var op num_val) | (num_val op var) | (num_val op var op num_val)</code></pre>
 		the numeric value is of the form:
-		<pre><code>
-			num_val ::= int ("." number?)? ("e" int)?
-			int ::= ("+" | "-")? \d+
-		</code></pre>
+		<pre><code>num_val ::= int ("." number?)? ("e" int)?
+int ::= ("+" | "-")? \d+</code></pre>
 		Examples of numeric value: <code>5, -10, +47, 2.46, -2.31, +98.31, -78.4e-48, 3e8</code>
-		<pre><code>
-			var ::= [a-z_]+
-		</code></pre>
+		<pre><code>var ::= [a-z_]+</code></pre>
 		Variables (the form above) represent the current value of the scale evaluation and operations have the same meaning as in many programing languages such as C or Python.
-		<pre><code>
-			op ::= "<" | ">" | "<=" | ">=" | "==" | "!="
-		</code></pre>
+		<pre><code>op ::= "<" | ">" | "<=" | ">=" | "==" | "!="</code></pre>
 		Examples of numeric scales (variable is x): <code>x!=10.3, -5<=x<=10, 50==x </code>
 		<p>The <i>enumeration scale</i></p>
-		<pre><code>
-			enum_scale ::= "'" \w+ "'"
-		</code></pre>
+		<pre><code>enum_scale ::= "'" \w+ "'"</code></pre>
 		is the one of the value of enumeration, which must be quoted. If the value of the attribute is the exactly same as the scale, the result of the scaling is True, otherwise False.
 		<p>The <i>string scale</i></p>
-		<pre><code>
-			str_scale ::= "'" .+ "'"
-		</code></pre>
+		<pre><code>str_scale ::= "'" .+ "'"</code></pre>
 		is a quoted <a href="https://docs.python.org/2/library/re.html"> python regular expression</a>. If the regular expression matches any substring of the scaled value, result of scaling is True, otherwise False.
 		<p>Example of the string scale: <code>"foo[+-*]*bar"</code>, which matches "hellfoobar", "foo--barxyz" ... but doesn't match "foo/bar" ...</p>
 		<p>The <i>date scale</i></p>
-		<pre><code>
-			date_scale ::= ((var op date_val) | (date_val op var) | (date_val op var op date_val))
-		</code></pre>
+		<pre><code>date_scale ::= ((var op date_val) | (date_val op var) | (date_val op var op date_val))</code></pre>
 		is the exactly same expression as numeric scale, but values must be dates in valid date format.
-		<p>The <i>binary values</i></p>
-		<pre><code>
-			bin_vals ::= ("0="? "'" .* "'" ",")? "1="? "'" .+ "'"
-		</code></pre>
+		<p><i>Binary values</i></p>
+		<pre><code>bin_vals ::= ("0="? "'" .* "'" ",")? "1="? "'" .+ "'"</code></pre>
 		allow to define new <i>binary values</i> for some bivalent attribute. The default values are 1 (True) and 0 (False). This can be useful for the conversion from multivalent format (which contains bivalent attribute, but values are different from 0 and 1) to bivalent format, without useless scaling (because values are bivalent already). Note that, this way is semantically the same as using enumeration for bivalent attribute, but use of <i>binary values</i> is prefered because is more time-efficient.
 		<p id="unpack">
 		The alternative to the scale is the <i>binary unpacking</i> (the total binarization) of the attribute, which can be used by "[]", writed just behind the names. This creates new attribute for every single value of the old attribute. Every new attribute is ot type enumeration with the scale: value. The order of new attributes is the same as the order of values in template attribute. If <i>binary unpacking</i> is used for more attributes, for example for two attribites, then every new attribute of the first old attribute has lower index then any of new attribute of the second old attribute.
@@ -232,27 +219,25 @@ c y
 			</tr>
 		</table>
 		<p>Complete grammar of the <i>--target_attributes</i> argument:</p>
-		<pre><code>
-			formulas ::= formula | (formula ";" formulas)
-			formula ::= (names "=")? names ((":" type ("[" scale "]")?) | "[]")?
-			names ::= name | (name "," names)
-			type ::= "n" | "e" | "s" | ("d" ("/" date_format)?)
-			scale ::= num_scale | enum_scale | str_scale | date_scale | bin_vals
-			name ::= \w+ | ((\d+)? "-" (\d+)?) | "*"
-			date_format ::= "F="? "'" .+ "'"
-			num_scale ::= (var op num_val) | (num_val op var) |
-			              (num_val op var op num_val)
-			enum_scale ::= "'" \w+ "'"
-			str_scale ::= "'" .+ "'"
-			date_scale ::= ((var op date_val) | (date_val op var) |
-			                (date_val op var op date_val))
-			bin_vals ::= ("0="? "'" .* "'" ",")? "1="? "'" .+ "'"
-			var ::= [a-zA-Z_]+
-			op ::= "<" | ">" | "<=" | ">=" | "==" | "!="
-			date_val ::= "'" .+ "'"
-			num_val ::= int ("." number?)? ("e" int)?
-			int ::= ("+" | "-")? \d+
-		</code></pre>
+		<pre><code>formulas ::= formula | (formula ";" formulas)
+formula ::= (names "=")? names ((":" type ("[" scale "]")?) | "[]")?
+names ::= name | (name "," names)
+type ::= "n" | "e" | "s" | ("d" ("/" date_format)?)
+scale ::= num_scale | enum_scale | str_scale | date_scale | bin_vals
+name ::= \w+ | ((\d+)? "-" (\d+)?) | "*"
+date_format ::= "F="? "'" .+ "'"
+num_scale ::= (var op num_val) | (num_val op var) |
+              (num_val op var op num_val)
+enum_scale ::= "'" \w+ "'"
+str_scale ::= "'" .+ "'"
+date_scale ::= ((var op date_val) | (date_val op var) |
+                (date_val op var op date_val))
+bin_vals ::= ("0="? "'" .* "'" ",")? "1="? "'" .+ "'"
+var ::= [a-zA-Z_]+
+op ::= "<" | ">" | "<=" | ">=" | "==" | "!="
+date_val ::= "'" .+ "'"
+num_val ::= int ("." number?)? ("e" int)?
+int ::= ("+" | "-")? \d+</code></pre>
 		If the <i>--target_attributes</i> argument is omitted, all attributes readed from the <i>source</i> are processed.
 		<p></p>
 		</dd>
@@ -271,35 +256,33 @@ c y
 		<dt><b>-i, --info</b></dt>
 		<dd>
 		Prints the statistics of the <i>source</i> and for its each processed attribute. Statistics is of the form:
-		<pre>
-			Relation name:
-			Objects count:
-			Attributes count:
-			====================
+<pre>Relation name:
+Objects count:
+Attributes count:
+====================
 
-			name:
-			index:
-			type: string/enumeration
-			values appearance:
-			    value: occurences-count/total-count = %
-				.
-				.
-				.
+name:
+index:
+type: string/enumeration
+values appearance:
+    value: occurences-count/total-count = %
+	.
+	.
+	.
 
-			name:
-			index:
-			type: numeric/date
-			max: , min:
-			values appearance:
-			    value: occurences-count/total-count = %
-				.
-				.
-				.
+name:
+index:
+type: numeric/date
+max: , min:
+values appearance:
+    value: occurences-count/total-count = %
+	.
+	.
+	.
 
-			.
-			.
-			.
-		</pre>
+.
+.
+.</pre>
 		The <i>--info</i> may be used as single action (the statistics is printed to the <i>stdout</i>) or in parallel with the conversion (if <i>--target</i> is <i>stdout</i>, the new file named same as the <i>source</i>, but with extension .info is produced). The usage <i>--info</i> in parallel with conversion is useful for the saving time if both actions are required.
 		<p></p>
 		</dd>
@@ -323,12 +306,10 @@ c y
 		</dt>
 		<dd>
 		Selects attributes from the <i>source</i>, which will be used as classes in the <i>--target</i>. It can be specified using the interval of attribute indexes, or using names of attributes, or both in combination. <i>--classes</i> is of the form:
-		<pre><code>
-			classes ::= element | (element "," classes)
-			element = interval | key
-			interval ::= ((\d+)? "-" (\d+)?)
-			key = \w+
-		</code></pre>
+		<pre><code>classes ::= element | (element "," classes)
+element = interval | key
+interval ::= ((\d+)? "-" (\d+)?)
+key = \w+</code></pre>
 
 		This argument is relevant only in the case, when the <i>--target</i> format is <a href="#data">C4.5</a> or <a href="#dtl">DTL</a>.
 		<p></p>
@@ -371,14 +352,12 @@ c y
 		</dt>
 		<dd>
 		The interval of the form
-		<pre><code>
-			interval ::= (\d+)? "-" (\d+)?
-		</code></pre>
+		<pre><code>interval ::= (\d+)? "-" (\d+)?</code></pre>
 		specifies <i>source</i> indexes of lines, which will be skipped in any action.
 		<p></p>
 		</dd>
 
-		<dt><b>-se</b>
+		<dt><b>-se</b>,
 			<b>--skip_errors</b>
 		</dt>
 		<dd>
@@ -386,7 +365,7 @@ c y
 		<p></p>
 		</dd>
 
-		<dt><b>-n</b> name
+		<dt><b>-n</b> name,
 			<b>--name</b> name
 		</dt>
 		<dd>
@@ -394,7 +373,7 @@ c y
 		<p></p>
 		</dd>
 
-		<dt><b>-mv</b> missing_value
+		<dt><b>-mv</b> missing_value,
 			<b>--missing_value</b> missing_value
 		</dt>
 		<dd>
@@ -402,19 +381,17 @@ c y
 		<p></p>
 		</dd>
 
-		<dt><b>-o</b> objects
+		<dt><b>-o</b> objects,
 			<b>--objects</b> objects
 		</dt>
 		<dd>
 		The list of object names seperated by comma:
-		<pre><code>
-			objects ::= name | (name "," objects)
-		</code></pre>
+		<pre><code>objects ::= name | (name "," objects)</code></pre>
 		This argument is relevant only in the case, when <i>--target</i> format is <a href="#cxt">Burmeister</a>. If <i>--objects</i> is ommited, indexes of objects are used.
 		<p></p>
 		</dd>
 
-		<dt><b>-snh</b> source_no_header
+		<dt><b>-snh</b> source_no_header,
 			<b>--source_no_header</b> source_no_header
 		</dt>
 		<dd>
@@ -422,7 +399,7 @@ c y
 		<p></p>
 		</dd>
 
-		<dt><b>-tnh</b> target_no_header
+		<dt><b>-tnh</b> target_no_header,
 			<b>--target_no_header</b> target_no_header
 		</dt>
 		<dd>
