@@ -66,17 +66,7 @@
 	</table>
 
 	<h2>DESCRIPTION</h2>
-	Swift - Relational Data Converter is a program for converting data files in six different formats.
-	<h3 id="formats">Swift formats</h3>
-	<ul>
-		<li><a href="https://en.wikipedia.org/wiki/Comma-separated_values">CSV</a> (.csv)</li>
-		<li><a href="http://weka.wikispaces.com/ARFF+%28stable+version%29">ARFF</a> (.arff)</li>
-		<li><a href="http://www.upriss.org.uk/fca/fcafileformats.html#Burmeister">Burmaister</a> (.cxt)</li>
-		<li><a href="http://www.cs.washington.edu/dm/vfml/appendixes/c45.htm">C4.5</a> (.data)</li>
-		<li><a href="http://fcalgs.sourceforge.net/format.html">FIMI</a> (.dat)</li>
-		<li>DTL (.dtl)</li>
-	</ul>
-	All accepted formats are text and can be converted with each other, it means 36 possible conversions. Swift is focused on working with a table data where rows represent objects (instances) and columns their attributes (properties). Beside the data conversion, program supports also:
+	Swift - Relational Data Converter is a program for converting data files in six different <a href="#formats">formats</a>. All accepted formats are text and can be converted with each other, it means 36 possible conversions. Swift is focused on working with a table data where rows represent objects (instances) and columns their attributes (properties). Beside the data conversion, program supports also:
 	<ul>
 		<li><b>Filtering</b> - changing column order, changing columns occurrences, skipping columns and rows.</li>
 		<li><b>Scaling</b>  - necessary for conversion multivalent formats (such as CSV, ARFF, C4.5) to bivalent formats (such as Burmeister, FIMI, DTL), but can be used for any converssion.</li>
@@ -92,7 +82,7 @@
 	<dl>
 		<dt><b>source</b></dt>
 		<dd>
-		The name of the file (program reads and processes this file) in one of the <a href="#formats">swift formats</a>. The <i>source</i> must ends with one of the extension mentioned in the list of <a href="#formats">swift formats</a> or the optional <i>--source_format</i> argument must be used. If the <i>source</i> is ommited or if it equals to "-", the program reads the input from the <i>stdin</i>.
+		The name of the file (program reads and processes this file) in one of the supported <a href="#formats">format</a>. The <i>source</i> must ends with a valid format extension or the optional <i>--source_format</i> argument must be used. If the <i>source</i> is ommited or if it equals to "-", the program reads the input from the <i>stdin</i>.
 		</dd>
 	</dl>
 	<h3>Optional arguments</h3>
@@ -102,7 +92,7 @@
 
 		<dt><b>-t</b> target, <b>--target</b> target</dt>
 		<dd>
-		The name of the file (program writes to this file) in one of the <a href="#formats">swift formats</a>. The <i>--target</i> must ends with one of the extension mentioned in the list of <a href="#formats">swift formats</a> or the optional <i>--target_format</i> argument must be used. If the <i>--target</i> is omitted or if it equals to "-", the program writes the input to the <i>stdout</i>.
+		The name of the file (program writes to this file) in one of the supported <a href="#formats">format</a>. The <i>--target</i> must ends with a valid format extension or the optional <i>--target_format</i> argument must be used. If the <i>--target</i> is omitted or if it equals to "-", the program writes the input to the <i>stdout</i>.
 		<p></p>
 		</dd>
 
@@ -186,7 +176,7 @@
 		</code></pre>
 		Examples of numeric value: <code>5, -10, +47, 2.46, -2.31, +98.31, -78.4e-48, 3e8</code>
 		<pre><code>
-			var ::= [a-zA-Z_]+
+			var ::= [a-z_]+
 		</code></pre>
 		Variables (the form above) represent the current value of the scale evaluation and operations have the same meaning as in many programing languages such as C or Python.
 		<pre><code>
@@ -328,13 +318,137 @@ c y
 		<p></p>
 		</dd>
 
-		<dt><b></b>
-			<b></b></dt>
+		<dt><b>-cls</b> classes,
+			<b>--classes</b> classes
+		</dt>
 		<dd>
+		Selects attributes from the <i>source</i>, which will be used as classes in the <i>--target</i>. It can be specified using the interval of attribute indexes, or using names of attributes, or both in combination. <i>--classes</i> is of the form:
+		<pre><code>
+			classes ::= element | (element "," classes)
+			element = interval | key
+			interval ::= ((\d+)? "-" (\d+)?)
+			key = \w+
+		</code></pre>
+
+		This argument is relevant only in the case, when the <i>--target</i> format is <a href="#data">C4.5</a> or <a href="#dtl">DTL</a>.
+		<p></p>
+		</dd>
+
+		<dt><b>-ss</b> source_separator,
+			<b>--source_separator</b> source_separator
+		</dt>
+		<dd>
+		Specifies the separator of attributes in the <i>source</i> (it affects only the current action). <i>--source_separator</i> must be specified, when the separator used in the <i>source</i> is a different from a default file format separator.
+		<p></p>
+		</dd>
+
+		<dt><b>-ts</b> target_separator,
+			<b>--target_separator</b> target_separator
+		</dt>
+		<dd>
+		Specifies the separator of attributes in the <i>--target</i> (it affects only the current action). Attributes in the <i>--target</i> will be seperated with this new value.
+		<p></p>
+		</dd>
+
+		<dt><b>-scs</b> source_classes_separator,
+			<b>--source_cls_separator</b> source_classes_separator
+		</dt>
+		<dd>
+		Specifies the separator of attributes and classes in the <i>source</i> (it affects only the current action). <i>--source_cls_separator</i> must be specified, when the classes/attributes separator used in the <i>source</i> is a different from a default file format classes/attributes separator. This argument is relevant only in the case, when the <i>source</i> format is <a href="#dtl">DTL</a>.
+		<p></p>
+		</dd>
+
+		<dt><b>-tcs</b> target_classes_separator,
+			<b>--target_cls_separator</b> target_classes_separator
+		</dt>
+		<dd>
+		Specifies the  separator of attributes and classes in the <i>--target</i> (it affects only the current action). Attributes and classes in the <i>--target</i> will be seperated with this new value. This argument is relevant only in the case, when the <i>--target</i> format is <a href="#dtl">DTL</a>.
+		<p></p>
+		</dd>
+
+		<dt><b>-sl</b> skip_lines,
+			<b>--skip_lines</b> skip_lines
+		</dt>
+		<dd>
+		The interval of the form
+		<pre><code>
+			interval ::= (\d+)? "-" (\d+)?
+		</code></pre>
+		specifies <i>source</i> indexes of lines, which will be skipped in any action.
+		<p></p>
+		</dd>
+
+		<dt><b>-se</b>
+			<b>--skip_errors</b>
+		</dt>
+		<dd>
+		Erros produced by invalid lines in the <i>source</i> are skipped. Program continues and skipped erros are printed to the <i>stderr</i>.
+		<p></p>
+		</dd>
+
+		<dt><b>-n</b> name
+			<b>--name</b> name
+		</dt>
+		<dd>
+		Specifies the new name of relation (data).
+		<p></p>
+		</dd>
+
+		<dt><b>-mv</b> missing_value
+			<b>--missing_value</b> missing_value
+		</dt>
+		<dd>
+		Specifies the value, which will be interpreted as an undefined value (None/NULL). The result of scaling the <i>--missing_value</i> is always False (0).
+		<p></p>
+		</dd>
+
+		<dt><b>-o</b> objects
+			<b>--objects</b> objects
+		</dt>
+		<dd>
+		The list of object names seperated by comma:
+		<pre><code>
+			objects ::= name | (name "," objects)
+		</code></pre>
+		This argument is relevant only in the case, when <i>--target</i> format is <a href="#cxt">Burmeister</a>. If <i>--objects</i> is ommited, indexes of objects are used.
+		<p></p>
+		</dd>
+
+		<dt><b>-snh</b> source_no_header
+			<b>--source_no_header</b> source_no_header
+		</dt>
+		<dd>
+		The first row in the <a href="#csv">CSV</a>  <i>source</i> is interpreted as a object (not header).
+		<p></p>
+		</dd>
+
+		<dt><b>-tnh</b> target_no_header
+			<b>--target_no_header</b> target_no_header
+		</dt>
+		<dd>
+		The <a href="#csv">CSV</a> <i>--target</i> will have the object on the first line.
 		<p></p>
 		</dd>
 
 	</dl>
+
+	<h2 id="formats">SWIFT FORMATS</h2>
+		<h3 id="csv">Comma-separated values (.csv)</h3>
+			<a href="https://en.wikipedia.org/wiki/Comma-separated_values">CSV</a>
+
+		<h3 id="arff">Attribute-Relation File Format (.arff)</h3>
+			<a href="http://weka.wikispaces.com/ARFF+%28stable+version%29">ARFF</a>
+
+		<h3 id="data">C4.5 File Format (.data .names)</h3>
+			<a href="http://www.cs.washington.edu/dm/vfml/appendixes/c45.htm">C4.5</a>
+
+		<h3 id="cxt">Burmeister (.cxt)</h3>
+			<a href="http://www.upriss.org.uk/fca/fcafileformats.html#Burmeister">Burmeister</a>
+
+		<h3 id="dat">FIMI File Format (.dat)</h3>
+			<a href="http://fcalgs.sourceforge.net/format.html">FIMI</a> (.dat)
+
+		<h3 id="dtl">DTL File Format (.dtl)</h3>
 
 	<h2 id="tips">TIPS AND TRICKS</h2>
 	<h2 id="gui">GUI MANUAL</h2>
