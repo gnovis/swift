@@ -74,7 +74,7 @@ def get_args():
     TARGET_ARGS = {"target": RunParams.TARGET,
                    "target_format": RunParams.FORMAT,
                    "target_separator": RunParams.TARGET_SEP,
-                   "target_objects": RunParams.TARGET_OBJECTS,
+                   "objects": RunParams.TARGET_OBJECTS,
                    "name": RunParams.RELATION_NAME,
                    "target_no_header": RunParams.NFL,
                    "target_cls_separator": RunParams.CLS_SEPARATOR}
@@ -101,7 +101,7 @@ def get_args():
     parser.add_argument("-t", "--target", nargs="?", type=argparse.FileType('w'), default=sys.stdout, help="Name of target file.")
     parser.add_argument("-ts", "--target_separator",
                         help="Separator which will be used in target file. Default is ','.")
-    parser.add_argument("-to", "--target_objects", help="Target file (new) objects. Only for CXT format.")
+    parser.add_argument("-o", "--objects", help="Target file (new) objects. Only for CXT format.")
     parser.add_argument("-n", "--name", help="New name of relation.")
     parser.add_argument("-cls", "--classes", help="""Intervals (e.g 5-8) or keys, seperated by commas.
                         For determine, which attribute will be used as class. Compulsory for coversion: -> C4.5 and -> DTL.""")

@@ -161,7 +161,7 @@ class AttrNumeric(Attribute):
         super().__init__(index, name, attr_type,
                          attr_pattern, expr_pattern)
         if self._expr_pattern:
-            subst_expr_pattern = re.sub(r"[^eE+<>!=0-9\s.-]+", "x", self._expr_pattern)
+            subst_expr_pattern = re.sub(r"[^E+<>!=0-9\s.-]+", "x", self._expr_pattern)
             self._evaled_expr_func = eval('lambda x:' + subst_expr_pattern)
 
     def scale(self, value):

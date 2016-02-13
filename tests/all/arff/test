@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ../../new_test_config
+source ../../test_config
 
 format=$ARFF
 none_value="?"
@@ -9,7 +9,7 @@ source_file=test.arff
 print_header $format
 
 # -> cxt
-$app $source_file -t arff.cxt -ta "$new_str_attrs" -to "$new_str_objects" -mv "$none_value"
+$app $source_file -t arff.cxt -ta "$new_str_attrs" -o "$new_str_objects" -mv "$none_value"
 print_test_info $format $CXT
 
 # -> csv

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ../../new_test_config
+source ../../test_config
 
 format=$CSV
 new_str_attrs="WINDY=windy:e['TRUE']; SUNNY=outlook:e['sunny']; ORDER=order; TEMP=temperature:n[x>80]; HUM=humidity:n[70<=x<=80]; NOTE=note:s['hell|[0-9]']; BIRTHDAY=birthday:d/'%Y-%m-%d'[date=='2001-04-03']"  
@@ -11,7 +11,7 @@ source_file_nfl=test_nfl.csv
 print_header $format
 
 # -> cxt
-$app $source_file_nfl -t csv.cxt -ta "$new_str_attrs_indexes" -to "$new_str_objects" -snh
+$app $source_file_nfl -t csv.cxt -ta "$new_str_attrs_indexes" -o "$new_str_objects" -snh
 print_test_info $format $CXT
 
 # -> arff

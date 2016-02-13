@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ../../new_test_config
+source ../../test_config
 
 format=$DAT
 source_file=test.dat
@@ -17,7 +17,7 @@ $app $source_file -t dat.arff -ta "$new_str_attrs"
 print_test_info $format $ARFF
 
 # -> cxt
-$app $source_file -t dat.cxt -ta "$new_str_attrs" -to "$new_str_objects"
+$app $source_file -t dat.cxt -ta "$new_str_attrs" -o "$new_str_objects"
 print_test_info $format $CXT
 
 # -> data
