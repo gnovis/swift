@@ -19,7 +19,7 @@ def convert(*args):
                                  args[SOURCE], args[TARGET])
     warnings = validator.warnings
     if len(warnings) > 0:
-        raise SwiftError(ErrorCode.missing_arg, "Missing Arguments", ErrorMessage.MISSING_ARGS_ERROR + "\n" + "\n".join(warnings))
+        raise ArgError(message=ErrorMessage.MISSING_ARGS_ERROR + "\n" + "\n".join(warnings))
     convertor = Convertor(args[SOURCE], args[TARGET], **(args[OTHERS]))
     convertor.read_info()
     convertor.convert()

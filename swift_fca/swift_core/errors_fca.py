@@ -29,10 +29,10 @@ class ErrorCode(IntEnum):
     formula_regex = 23
     formula_key = 24
     keyboard_interrupt = 25
-    missing_arg = 26
-    bival = 27
-    broken_pipe = 28
-    names_file = 29
+    bival = 26
+    broken_pipe = 27
+    names_file = 28
+    dtl_header = 29
 
 
 class ErrorMessage:
@@ -80,6 +80,7 @@ class HeaderError(ParseError):
              FileType.DATA: [ErrorCode.data_header, HEADER_FORMAT.format(FileType.DATA_REPR, NAME)],
              FileType.CSV: [ErrorCode.csv_header, HEADER_FORMAT.format(FileType.CSV_REPR, NAME)],
              FileType.DAT: [ErrorCode.dat_header, HEADER_FORMAT.format(FileType.DAT_REPR, NAME)],
+             FileType.DTL: [ErrorCode.dtl_header, HEADER_FORMAT.format(FileType.DTL_REPR, NAME)],
              FileType.CXT: [ErrorCode.cxt_header, HEADER_FORMAT.format(FileType.CXT_REPR, NAME)]}
 
     def __init__(self, file_type, row_no, col_no, line, message):
@@ -145,7 +146,8 @@ class DateValFormatError(SwiftError):
 
 class FormulaNamesError(SwiftError):
     def __init__(self, old, new):
-        msg = "Count of new names and count of old names must be equal.\nnew({}): {}\nold({}): {}".format(len(new), ", ".join(new), len(old), ", ".join(old))
+        msg = "The count of new names and the count of old names must be equal.\nnew({}): {}\nold({}): {}".format(
+            len(new), ", ".join(new), len(old), ", ".join(old))
         super().__init__(ErrorCode.formula_names, "Formula Names", msg)
 
 

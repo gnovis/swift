@@ -18,9 +18,15 @@
 				background-color: #e6e6e6;
 			}
 			h1, h2, h3, h4 {
-				color:#001a4d;
+				color:#262626;
 				font-family:"DejaVu Sans";}
-			b, a {color: #003399}
+			b {color: #004080}
+			a {
+				color: #cc0052;
+				font-weight: bold;
+				text-decoration: none;
+			}
+			dd {margin-bottom: 10px}
 		</style>
 	</head>
 <body>
@@ -108,12 +114,11 @@
 	<h3>Optional arguments</h3>
 	<dl>
 		<dt><b>-h, --help</b></dt>
-		<dd>Print the help message to the <i>stdout</i> and exit.<p></p></dd>
+		<dd>Print the help message to the <i>stdout</i> and exit.</dd>
 
 		<dt><b>-t</b> target, <b>--target</b> target</dt>
 		<dd>
 		The name of the file (program writes to this file) in one of the supported <a href="#formats">format</a>. The <i>--target</i> must ends with a valid format extension or the optional <i>--target_format</i> argument must be used. If the <i>--target</i> is omitted or if it equals to "-", the program writes the input to the <i>stdout</i>.
-		<p></p>
 		</dd>
 
 		<dt><b>-ta </b>target_attributes, <b>--target_attributes</b> target_attributes</dt>
@@ -240,18 +245,15 @@ date_val ::= "'" .+ "'"
 num_val ::= int ("." number?)? ("e" int)?
 int ::= ("+" | "-")? \d+</code></pre>
 		If the <i>--target_attributes</i> argument is omitted, all attributes readed from the <i>source</i> are processed.
-		<p></p>
 		</dd>
 
 		<dt><b>-c</b> [rows_count], <b>--convert</b> [rows_count]</dt>
 		<dd>
 			Converts the <i>source</i> to the <i>--target</i>. The optional argument rows_count defines how many rows of data should be processed.
-		<p></p>
 		</dd>
 
 		<dt><b>-p</b> [rows_count], <b>--preview</b> [rows_count]</dt>
 		<dd>Prints desired count of rows from the <i>source</i> table data in to the <i>stdout</i>. The default amount of printed rows is 20, but this value can be changed by using the optional argument rows_count.
-		<p></p>
 		</dd>
 
 		<dt><b>-i, --info</b></dt>
@@ -285,21 +287,18 @@ values appearance:
 .
 .</pre>
 		The <i>--info</i> may be used as single action (the statistics is printed to the <i>stdout</i>) or in parallel with the conversion (if <i>--target</i> is <i>stdout</i>, the new file named same as the <i>source</i>, but with extension .info is produced). The usage <i>--info</i> in parallel with conversion is useful for the saving time if both actions are required.
-		<p></p>
 		</dd>
 
 		<dt><b>-sf</b> {csv,arff,dat,data,cxt,dtl},
 			<b>--source_format</b> {csv,arff,dat,data,cxt,dtl}</dt>
 		<dd>
 		Specifies the <i>source</i> format using the extension. If the <i>source</i> doesn't have the extension, the <i>--source_format</i> is required. If the <i>source</i> has the extension and <i>--source_format</i> is also used, the <i>--source_format</i> overwrites the <i>source</i> extension.
-		<p></p>
 		</dd>
 
 		<dt><b>-tf</b> {csv,arff,dat,data,cxt,dtl},
 			<b>--target_format</b> {csv,arff,dat,data,cxt,dtl}</dt>
 		<dd>
 		Specifies the <i>--target</i> format using the extension. If the <i>--target</i> doesn't have the extension, the <i>--target_format</i> is required. If the <i>--target</i> has the extension and <i>--target_format</i> is also used, the <i>--target_format</i> overwrites the <i>--target</i> extension.
-		<p></p>
 		</dd>
 
 		<dt><b>-cls</b> classes,
@@ -313,7 +312,6 @@ interval ::= ((\d+)? "-" (\d+)?)
 key = \w+</code></pre>
 
 		This argument is relevant only in the case, when the <i>--target</i> format is <a href="#data">C4.5</a> or <a href="#dtl">DTL</a>.
-		<p></p>
 		</dd>
 
 		<dt><b>-ss</b> source_separator,
@@ -321,7 +319,6 @@ key = \w+</code></pre>
 		</dt>
 		<dd>
 		Specifies the separator of attributes in the <i>source</i> (it affects only the current action). <i>--source_separator</i> must be specified, when the separator used in the <i>source</i> is a different from a default file format separator.
-		<p></p>
 		</dd>
 
 		<dt><b>-ts</b> target_separator,
@@ -329,7 +326,6 @@ key = \w+</code></pre>
 		</dt>
 		<dd>
 		Specifies the separator of attributes in the <i>--target</i> (it affects only the current action). Attributes in the <i>--target</i> will be seperated with this new value.
-		<p></p>
 		</dd>
 
 		<dt><b>-scs</b> source_classes_separator,
@@ -337,7 +333,6 @@ key = \w+</code></pre>
 		</dt>
 		<dd>
 		Specifies the separator of attributes and classes in the <i>source</i> (it affects only the current action). <i>--source_cls_separator</i> must be specified, when the classes/attributes separator used in the <i>source</i> is a different from a default file format classes/attributes separator. This argument is relevant only in the case, when the <i>source</i> format is <a href="#dtl">DTL</a>.
-		<p></p>
 		</dd>
 
 		<dt><b>-tcs</b> target_classes_separator,
@@ -345,7 +340,6 @@ key = \w+</code></pre>
 		</dt>
 		<dd>
 		Specifies the  separator of attributes and classes in the <i>--target</i> (it affects only the current action). Attributes and classes in the <i>--target</i> will be seperated with this new value. This argument is relevant only in the case, when the <i>--target</i> format is <a href="#dtl">DTL</a>.
-		<p></p>
 		</dd>
 
 		<dt><b>-sl</b> skip_lines,
@@ -355,7 +349,6 @@ key = \w+</code></pre>
 		The interval of the form
 		<pre><code>interval ::= (\d+)? "-" (\d+)?</code></pre>
 		specifies <i>source</i> indexes of lines, which will be skipped in any action.
-		<p></p>
 		</dd>
 
 		<dt><b>-se</b>,
@@ -363,7 +356,6 @@ key = \w+</code></pre>
 		</dt>
 		<dd>
 		Erros produced by invalid lines in the <i>source</i> are skipped. Program continues and skipped erros are printed to the <i>stderr</i>.
-		<p></p>
 		</dd>
 
 		<dt><b>-n</b> name,
@@ -371,7 +363,6 @@ key = \w+</code></pre>
 		</dt>
 		<dd>
 		Specifies the new name of relation (data).
-		<p></p>
 		</dd>
 
 		<dt><b>-mv</b> missing_value,
@@ -379,7 +370,6 @@ key = \w+</code></pre>
 		</dt>
 		<dd>
 		Specifies the value, which will be interpreted as an undefined value (None/NULL). The result of scaling the <i>--missing_value</i> is always False (0).
-		<p></p>
 		</dd>
 
 		<dt><b>-o</b> objects,
@@ -389,7 +379,6 @@ key = \w+</code></pre>
 		The list of object names seperated by comma:
 		<pre><code>objects ::= name | (name "," objects)</code></pre>
 		This argument is relevant only in the case, when <i>--target</i> format is <a href="#cxt">Burmeister</a>. If <i>--objects</i> is ommited, indexes of objects are used.
-		<p></p>
 		</dd>
 
 		<dt><b>-snh</b> source_no_header,
@@ -397,7 +386,6 @@ key = \w+</code></pre>
 		</dt>
 		<dd>
 		The first row in the <a href="#csv">CSV</a>  <i>source</i> is interpreted as a object (not header).
-		<p></p>
 		</dd>
 
 		<dt><b>-tnh</b> target_no_header,
@@ -405,14 +393,107 @@ key = \w+</code></pre>
 		</dt>
 		<dd>
 		The <a href="#csv">CSV</a> <i>--target</i> will have the object on the first line.
-		<p></p>
 		</dd>
 
 	</dl>
 
 
-	<h3 id="">Error codes</h3>
-	doplnit
+	<h3 id="">Errors</h3>
+	The following errors in the list are of the form:
+<pre><code>error_code: error_name
+	error_description
+</code></pre>
+which are produced by the program. When an error is raised, program ends and returns the error code.
+	<dl>
+		<dt><b>1</b>: Swift Unknown Error</dt>
+		<dd>If you get this error, please <a href="#bugs">report</a> this bug with details printed below the error message. Thank you.</dd>
+
+		<dt><b>2</b>: Argument Error</dt>
+		<dd>Some of required arguments are missing or aren't specified correctly.</dd>
+
+		<dt><b>3</b>: ARFF Header Error</dt>
+		<dd>The syntax error in the header of the ARFF <i>source</i> file.</dd>
+
+		<dt><b>4</b>: DATA Header Error</dt>
+		<dd>The syntax error in the header of the DATA <i>source</i> file.</dd>
+
+		<dt><b>5</b>: CSV Header Error</dt>
+		<dd>The syntax error in the header of the CSV <i>source</i> file.</dd>
+
+		<dt><b>6</b>: DAT header Error</dt>
+		<dd>The syntax error in the header of the DAT <i>source</i> file.</dd>
+
+		<dt><b>7</b>: CXT Header Error</dt>
+		<dd>The syntax error in the header of the CXT <i>source</i> file.</dd>
+
+		<dt><b>8</b>: ARFF Line Error</dt>
+		<dd>The syntax error in the line of the ARFF <i>source</i> file.</dd>
+
+		<dt><b>9</b>: DATA Line Error</dt>
+		<dd>The syntax error in the line of the DATA <i>source</i> file.</dd>
+
+		<dt><b>10</b>: CSV Line Error</dt>
+		<dd>The syntax error in the line of the CSV <i>source</i> file.</dd>
+
+		<dt><b>11</b>: DAT Line Error</dt>
+		<dd>The syntax error in the line of the DAT <i>source</i> file.</dd>
+
+		<dt><b>12</b>: CXT Line Error</dt>
+		<dd>The syntax error in the line of the CXT <i>source</i> file.</dd>
+
+		<dt><b>13</b>: DTL Line Error</dt>
+		<dd>The syntax error in the line of the DTL <i>source</i> file.</dd>
+
+		<dt><b>14</b>: Formula Error</dt>
+		<dd>The syntax error in some formula of the <i>--target_attributes</i> argument.</dd>
+
+		<dt><b>15</b>: Formula Names Error</dt>
+		<dd>The count of new names and the count of old names aren't equal.</dd>
+
+		<dt><b>16</b>: Sequence Error</dt>
+		<dd>The syntax error in the sequance (interval).</dd>
+
+		<dt><b>17</b>: DATE Value Error</dt>
+		<dd>The invalid value of the date attribute.</dd>
+
+		<dt><b>18</b>: NUMERIC Value Error</dt>
+		<dd>The invalid value of the numeric attribute.</dd>
+
+		<dt><b>19</b>: STRING Value Error</dt>
+		<dd>The invalid value of the string attribute.</dd>
+
+		<dt><b>20</b>: NOMINAL Value Error</dt>
+		<dd>The invalid value of the nominal (enumeration) attribute.</dd>
+
+		<dt><b>21</b>: DATE Error</dt>
+		<dd>The invalid syntax of the date.</dd>
+
+		<dt><b>22</b>: Formula Date Value/Format Error</dt>
+		<dd>The value and the format of the date doesn't match.</dd>
+
+		<dt><b>23</b>: Formula Regular Expression Error</dt>
+		<dd>The invalid regular expression in the formula.</dd>
+
+		<dt><b>24</b>: Formula Attribute Key Error</dt>
+		<dd>The given key of the attribute doesn't exists.</dd>
+
+		<dt><b>25</b>: Keyboard Interrupt Error</dt>
+		<dd></dd>
+
+		<dt><b>26</b>: Bivalent Error</dt>
+		<dd>The invalid bivalent value in data.</dd>
+
+		<dt><b>27</b>: Broken Pipe Error</dt>
+		<dd></dd>
+
+		<dt><b>28</b>: Names File Error</dt>
+		<dd>Files: .names and .data (C4.5 format) aren't in the same directory.</dd>
+
+		<dt><b>29</b>: DTL Header Error</dt>
+		<dd>The syntax error in the header of the DTL <i>source</i> file.</dd>
+
+	</dl>
+
 
 	<h2 id="formats">SUPPORTED FORMATS</h2>
 		Swift supports following six formats:
@@ -482,7 +563,7 @@ The relational attribute humidity (above) will be converted to attributes (e.g f
 	You are welcome to participate in development of this project. Join us on <a href="https://github.com/gnovis/swift">github</a>.
 	<h2 id="authors">AUTHORS</h2>
 	Jan Novacek &ltnovacekj5@gmail.com&gt, Jan Outrata
-	<h2 id="licence">LICENCE</h2>
+	<h2 id="licence">LICENSE</h2>
 	Swift  is  distributed  under the  GNU GPL v3 - <a href="http://www.gnu.org/licenses/gpl-3.0.html">http://www.gnu.org/licenses/gpl-3.0.html</a>.
 	<h2 id="download">DOWNLOAD</h2>
 	This program can be obtined from <a href="https://github.com/gnovis/swift">https://github.com/gnovis/swift</a> or by the direct <a href="https://github.com/gnovis/swift/zipball/master/">link</a>.
