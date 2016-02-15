@@ -410,22 +410,56 @@ key = \w+</code></pre>
 	</dl>
 
 	<h2 id="formats">SWIFT FORMATS</h2>
+		Swift supports following six formats:
 		<h3 id="csv">Comma-separated values (.csv)</h3>
-			<a href="https://en.wikipedia.org/wiki/Comma-separated_values">CSV</a>
+			The description of the format with examples can be found <a href="https://en.wikipedia.org/wiki/Comma-separated_values">here</a>.
+			<p><i>Notes: </i>The attribute separator inside the value must be always escaped by the backslash.</p>
 
 		<h3 id="arff">Attribute-Relation File Format (.arff)</h3>
-			<a href="http://weka.wikispaces.com/ARFF+%28stable+version%29">ARFF</a>
+			The description of the format with examples can be found <a href="http://weka.wikispaces.com/ARFF+%28stable+version%29">here</a>.
+			<p><i>Notes:</i> The optional date format for the date attribute in the header, must be specified with python <a href="https://docs.python.org/3.5/library/datetime.html#strftime-and-strptime-behavior">format codes</a> (not in the Java SimpleDateFormat as specified in the official documentation).</p>
+			Example:
+<pre><code>@relation birthdays
+@attribute birthday date %Y-%m-%d
+@data
+1990-04-23
+1993-12-03
+1989-03-31</code></pre>
+
+<p>When converting from the arff file with some relational attributes to some other format, relational attributes are linearized (using dot notation, see example).</p>
+Example:
+<pre><code>@attribute humidity relational
+    @attribute absolute relational
+        @attribute day numeric
+        @attribute nigth numeric
+    @end absolute
+@end humidity</code></pre>
+
+The relational attribute humidity (above) will be converted to attributes (e.g for csv target):
+<pre><code>humidity.absolute.day, humidity.absolute.night</code></pre>
 
 		<h3 id="data">C4.5 File Format (.data .names)</h3>
-			<a href="http://www.cs.washington.edu/dm/vfml/appendixes/c45.htm">C4.5</a>
+		The description of the format with examples can be found <a href="http://www.cs.washington.edu/dm/vfml/appendixes/c45.htm">here</a>.
+		<p><i>Notes: </i>With the class, must be worked exactly the same as with the attributes at any conversion (class can be scaled, total binarized, ...). The key used in the <i>--target_attributes</i> is the class index or the name: "class".</p>
 
 		<h3 id="cxt">Burmeister (.cxt)</h3>
-			<a href="http://www.upriss.org.uk/fca/fcafileformats.html#Burmeister">Burmeister</a>
+		The description of the format with examples can be found <a href="http://www.upriss.org.uk/fca/fcafileformats.html#Burmeister">here</a>.
 
 		<h3 id="dat">FIMI File Format (.dat)</h3>
-			<a href="http://fcalgs.sourceforge.net/format.html">FIMI</a> (.dat)
+		The description of the format with examples can be found <a href="http://fcalgs.sourceforge.net/format.html">here</a>.
+		<p><i>Notes: </i>The blank lines are readed (from FIMI source) as objects, with all attributes of the value 0 (False). And conversely objects with all attributes of the value 0 (False), are writed (to FIMI target) as blank lines. It differs from the official format documentation, which ignore blank lines and objects with all attributes of value 0.</p>
 
 		<h3 id="dtl">DTL File Format (.dtl)</h3>
+		<p>This format is very similiar to FIMI, but it supports specification of classes for each object. The file consists of rows of the form:
+		<pre><code>attributes "|" classes</code></pre>
+		where attributes part is exactly the same as attributes in the FIMI format (values are indexes of attributes with value 1) and "|" separates attributes and classes. The classes part consists of various values, separated with the same separator as attributes are.</p>
+		Example (<code>class1={a,b}, class2={aa,bb}</code>):
+<pre><code>0 1 2 3 4|a bb
+1 2 3 4|a aa
+2 3 4|b bb
+3 4|a bb
+4|b bb</code></pre>
+		<p>With classes must be worked exactly the same as with the attributes at any conversion (class can be scaled, total binarized, ...). The key used in the <i>--target_attributes</i> is the class index or the name: "class1", "class2"... .</p>
 
 	<h2 id="tips">TIPS AND TRICKS</h2>
 	<h2 id="gui">GUI MANUAL</h2>
