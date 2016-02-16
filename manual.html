@@ -1,23 +1,27 @@
  <!DOCTYPE html>
 <html>
 	<head>
+		<meta charset="utf-8">
 		<title>Swift Manual</title>
 		<style>
 			body {
-				margin-left:50px;
-				margin-right:50px;
-				margin-top:30px;
-				margin-bottom:30px;
+				text-align: center;
+			}
+
+			#wrap {
+				width: 900px;
+				margin: 0 auto;
+				text-align: left;
+				padding: 20px;
 			}
 			pre {
 				border-style: solid;
 				border-width: 1px;
 				border-color: #b3b3b3;
 				padding: 10px;
-				max-width: 640px;
 				background-color: #e6e6e6;
 			}
-			h1, h2, h3, h4 {
+			h1, h2, h3, h4, h5 {
 				color:#262626;
 				font-family:"DejaVu Sans";}
 			b {color: #004080}
@@ -29,7 +33,9 @@
 			dd {margin-bottom: 10px}
 		</style>
 	</head>
+
 <body>
+<div id="wrap">
 	<h1>Swift Manual</h1>
 
 	<h2>NAME</h2>
@@ -102,7 +108,7 @@
 	All operations work with data of any size, only limitation is a space of hard drive (not RAM).
 
 	<p>
-	Swift provides Command-line interface (swift-cli.py) and also Graphical user interface (swift.py), which is described in a seperate <a href="#gui">GUI Manual</a> section. For quick use without useless reading, go to <a href="#tips">tips and tricks</a> section which contains examples of common use cases.
+	Swift provides Command-line interface (swift-cli.py) and also Graphical user interface (swift.py), which is described in a seperate <a href="#gui">GUI Manual</a> section. For quick use without useless reading, go to <a href="#examples">examples</a> section which contains examples of common use cases.
 	</p>
 	<h3>Positional arguments</h3>
 	<dl>
@@ -544,11 +550,108 @@ The relational attribute humidity (above) will be converted to attributes (e.g f
 2 3 4|b bb
 3 4|a bb
 4|b bb</code></pre>
+
 		<p>With classes must be worked exactly the same as with the attributes at any conversion (class can be scaled, total binarized, ...). The key used in the <i>--target_attributes</i> is the class index or the name: "class1", "class2"... .</p>
 
-	<h2 id="tips">TIPS AND TRICKS</h2>
+	<h2 id="examples">EXAMPLES</h2>
+	<h3>Sample data</h3>
+	<dl>
+		<dt>CSV - example.csv</dt>
+		<dd>
+<pre><code>name,   birth_date, credits, study, sex
+George, 1991-06-13, 54,      true,  man
+Monica, 1990-04-23, 98,      false, woman
+Mia,    ?,          87,      true,  woman
+John,   1989-11-11, 91,      true,  man</code></pre>
+		</dd>
+
+		<dt>DTL - example.dtl</dt>
+		<dd>
+<pre><code>0 1 2 3 4|a bb
+1 2 3 4|a aa
+2 3 4|b bb
+3 4|a bb
+4|b bb</code></pre>
+		</dd>
+
+		<dt>C4.5</dt>
+		<dd>
+		example.names
+<pre><code>foo, bar.
+age: cotinuous.
+job: teacher, pilot, doctor.
+work: discrete 2.
+sport: ignore.</code></pre>
+example.data
+<pre><code>44, doctor,  1, foo
+30, teacher, 0, bar
+35, ?,       1, foo
+31, pilot,   0, foo
+</code></pre>
+		</dd>
+
+	</dl>
 	<h3>Convert</h3>
-	<h3>Scale</h3>
+	<dl>
+
+		<h4>Simple Conversion</h4>
+	<dt>DTL to CSV</dt>
+	<dd>
+		<pre><code>swift-cli.py example.dtl -t result.csv</code></pre>
+		result.csv
+<pre><code>
+0,1,2,3,4,class1,class2
+1,1,1,1,1,a,bb
+0,1,1,1,1,a,aa
+0,0,1,1,1,b,bb
+0,0,0,1,1,a,bb
+0,0,0,0,1,b,bb
+</code></pre>
+	</dd>
+
+		<h4>Types specification</h4>
+		<dt>CSV to ARFF</dt>
+		<dd>
+		<pre><code>swift-cli.py example.csv -t result.arff -mv '?' -ta "name:s; 1:d/'%Y-%m-%d'; credits:n; work,gender=3,4:e" -n people</code></pre>
+		result.arff
+<pre><code>@relation people
+
+@attribute name string
+@attribute birth_date date %Y-%m-%d
+@attribute credits numeric
+@attribute work { true,false }
+@attribute gender { man,woman }
+
+@data
+George,1991-06-13,54,true,man
+Monica,1990-04-23,98,false,woman
+Mia,?,87,true,woman
+John,1989-11-11,91,true,man</pre></code>
+		</dd>
+
+		<h4>Classes specification</h4>
+		<dt>CSV to C4.5</dt>
+		<dd>
+		<pre><code>swift-cli.py example.csv -t result.data -mv '?' -ta "name:s; 1:d/'%Y-%m-%d'; credits:n; 3,4:e" -n people -cls sex</code></pre>
+
+		result.names
+<pre><code>man,woman.
+name: discrete n.
+birth_date: discrete n.
+credits: continuous.
+study: true,false.
+sex: man,woman.</pre></code>
+		result.data
+<pre><code>George,1991-06-13,54,true,man,man
+Monica,1990-04-23,98,false,woman,woman
+Mia,?,87,true,woman,woman
+John,1989-11-11,91,true,man,man</code></pre>
+
+		</dd>
+
+	</dl>
+	<h4>Scale</h4>
+	<h4>Binary Unpacking</h4>
 	<h3>Filter</h3>
 	<h3>Info</h3>
 	<h3>Preview</h3>
@@ -561,10 +664,11 @@ The relational attribute humidity (above) will be converted to attributes (e.g f
 	<h2 id="contribute">CONTRIBUTING</h2>
 	You are welcome to participate in development of this project. Join us on <a href="https://github.com/gnovis/swift">github</a>.
 	<h2 id="authors">AUTHORS</h2>
-	Jan Novacek &ltnovacekj5@gmail.com&gt, Jan Outrata
+	Jan Novacek (novacekj5@gmail.com), Jan Outrata
 	<h2 id="licence">LICENSE</h2>
 	Swift  is  distributed  under the  GNU GPL v3 - <a href="http://www.gnu.org/licenses/gpl-3.0.html">http://www.gnu.org/licenses/gpl-3.0.html</a>.
 	<h2 id="download">DOWNLOAD</h2>
 	This program can be obtined from <a href="https://github.com/gnovis/swift">https://github.com/gnovis/swift</a> or by the direct <a href="https://github.com/gnovis/swift/zipball/master/">link</a>.
+</div>
 </body>
 </html>
