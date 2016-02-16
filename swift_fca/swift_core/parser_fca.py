@@ -102,6 +102,8 @@ class FormulaParser(Parser):
 
         scale = tokens.scale
         unpack = tokens.get('unpack', defaultValue=False)
+        if unpack:
+            cls = AttrEnum
 
         if len(old_names) != len(new_names):
             raise FormulaNamesError(old_names, new_names)
