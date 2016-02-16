@@ -574,6 +574,15 @@ John,   1989-11-11, 91,      true,  man</code></pre>
 4|b bb</code></pre>
 		</dd>
 
+		<dt>DAT - example.dat</dt>
+		<dd>
+<pre><code>0
+1
+2
+3
+4</code></pre>
+		</dd>
+
 		<dt>C4.5</dt>
 		<dd>
 		example.names
@@ -607,6 +616,23 @@ example.data
 0,0,0,1,1,a,bb
 0,0,0,0,1,b,bb
 </code></pre>
+	<i>Next possible conversions:</i>
+	<ul>
+		<li>CSV to CSV</li>
+		<li>ARFF to ARFF</li>
+		<li>ARFF to CSV</li>
+		<li>DATA to CSV</li>
+		<li>DATA to ARFF</li>
+		<li>DAT to DAT</li>
+		<li>DAT to CSV</li>
+		<li>DAT to ARFF</li>
+		<li>CXT to CXT</li>
+		<li>CXT to CSV</li>
+		<li>CXT to DAT</li>
+		<li>CXT to ARFF</li>
+		<li>DTL to ARFF</li>
+	</ul>
+
 	</dd>
 
 		<h4>Types specification</h4>
@@ -630,7 +656,7 @@ John,1989-11-11,91,true,man</pre></code>
 		</dd>
 
 		<h4>Classes specification</h4>
-		<dt>CSV to C4.5</dt>
+		<dt>CSV to DATA</dt>
 		<dd>
 		<pre><code>swift-cli.py example.csv -t result.data -mv '?' -ta "name:s; 1:d/'%Y-%m-%d'; credits:n; 3,4:e" -n people -cls sex</code></pre>
 
@@ -640,17 +666,149 @@ name: discrete n.
 birth_date: discrete n.
 credits: continuous.
 study: true,false.
-sex: man,woman.</pre></code>
+sex: man,woman.</code></pre>
 		result.data
 <pre><code>George,1991-06-13,54,true,man,man
 Monica,1990-04-23,98,false,woman,woman
 Mia,?,87,true,woman,woman
 John,1989-11-11,91,true,man,man</code></pre>
 
+	<i>Next possible conversions:</i>
+	<ul>
+		<li>ARFF to DATA</li>
+		<li>DATA to DATA</li>
+		<li>DAT to DTL</li>
+		<li>DAT to DATA</li>
+		<li>CXT to DATA</li>
+		<li>CXT to DTL</li>
+		<li>DTL to DTL</li>
+		<li>DTL to DATA</li>
+	</ul>
+
 		</dd>
 
-	</dl>
+
+	<h4>Object names and attribute names specification</h4>
+	<dt>DAT to CXT</dt>
+	<dd>
+
+	<pre><code>swift-cli.py example.dat -t result.cxt -o foo,bar,foobar,barfoo -ta 'a=0;b=1;c=2;d=3'</code></pre>
+	result.cxt
+<pre><code>B
+
+4
+4
+foo
+bar
+foobar
+barfoo
+a
+b
+c
+d
+X...
+.X..
+..X.
+...X</code></pre>
+
 	<h4>Scale</h4>
+	<dt>CSV to DAT</dt>
+	<dd>
+	<pre><code>swift-cli.py example.csv -mv '?' -t result.dat -ta "name:s['M.+a']; birth_date:d/'%Y-%m-%d'[x&gt='1991-01-01'];
+             credits:n[50&lt=x&lt=90]; study:e['true']; sex:e['man']"</code></pre>
+result.dat
+<pre><code>1 2 3 4
+0
+0 2 3
+3 4</code></pre>
+
+	<i>Next possible conversions:</i>
+	<ul>
+		<li>ARFF to DAT</li>
+		<li>DATA to DAT</li>
+		<li>DTL to DAT</li>
+	</ul>
+	</dd>
+
+	<h4>Scale and object names specification</h4>
+	<dt>CSV to CXT</dt>
+	<dd>
+	<pre><code>swift-cli.py example.csv -mv '?' -t result.cxt -o s001,s002,s003,s004 -ta "name:s['M.+a'];
+	     birth_date:d/'%Y-%m-%d'[x&gt='1991-01-01']; credits:n[50&lt=x&lt=90]; study:e['true']; sex:e['man']"</code></pre>
+	result.cxt
+
+<pre><code>B
+
+4
+5
+s001
+s002
+s003
+s004
+name
+birth_date
+credits
+study
+sex
+.XXXX
+X....
+X.XX.
+...XX</code></pre>
+
+	<i>Next possible conversions:</i>
+	<ul>
+		<li>ARFF to CXT</li>
+		<li>DATA to CXT</li>
+	</ul>
+	</dd>
+
+	<h4>Scale and classes specification</h4>
+	<dt>CSV to DTL</dt>
+	<dd>
+	<pre><code>swift-cli.py example.csv -mv '?' -t result.dtl -cls 3,4 -ta "name:s['M.+a'];
+	     birth_date:d/'%Y-%m-%d'[x&gt='1991-01-01']; credits:n[50&lt=x&lt=90]; study:e['true']; sex:e['man']"</code></pre>
+	result.dtl
+<pre><code>1 2 3 4|true man
+0|false woman
+0 2 3|true woman
+3 4|true man</code></pre>
+
+	<i>Next possible conversions:</i>
+	<ul>
+		<li>ARFF to DTL</li>
+		<li>DATA to DTL</li>
+	</ul>
+
+	</dd>
+
+	<h4>Scale, object names and attribute names specification</h4>
+	<dt>DTL to CXT</dt>
+	<dd>
+	<pre><code>swift-cli.py example.dtl -t result.cxt -ta "b1,b2,b3,b4,b5=0-4;class1:e['b'];class2:e['bb']" -o a,b,c,d,e</code></pre>
+	<pre><code>B
+
+5
+7
+a
+b
+c
+d
+e
+b1
+b2
+b3
+b4
+b5
+class1
+class2
+XXXXX.X
+.XXXX..
+..XXXXX
+...XX.X
+....XXX</code></pre>
+	</dd>
+
+	</dl>
 	<h4>Binary Unpacking</h4>
 	<h3>Filter</h3>
 	<h3>Info</h3>
