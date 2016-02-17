@@ -4,10 +4,6 @@
 		<meta charset="utf-8">
 		<title>Swift Manual</title>
 		<style>
-			body {
-				text-align: center;
-			}
-
 			#wrap {
 				width: 900px;
 				margin: 0 auto;
@@ -32,11 +28,38 @@
 			}
 			dd {margin-bottom: 10px}
 			ul {margin-bottom: 10px}
+
+			body {
+				text-align: center;
+			}
+
+			h1 {counter-reset: subsection;}
+			h2 {counter-reset :subsubsection}
+			h3 {counter-reset :subsubsubsection}
+
+			h2:before {
+			    counter-increment: subsection;
+			    content: counter(subsection)"." " ";
+			}
+
+			h3:before {
+			    counter-increment: subsubsection;
+			    content: counter(subsection)"."counter(subsubsection) " ";
+			}
+			h4:before {
+			    counter-increment: subsubsubsection;
+			    content: counter(subsection)"."counter(subsubsection)"."counter(subsubsubsection) " ";
+			}
+			div#toc ul {
+				list-style-type: none;
+			}
+
 		</style>
 	</head>
 
 <body>
 <div id="wrap">
+
 	<h1>Swift Manual</h1>
 
 	<h2>NAME</h2>
@@ -968,9 +991,89 @@ XXXXX.X
 	</dd>
 	</dl>
 	<h3>Binary Unpacking</h3>
+	<dl>
+	<dt>CSV (<a href="#ex_csv">example.csv</a>) to CSV</dt>
+	<dd>
+	<pre><code>swift-cli.py example.csv -t result.csv csv -ta "*[]" -tnh</code></pre>
+	result.csv
+	<pre><code>1,0,0,0,1,0,0,0,1,0,0,0,1,0,1,0
+0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1
+0,0,1,0,0,0,1,0,0,0,1,0,1,0,0,1
+0,0,0,1,0,0,0,1,0,0,0,1,1,0,1,0</code></pre>
+	</dd>
+	</dl>
+
 	<h3>Filter</h3>
+
+	<dl>
+	<dt>CSV (<a href="#ex_csv">example.csv</a>) to CSV</dt>
+	<dd>
+	<pre><code>swift-cli.py example.csv -t result.csv -ta "study;name" -sl "2-"</code></pre>
+	<pre><code>study,name
+true,George
+false,Monica</code></pre>
+	</dd>
+	</dl>
+
 	<h3>Info</h3>
+
+	<dl>
+	<dt>DATA (<a href="#ex_data">example.data</a>)</dt>
+	<dd>
+	<pre><code>swift-cli.py example.data -i</code></pre>
+	<pre><code>Relation name:
+Objects count: 4
+Attributes count: 4
+====================
+
+name: age
+index: 0
+type: numeric
+max: 44.0, min: 30.0
+values appearance:
+    44.0: 1/4 = 25.00%
+    30.0: 1/4 = 25.00%
+    35.0: 1/4 = 25.00%
+    31.0: 1/4 = 25.00%
+
+name: job
+index: 1
+type: nominal
+values appearance:
+    ?: 1/4 = 25.00% (none value)
+    doctor: 1/4 = 25.00%
+    teacher: 1/4 = 25.00%
+    pilot: 1/4 = 25.00%
+
+name: work
+index: 2
+type: nominal
+values appearance:
+    1: 2/4 = 50.00%
+    0: 2/4 = 50.00%
+
+name: class
+index: 3
+type: nominal
+values appearance:
+    bar: 1/4 = 25.00%
+    foo: 3/4 = 75.00%</code></pre>
+	</dd>
+	</dl>
+
 	<h3>Preview</h3>
+
+	<dl>
+	<dt>DAT (<a href="#ex_dat">example.dat</a>)</dt>
+	<dd>
+	<pre><code>swift-cli.py example.dat -p</code></pre>
+	<pre><code>0 1 2 3
+1 0 0 0
+0 1 0 0
+0 0 1 0
+0 0 0 1</code></pre>
+	</dd>
+	</dl>
 
 	<h2 id="gui">GUI MANUAL</h2>
 	<h2 id="installation">INSTALLATION</h2>
