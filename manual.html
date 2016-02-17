@@ -31,6 +31,7 @@
 				text-decoration: none;
 			}
 			dd {margin-bottom: 10px}
+			ul {margin-bottom: 10px}
 		</style>
 	</head>
 
@@ -114,7 +115,7 @@
 	<dl>
 		<dt><b>source</b></dt>
 		<dd>
-		The name of the file (program reads and processes this file) in one of the supported <a href="#formats">format</a>. The <i>source</i> must ends with a valid format extension or the optional <i>--source_format</i> argument must be used. If the <i>source</i> is ommited or if it equals to "-", the program reads the input from the <i>stdin</i>.
+		The name of the file (program reads and processes this file) in one of the supported <a href="#formats">format</a>. The <i>source</i> must ends with a valid format extension or the optional <i>--source_format</i> argument must be used. If the <i>source</i> is omitted or if it equals to "-", the program reads the input from the <i>stdin</i>.
 		</dd>
 	</dl>
 	<h3>Optional arguments</h3>
@@ -249,7 +250,9 @@ op ::= "<" | ">" | "<=" | ">=" | "==" | "!="
 date_val ::= "'" .+ "'"
 num_val ::= int ("." number?)? ("e" int)?
 int ::= ("+" | "-")? \d+</code></pre>
-		If the <i>--target_attributes</i> argument is omitted, all attributes readed from the <i>source</i> are processed.
+		<i>Notes: </i>
+		<p>If the <i>--target_attributes</i> argument is omitted, all attributes readed from the <i>source</i> are processed.</p>
+		<p>If the <i>--target_attributes</i> argument beginning with "-" (e.g interval: <code>'-4'</code>), the <i>--target_attributes</i> should be specified as: <code>-ta='-4'</code>. </p>
 		</dd>
 
 		<dt><b>-c</b> [rows_count], <b>--convert</b> [rows_count]</dt>
@@ -383,7 +386,7 @@ key = \w+</code></pre>
 		<dd>
 		The list of object names seperated by comma:
 		<pre><code>objects ::= name | (name "," objects)</code></pre>
-		This argument is relevant only in the case, when <i>--target</i> format is <a href="#cxt">Burmeister</a>. If <i>--objects</i> is ommited, indexes of objects are used.
+		This argument is relevant only in the case, when <i>--target</i> format is <a href="#cxt">Burmeister</a>. If <i>--objects</i> is omitted, indexes of objects are used.
 		</dd>
 
 		<dt><b>-snh</b> source_no_header,
@@ -556,7 +559,7 @@ The relational attribute humidity (above) will be converted to attributes (e.g f
 	<h2 id="examples">EXAMPLES</h2>
 	<h3>Sample data</h3>
 	<dl>
-		<dt>CSV - example.csv</dt>
+		<dt id="ex_csv">CSV - example.csv</dt>
 		<dd>
 <pre><code>name,   birth_date, credits, study, sex
 George, 1991-06-13, 54,      true,  man
@@ -565,7 +568,7 @@ Mia,    ?,          87,      true,  woman
 John,   1989-11-11, 91,      true,  man</code></pre>
 		</dd>
 
-		<dt>DTL - example.dtl</dt>
+		<dt id="ex_dtl">DTL - example.dtl</dt>
 		<dd>
 <pre><code>0 1 2 3 4|a bb
 1 2 3 4|a aa
@@ -574,7 +577,7 @@ John,   1989-11-11, 91,      true,  man</code></pre>
 4|b bb</code></pre>
 		</dd>
 
-		<dt>DAT - example.dat</dt>
+		<dt id="ex_dat">DAT - example.dat</dt>
 		<dd>
 <pre><code>0
 1
@@ -583,11 +586,11 @@ John,   1989-11-11, 91,      true,  man</code></pre>
 4</code></pre>
 		</dd>
 
-		<dt>C4.5</dt>
+		<dt id="ex_data">DATA</dt>
 		<dd>
 		example.names
 <pre><code>foo, bar.
-age: cotinuous.
+age: continuous.
 job: teacher, pilot, doctor.
 work: discrete 2.
 sport: ignore.</code></pre>
@@ -603,8 +606,82 @@ example.data
 	<h3>Convert</h3>
 	<dl>
 
-		<h4>Simple Conversion</h4>
-	<dt>DTL to CSV</dt>
+		<table>
+		<tr>
+		<td>
+		<ul>
+			<li><a href="#simple">CSV to CSV</a></li>
+			<li><a href="#type_spec">CSV to ARFF</a></li>
+			<li><a href="#types_cls_spec">CSV to DATA</a></li>
+			<li><a href="#scale_obj_spec">CSV to CXT</a></li>
+			<li><a href="#scale">CSV to DAT</a></li>
+			<li><a href="#scale_cls_spec">CSV to DTL</a></li>
+		</ul>
+		</td>
+		<td>
+		<ul>
+			<li><a href="#simple">ARFF to ARFF</a></li>
+			<li><a href="#simple">ARFF to CSV</a></li>
+			<li><a href="#cls_spec">ARFF to DATA</a></li>
+			<li><a href="#scale_obj_spec">ARFF to CXT</a></li>
+			<li><a href="#scale">ARFF to DAT</a></li>
+			<li><a href="#scale_cls_spec">ARFF to DTL</a></li>
+		</ul>
+		</td>
+		<td>
+		<ul>
+			<li><a href="#cls_spec">DATA to DATA</a></li>
+			<li><a href="#simple">DATA to ARFF</a></li>
+			<li><a href="#simple">DATA to CSV</a></li>
+			<li><a href="#scale_obj_spec">DATA to CXT</a></li>
+			<li><a href="#scale">DATA to DAT</a></li>
+			<li><a href="#scale_cls_spec">DATA to DTL</a></li>
+		</ul>
+		</td>
+		</tr>
+		<tr>
+		<td>
+		<ul>
+			<li><a href="#simple">CXT to CXT</a></li>
+			<li><a href="#cls_spec">CXT to DATA</a></li>
+			<li><a href="#simple">CXT to ARFF</a></li>
+			<li><a href="#simple">CXT to CSV</a></li>
+			<li><a href="#simple">CXT to DAT</a></li>
+			<li><a href="#cls_spec">CXT to DTL</a></li>
+		</ul>
+		</td>
+		<td>
+		<ul>
+			<li><a href="#simple">DAT to DAT</a></li>
+			<li><a href="#obj_atrr_spec">DAT to CXT</a></li>
+			<li><a href="#cls_spec">DAT to DATA</a></li>
+			<li><a href="#simple">DAT to ARFF</a></li>
+			<li><a href="#simple">DAT to CSV</a></li>
+			<li><a href="#cls_spec">DAT to DTL</a></li>
+		</ul>
+		</td>
+		<td>
+		<ul>
+			<li><a href="#scale_cls_spec">DTL to DTL</a></li>
+			<li><a href="#scale">DTL to DAT</a></li>
+			<li><a href="#scale_obj_attr_spec">DTL to CXT</a></li>
+			<li><a href="#cls_spec">DTL to DATA</a></li>
+			<li><a href="#simple">DTL to ARFF</a></li>
+			<li><a href="#simple">DTL to CSV</a></li>
+		</ul>
+		</td>
+		</tr>
+		</table>
+
+		<h4 id="simple">Simple Conversion</h4>
+
+		<i>Required arguments:</i>
+		<ul>
+			<li><i>source</i></li>
+			<li><i>--target / --target_format</i></li>
+		</ul>
+
+		<dt>DTL (<a href="#ex_dtl">example.dtl</a>) to CSV</dt>
 	<dd>
 		<pre><code>swift-cli.py example.dtl -t result.csv</code></pre>
 		result.csv
@@ -635,8 +712,16 @@ example.data
 
 	</dd>
 
-		<h4>Types specification</h4>
-		<dt>CSV to ARFF</dt>
+		<h4 id="type_spec">Types specification</h4>
+
+		<i>Required arguments:</i>
+		<ul>
+			<li><i>source</i></li>
+			<li><i>--target / --target_format</i></li>
+			<li><i>--target_attributes</i> (with types specification)</li>
+		</ul>
+
+		<dt>CSV (<a href="#ex_csv">example.csv</a>) to ARFF</dt>
 		<dd>
 		<pre><code>swift-cli.py example.csv -t result.arff -mv '?' -ta "name:s; 1:d/'%Y-%m-%d'; credits:n; work,gender=3,4:e" -n people</code></pre>
 		result.arff
@@ -655,11 +740,53 @@ Mia,?,87,true,woman
 John,1989-11-11,91,true,man</pre></code>
 		</dd>
 
-		<h4>Classes specification</h4>
-		<dt>CSV to DATA</dt>
-		<dd>
-		<pre><code>swift-cli.py example.csv -t result.data -mv '?' -ta "name:s; 1:d/'%Y-%m-%d'; credits:n; 3,4:e" -n people -cls sex</code></pre>
+		<h4 id="cls_spec">Classes specification</h4>
 
+		<i>Required arguments:</i>
+		<ul>
+			<li><i>source</i></li>
+			<li><i>--target / --target_format</i></li>
+			<li><i>--classes</i></li>
+		</ul>
+
+		<dt>DATA (<a href="#ex_data">example.data</a>) to DATA</dt>
+		<dd>
+		<pre><code>swift-cli.py example.data -t result.data -cls class </code></pre>
+		result.names
+<pre><code>foo,bar.
+age: continuous.
+job: teacher,pilot,doctor.
+work: 1,0.
+class_prev: foo,bar.</code></pre>
+		result.data
+<pre><code>44,doctor,1,foo,foo
+30,teacher,0,bar,bar
+35,?,1,foo,foo
+31,pilot,0,foo,foo</code></pre>
+	<i>Next possible conversions:</i>
+	<ul>
+		<li>ARFF to DATA</li>
+		<li>DATA to DATA</li>
+		<li>DAT to DTL</li>
+		<li>DAT to DATA</li>
+		<li>CXT to DATA</li>
+		<li>CXT to DTL</li>
+		<li>DTL to DATA</li>
+	</ul>
+
+		</dd>
+
+	<h4 id="types_cls_spec">Types, classes specification</h4>
+		<i>Required arguments:</i>
+		<ul>
+			<li><i>source</i></li>
+			<li><i>--target / --target_format</i></li>
+			<li><i>--target_attributes</i> (with types specification)</li>
+			<li><i>--classes</i></li>
+		</ul>
+		<dt>CSV (<a href="#ex_csv">example.csv</a>) to DATA</dt>
+		<dd>
+		<pre><code>swift-cli.py example.csv -t result.data -mv '?' -ta "name:s; 1:d/'%Y-%m-%d'; credits:n; 3,4:e" -cls sex</code></pre>
 		result.names
 <pre><code>man,woman.
 name: discrete n.
@@ -672,24 +799,19 @@ sex: man,woman.</code></pre>
 Monica,1990-04-23,98,false,woman,woman
 Mia,?,87,true,woman,woman
 John,1989-11-11,91,true,man,man</code></pre>
-
-	<i>Next possible conversions:</i>
-	<ul>
-		<li>ARFF to DATA</li>
-		<li>DATA to DATA</li>
-		<li>DAT to DTL</li>
-		<li>DAT to DATA</li>
-		<li>CXT to DATA</li>
-		<li>CXT to DTL</li>
-		<li>DTL to DTL</li>
-		<li>DTL to DATA</li>
-	</ul>
-
 		</dd>
 
+		<h4 id="obj_atrr_spec">Object names and attribute names specification</h4>
 
-	<h4>Object names and attribute names specification</h4>
-	<dt>DAT to CXT</dt>
+		<i>Required arguments:</i>
+		<ul>
+			<li><i>source</i></li>
+			<li><i>--target / --target_format</i></li>
+			<li><i>--objects</i></li>
+			<li><i>--target_attributes</i> (with new names, if omitted, indexes of objects are used instead)</li>
+		</ul>
+
+	<dt>DAT (<a href="#ex_dat">example.dat</a>) to CXT</dt>
 	<dd>
 
 	<pre><code>swift-cli.py example.dat -t result.cxt -o foo,bar,foobar,barfoo -ta 'a=0;b=1;c=2;d=3'</code></pre>
@@ -710,9 +832,18 @@ X...
 .X..
 ..X.
 ...X</code></pre>
+	</dd>
 
-	<h4>Scale</h4>
-	<dt>CSV to DAT</dt>
+	<h4 id="scale">Scale</h4>
+
+		<i>Required arguments:</i>
+		<ul>
+			<li><i>source</i></li>
+			<li><i>--target / --target_format</i></li>
+			<li><i>--target_attributes</i> (with scaling formulas)</li>
+		</ul>
+
+	<dt>CSV (<a href="#ex_csv">example.csv</a>) to DAT</dt>
 	<dd>
 	<pre><code>swift-cli.py example.csv -mv '?' -t result.dat -ta "name:s['M.+a']; birth_date:d/'%Y-%m-%d'[x&gt='1991-01-01'];
              credits:n[50&lt=x&lt=90]; study:e['true']; sex:e['man']"</code></pre>
@@ -730,8 +861,17 @@ result.dat
 	</ul>
 	</dd>
 
-	<h4>Scale and object names specification</h4>
-	<dt>CSV to CXT</dt>
+	<h4 id="scale_obj_spec">Scale and object names specification</h4>
+
+		<i>Required arguments:</i>
+		<ul>
+			<li><i>source</i></li>
+			<li><i>--target / --target_format</i></li>
+			<li><i>--objects</i></li>
+			<li><i>--target_attributes</i> (with scaling formulas)</li>
+		</ul>
+
+	<dt>CSV (<a href="#ex_csv">example.csv</a>) to CXT</dt>
 	<dd>
 	<pre><code>swift-cli.py example.csv -mv '?' -t result.cxt -o s001,s002,s003,s004 -ta "name:s['M.+a'];
 	     birth_date:d/'%Y-%m-%d'[x&gt='1991-01-01']; credits:n[50&lt=x&lt=90]; study:e['true']; sex:e['man']"</code></pre>
@@ -762,8 +902,18 @@ X.XX.
 	</ul>
 	</dd>
 
-	<h4>Scale and classes specification</h4>
-	<dt>CSV to DTL</dt>
+	<h4 id="scale_cls_spec">Scale and classes specification</h4>
+
+		<i>Required arguments:</i>
+		<ul>
+			<li><i>source</i></li>
+			<li><i>--target / --target_format</i></li>
+			<li><i>--target_attributes</i> (with scaling formulas)</li>
+			<li><i>--classes</i></li>
+		</ul>
+
+	<dt>CSV (<a href="#ex_csv">example.csv</a>) to DTL</dt>
+
 	<dd>
 	<pre><code>swift-cli.py example.csv -mv '?' -t result.dtl -cls 3,4 -ta "name:s['M.+a'];
 	     birth_date:d/'%Y-%m-%d'[x&gt='1991-01-01']; credits:n[50&lt=x&lt=90]; study:e['true']; sex:e['man']"</code></pre>
@@ -777,12 +927,21 @@ X.XX.
 	<ul>
 		<li>ARFF to DTL</li>
 		<li>DATA to DTL</li>
+		<li>DTL to DTL</li>
 	</ul>
 
 	</dd>
 
-	<h4>Scale, object names and attribute names specification</h4>
-	<dt>DTL to CXT</dt>
+	<h4 id="scale_obj_attr_spec">Scale, object names and attribute names specification</h4>
+
+		<i>Required arguments:</i>
+		<ul>
+			<li><i>source</i></li>
+			<li><i>--target / --target_format</i></li>
+			<li><i>--target_attributes</i> (with scaling formulas and new attribute names, if names are omitted, indexes of objects are used instead).</li>
+			<li><i>--objects</i></li>
+		</ul>
+	<dt>DTL (<a href="#ex_dtl">example.dtl</a>) to CXT</dt>
 	<dd>
 	<pre><code>swift-cli.py example.dtl -t result.cxt -ta "b1,b2,b3,b4,b5=0-4;class1:e['b'];class2:e['bb']" -o a,b,c,d,e</code></pre>
 	<pre><code>B
@@ -807,7 +966,6 @@ XXXXX.X
 ...XX.X
 ....XXX</code></pre>
 	</dd>
-
 	</dl>
 	<h3>Binary Unpacking</h3>
 	<h3>Filter</h3>

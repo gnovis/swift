@@ -466,7 +466,10 @@ class DataData(Data):
                 cls_to_write = self._class.values
             f.write(self.separator.join(cls_to_write) + ".\n")
             for attr in old_data.attributes:
-                line = (str(attr.name) + ': '
+                attr_name = str(attr.name)
+                if attr_name == "class":
+                    attr_name += "_prev"
+                line = (attr_name + ': '
                         + attr.data_repr(self.separator) + '.\n')
                 f.write(line)
 
