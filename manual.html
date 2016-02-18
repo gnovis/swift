@@ -3,65 +3,22 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Swift Manual</title>
-		<style>
-			#wrap {
-				width: 900px;
-				margin: 0 auto;
-				text-align: left;
-				padding: 20px;
-				background-color: white
-			}
-			pre {
-				border-style: solid;
-				border-width: 1px;
-				border-color: #b3b3b3;
-				padding: 10px;
-				background-color: #e6e6e6;
-			}
-			h1, h2, h3, h4, h5 {
-				color:#262626;
-				font-family:"DejaVu Sans";}
-			b {color: #004080}
-			a {
-				color: #cc0052;
-				font-weight: bold;
-				text-decoration: none;
-			}
-			dd {margin-bottom: 10px}
-			ul {margin-bottom: 10px}
-
-			body {
-				text-align: center;
-				margin: 0 !important;
-				padding: 0 !important;
-				background-color: whitesmoke
-			}
-
-
-			h1 {counter-reset: subsection;}
-			h2 {counter-reset :subsubsection}
-			h3 {counter-reset :subsubsubsection}
-
-			h2:before {
-			    counter-increment: subsection;
-			    content: counter(subsection)"." " ";
-			}
-
-			h3:before {
-			    counter-increment: subsubsection;
-			    content: counter(subsection)"."counter(subsubsection) " ";
-			}
-			h4:before {
-			    counter-increment: subsubsubsection;
-			    content: counter(subsection)"."counter(subsubsection)"."counter(subsubsubsection) " ";
-			}
-		</style>
+		<link rel="stylesheet" href="./style.css" type="text/css"/>
 	</head>
 
 <body>
-<div id="wrap">
 
-	<h1>Swift Manual</h1>
+<div id="header">
+	<div id="header_content">
+		<div>Swift</div>
+		<div style="font-weight:normal; font-size:30px">Relational Data Converter</div>
+		<a href="index.html"><img id="icon"src="./img/swift_icon.svg"></a>
+	</div>
+</div>
+
+<div id="content">
+
+	<h1>Manual</h1>
 
 	<h2>NAME</h2>
 	<p>Swift - Relational Data Converter</p>
