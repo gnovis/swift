@@ -1,3 +1,11 @@
+#footer_icon{
+	width: 20px
+}
+
+#footer{
+	padding:15px
+}
+
 #icon{
 	width: 80px;
 	float: left;
@@ -14,20 +22,30 @@ div#header {
 	margin: 0 auto;
 	text-align: left;
 	padding: 20px;
-	background-color: white
+	background-color: white;
+	border-radius: 25px;
 }
 
 pre {
-	border-style: solid;
+	border-style: dashed;
 	border-width: 1px;
 	border-color: #b3b3b3;
 	padding: 10px;
 	background-color: #e6e6e6;
 }
+code{
+	background-color: #e6e6e6;
+}
 h1, h2, h3, h4, h5 {
 	color:#262626;
 	font-family:"DejaVu Sans";}
-b {color: #004080}
+
+h2 {
+	border-bottom: 1px solid #eee;
+	padding-bottom: 10px;
+}
+
+b {color:#262626;}
 a {
 	color: #cc0052;
 	font-weight: bold;
@@ -40,7 +58,7 @@ body {
 	text-align: center;
 	margin: 0 !important;
 	padding: 0 !important;
-	background-color: #ededed
+	background-color: #ededed;
 }
 h1 {counter-reset: subsection;}
 h2 {counter-reset :subsubsection}

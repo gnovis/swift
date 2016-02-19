@@ -4,6 +4,7 @@
 		<meta charset="utf-8">
 		<title>Swift Manual</title>
 		<link rel="stylesheet" href="./style.css" type="text/css"/>
+		<link rel="shortcut icon" href='./img/swift_icon.svg'>
 	</head>
 
 <body>
@@ -388,11 +389,11 @@ key = \w+</code></pre>
 
 
 	<h3>Errors</h3>
-	The following errors in the list are of the form:
+	The errors below are produced by the program. Each error specification is of the form:
 <pre><code>error_code: error_name
 	error_description
 </code></pre>
-which are produced by the program. When an error is raised, program ends and returns the error code.
+	When an error is raised, program ends and returns the error code.
 	<dl>
 		<dt><b>1</b>: Swift Unknown Error</dt>
 		<dd>If you get this error, please <a href="#bugs">report</a> this bug with details printed below the error message. Thank you.</dd>
@@ -485,7 +486,7 @@ which are produced by the program. When an error is raised, program ends and ret
 
 
 	<h2 id="formats">SUPPORTED FORMATS</h2>
-		Swift supports following six formats:
+	Swift supports following six formats: <a href="#csv">CSV</a>, <a href="#arff">ARFF</a>, <a href="#data">DATA</a>, <a href="#cxt">CXT</a>, <a href="#dat">DAT</a> and <a href="#dtl">DTL</a>.
 		<h3 id="csv">Comma-separated values (.csv)</h3>
 			The description of the format with examples can be found <a href="https://en.wikipedia.org/wiki/Comma-separated_values">here</a>.
 			<p><i>Notes: </i>The attribute separator inside the value must be always escaped by the backslash.</p>
@@ -538,6 +539,7 @@ The relational attribute humidity (above) will be converted to attributes (e.g f
 		<p>With classes must be worked exactly the same as with the attributes at any conversion (class can be scaled, total binarized, ...). The key used in the <i>--target_attributes</i> is the class index or the name: "class1", "class2"... .</p>
 
 	<h2 id="examples">EXAMPLES</h2>
+	All examples is this section uses following sample data.
 	<h3>Sample data</h3>
 	<dl>
 		<dt id="ex_csv">CSV - example.csv</dt>
@@ -585,8 +587,9 @@ example.data
 
 	</dl>
 	<h3>Convert</h3>
+	This section is divided into nine subsections according arguments, which are required in the particular conversion. Each of the subsections contains the list of the required arguments, one illustrative example and the list of next conversions, which can be used similarly.
+	<p>For the quick navigation, you can use the following table of all possible conversions.</p>
 	<dl>
-
 		<table>
 		<tr>
 		<td>
@@ -1033,19 +1036,52 @@ values appearance:
 	</dd>
 	</dl>
 
-	<h2 id="gui">GUI MANUAL</h2>
 	<h2 id="installation">INSTALLATION</h2>
+
 	<h3>Requirements</h3>
+	Make sure that following dependencies are installed in your computer:
+	<ul>
+	<li>
+	<a href="https://www.python.org/">Python3</a>
+	</li>
+	<li>
+	<a href="http://www.riverbankcomputing.co.uk/software/pyqt/intro">PyQt4</a>
+	</li>
+	<li>
+	<a href="https://pyparsing.wikispaces.com/">Pyparsing</a>
+	</li>
+	</ul>
+	<h3 id="download">Download</h3>
+
+	This program can be obtined from the <a href="https://github.com/gnovis/swift">repository</a> using git:
+	<pre><code>git clone git@github.com:gnovis/swift.git</code></pre>
+	or by the direct <a href="https://github.com/gnovis/swift/zipball/master/">link</a>.
+
+	<h3>Unpack</h3>
+	If you download the source through a direct link, you need to unpack the ZIP archive. For example by using the <a href="http://www.info-zip.org/mans/unzip.html">unzip</a> program (on Linux):
+<pre><code>cd ~/Downloads
+unzip swift-master
+mv swift-master swift</code></pre>
+
+	<h3>Finish</h3>
+	Go to the swift directory <code>cd path/to/swift/</code> and start using swift with <code>swift-cli.py</code> or <code>swift.py</code> scripts.
+
 	<h2 id="bugs">REPORTING BUGS</h2>
-	If you find a bug, please create an issue with a description on <a href="https://github.com/gnovis/swift/issues">https://github.com/gnovis/swift/issues</a>.
+	If you find a bug, please create an issue with a description via the <a href="https://github.com/gnovis/swift/issues">issue tracker</a>.
 	<h2 id="contribute">CONTRIBUTING</h2>
 	You are welcome to participate in development of this project. Join us on <a href="https://github.com/gnovis/swift">github</a>.
 	<h2 id="authors">AUTHORS</h2>
-	Jan Novacek (novacekj5@gmail.com), Jan Outrata
+	Developed by Jan Novacek &ltnovacekj5@gmail.com&gt and Jan Outrata &ltjan.outrata@upol.cz&gt.
 	<h2 id="licence">LICENSE</h2>
-	Swift  is  distributed  under the  GNU GPL v3 - <a href="http://www.gnu.org/licenses/gpl-3.0.html">http://www.gnu.org/licenses/gpl-3.0.html</a>.
-	<h2 id="download">DOWNLOAD</h2>
-	This program can be obtined from <a href="https://github.com/gnovis/swift">https://github.com/gnovis/swift</a> or by the direct <a href="https://github.com/gnovis/swift/zipball/master/">link</a>.
+	Swift  is  distributed  under the <a href="http://www.gnu.org/licenses/gpl-3.0.html">GNU GPL v3</a>.
+
+
 </div>
+
+<div id="footer">
+	<img id="footer_icon" src="./img/swift_icon.svg">
+	<span id="copy">Swift Relational Data Converter &copy; 2016</span>
+</div>
+
 </body>
 </html>
