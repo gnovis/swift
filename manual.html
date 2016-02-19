@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>Swift Manual</title>
+		<title>Swift - Manual</title>
 		<link rel="stylesheet" href="./style.css" type="text/css"/>
 		<link rel="shortcut icon" href='./img/swift_icon.svg'>
 	</head>
@@ -91,7 +91,7 @@
 	All operations work with data of any size, only limitation is a space of hard drive (not RAM).
 
 	<p>
-	Swift provides Command-line interface (swift-cli.py) and also Graphical user interface (swift.py), which is described in a seperate <a href="#gui">GUI Manual</a> section. For quick use without useless reading, go to <a href="#examples">examples</a> section which contains examples of common use cases.
+	Swift provides Command-line interface (swift-cli.py) and also Graphical user interface (swift.py), which is described in a seperate <a href="guimanual.html">GUI Manual</a> section. For quick use without useless reading, go to <a href="#examples">examples</a> section which contains examples of common use cases.
 	</p>
 	<h3>Positional arguments</h3>
 	<dl>
@@ -857,18 +857,18 @@ result.dat
 
 	<dt>CSV (<a href="#ex_csv">example.csv</a>) to CXT</dt>
 	<dd>
-	<pre><code>swift-cli.py example.csv -mv '?' -t result.cxt -o s001,s002,s003,s004 -ta "name:s['M.+a'];
+	<pre><code>swift-cli.py example.csv -mv '?' -t result.cxt -o a,b,c,d -ta "name:s['M.+a'];
 	     birth_date:d/'%Y-%m-%d'[x&gt='1991-01-01']; credits:n[50&lt=x&lt=90]; study:e['true']; sex:e['man']"</code></pre>
 	result.cxt
 
-<pre><code>B
+<pre id="res_cxt"><code>B
 
 4
 5
-s001
-s002
-s003
-s004
+a
+b
+c
+d
 name
 birth_date
 credits

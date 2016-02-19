@@ -1,0 +1,110 @@
+ <!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Swift - GUI Manual</title>
+	<link rel="shortcut icon" href='./img/swift_icon.svg'>
+	<link rel="stylesheet" href="./style.css" type="text/css"/>
+</head>
+
+<body>
+
+<div id="header">
+	<div id="header_content">
+		<div>Swift</div>
+		<div style="font-weight:normal; font-size:30px">Relational Data Converter</div>
+		<a href="index.html"><img id="icon"src="./img/swift_icon.svg"></a>
+	</div>
+</div>
+
+<div id="content">
+	<h1>GUI Manual</h1>
+	To run swift GUI interface, use <code>swift.py</code> script.
+<pre><code>cd path/to/swift/
+./swift.py
+</code></pre>
+	<h2>LAYOUT</h2>
+	<p class="screens"><img src="./img/mainblank.png"></p>
+	<h3>UI Elements</h3>
+	<dl>
+		<dt><b>1 - Source file text box</b></dt>
+		<dd>Write or select (the left <i>Select</i> button) the path to the source file.</dd>
+		<dt><b>2 - Target file text box</b></dt>
+		<dd>Write or select (the right <i>Select</i> button) the path to the target file (can't be the same as source file).</dd>
+		<dt><b>3 - Source data table</b></dt>
+		<dd>Display the source data as a table, use button <i>Preview</i>.</dd>
+		<dt><b>4 - Target data table</b></dt>
+		<dd>Display the target data as a table if the <i>Preview after convert</i> checkbox is checked.</dd>
+		<dt><b>5 - Infobar.</b></dt>
+		<dd>Show an info messages.</dd>
+
+		<dt><b>6 - Source Select button</b></dt>
+		<dd>
+		Select the path to the source file.
+		</dd>
+
+		<dt><b>7 - Target Select button</b></dt>
+		<dd>
+		Select the path to the target file.
+		</dd>
+
+		<dt><b>8 - Convert button</b></dt>
+		<dd>
+		Start a conversion.
+		</dd>
+
+		<dt><b>9 - Source Settings button</b></dt>
+		<dd>
+		Open the settings dialog for the source file.
+		</dd>
+
+		<dt><b>10 - Source Original data button</b></dt>
+		<dd>
+		Open the Original data dialog with the text source data.
+		</dd>
+
+		<dt><b>11 - Preview button</b></dt>
+		<dd>
+		Display a preview of the source data in the <i>Source data table</i>.
+		</dd>
+
+		<dt><b>12 - Info button</b></dt>
+		<dd>
+		Export statistics of the source data into a selected file.
+		</dd>
+
+		<dt><b>13 - Target Settings button</b></dt>
+		<dd>
+		Open the settings dialog for the target file.
+		</dd>
+
+		<dt><b>14 - Target Original data button</b></dt>
+		<dd>
+		Open the Original data dialog with the text source data.
+		</dd>
+
+		<dt><b>15 - Preview after convert checkbox</b></dt>
+		<dd>
+		If is chacked and if conversion was successful, the target data will be displayed in the <i>target data table</i>.
+		</dd>
+
+		<dt><b>16 - Split bar</b></dt>
+		<dd>
+		Allows to change width of <i>source/target data table</i>.
+		</dd>
+	</dl>
+	<h2>EXAMPLE</h2>
+	Conversion CSV (<a href="manual.html#ex_csv">example.csv</a>) to CXT (<a href="manual.html#res_cxt">result.cxt</a>)
+	<p class="screens"><img src="img/preview.png"></p>
+	<p class="screens"><img src="img/sourceargs.png"></p>
+	<p class="screens"><img src="img/targetargs.png"></p>
+	<p class="screens"><img src="img/result.png"></p>
+</div>
+
+<div id="footer">
+	<img id="footer_icon" src="./img/swift_icon.svg">
+	<span id="copy">Swift Relational Data Converter &copy; 2016</span>
+</div>
+
+</body>
+</html>
