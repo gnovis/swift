@@ -6,4 +6,4 @@ weight: continuous.
 job: doctor,teacher,pilot,student.
 vegan: false.
 work: true,false.
-class: man,woman.
+class_prev: man,woman.

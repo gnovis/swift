@@ -123,8 +123,8 @@ class FormulaParser(Parser):
 
     def parse(self, str_args, max_attrs_i):
 
-        date_val = quotedString.copy()
-        quoted_str = quotedString
+        date_val = quotedString
+        quoted_str = quotedString.copy()
         quoted_str.setParseAction(removeQuotes)
         comma = Suppress(",")
         bin_vals = Group(Optional((Suppress("0=") + quoted_str("new_false") + comma)) + Optional(Suppress("1=")) + quoted_str("new_true"))

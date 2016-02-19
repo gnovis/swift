@@ -112,7 +112,7 @@ class GuiSwift(QtGui.QWidget):
         self.btn_s_params = QtGui.QPushButton("Settings")
         self.btn_t_params = QtGui.QPushButton("Settings")
         self.btn_browse = QtGui.QPushButton("Preview")
-        self.btn_export_info = QtGui.QPushButton("Export Info")
+        self.btn_export_info = QtGui.QPushButton("Info")
         self.btn_s_orig_data = QtGui.QPushButton("Original data")
         self.btn_t_orig_data = QtGui.QPushButton("Original data")
 
@@ -198,7 +198,7 @@ class GuiSwift(QtGui.QWidget):
         self.btn_t_orig_data.clicked.connect(lambda: open_orig(self._target, self.target_params))
 
         # Checkbox
-        self.chb_browse_convert = QtGui.QCheckBox("Browse data after convert")
+        self.chb_browse_convert = QtGui.QCheckBox("Preview after convert")
         self.chb_browse_convert.setChecked(True)
 
         # Status Bar
@@ -249,7 +249,8 @@ class GuiSwift(QtGui.QWidget):
 
         self.setLayout(grid)
 
-        self.showMaximized()
+        # self.showMaximized()
+        self.resize(750, 500)
         self.setWindowTitle(App.TITLE)
         self.setWindowIcon(QtGui.QIcon(':swift_icon.svg'))
         self.show()
@@ -1218,7 +1219,7 @@ class SourceParamsDialog(ParamsDialog):
 
         self.skip_lines = FormLine("Skip Lines", validator=seq_validator)
         self.line_separator = FormLine("Separator")
-        self.line_str_attrs = FormLine("Attributes")
+        self.line_str_attrs = FormLine("Target Attributes")
         self.line_missing_val = FormLine("Missing Value")
         self.line_cls_separator = FormLine("Class separator")
         # checkbox

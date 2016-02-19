@@ -13,7 +13,9 @@ def numeric():
     return numeric
 
 
-def boolexpr(VAL=numeric()):
+def boolexpr(VAL=None):
+    if not VAL:
+        VAL = numeric()
     VAR = Word(alphas + "_")
     OP = Or(Literal("<") ^ Literal(">") ^
             Literal("<=") ^ Literal(">=") ^
