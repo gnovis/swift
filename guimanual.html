@@ -23,77 +23,97 @@
 <pre><code>cd path/to/swift/
 ./swift.py
 </code></pre>
-	<h2>MAIN WINDOW LAYOUT</h2>
+	<h2>LAYOUT</h2>
 	<p class="screens"><img src="./img/mainblank.png"></p>
 	<h3>UI Elements</h3>
 	<dl>
 		<dt><b>1 - Source file text box</b></dt>
-		<dd>Write or select (the left <i>Select</i> button) the path to the source file.</dd>
+		<dd>
+		<p>Write or select (with the <i>Source Select button</i>) the path to the source file.</p>
+
+		Background colors:
+		<ul>
+			<li><span>white</span> - the text box is clear (no file selected)</li>
+			<li><span style="background-color:#c4df9b">green</span> - the valid source file is selected (the file exists and has a correct file extension)</li>
+			<li><span style="background-color:#f6989d">red</span> - the invalid source file is selected (the file doesn't exists or has an incorrect file extension)</li>
+		</ul>
+
+		</dd>
 		<dt><b>2 - Target file text box</b></dt>
-		<dd>Write or select (the right <i>Select</i> button) the path to the target file (can't be the same as source file).</dd>
+		<dd>
+		<p>Write or select (with the <i>Target Select button</i>) the path to the target file (can't be the same as source file).</p>
+
+		Background colors:
+		<ul>
+			<li><span>white</span> - the text box is clear (no file selected)</li>
+			<li><span style="background-color:#c4df9b">green</span> - the valid target file is selected (the file exists and has a correct file extension)</li>
+			<li><span style="background-color:#f6989d">red</span> - the invalid target file is selected (the file doesn't exists or has an incorrect file extension)</li>
+		</ul>
+
+		</dd>
 		<dt><b>3 - Source data table</b></dt>
-		<dd>Display the source data as a table, use button <i>Preview</i>.</dd>
+		<dd>Displays the source data as a table, use button <i>Preview</i>.</dd>
 		<dt><b>4 - Target data table</b></dt>
-		<dd>Display the target data as a table if the <i>Preview after convert</i> checkbox is checked.</dd>
+		<dd>Displays the target data as a table if the <i>Preview after convert</i> checkbox is checked.</dd>
 		<dt><b>5 - Infobar.</b></dt>
-		<dd>Show an info messages.</dd>
+		<dd>Shows info messages.</dd>
 
 		<dt><b>6 - Source Select button</b></dt>
 		<dd>
-		Select the path to the source file.
+		Selects the path to the source file.
 		</dd>
 
 		<dt><b>7 - Target Select button</b></dt>
 		<dd>
-		Select the path to the target file.
+		Selects the path to the target file.
 		</dd>
 
 		<dt><b>8 - Convert button</b></dt>
 		<dd>
-		Start a conversion.
+		Starts a conversion.
 		</dd>
 
 		<dt><b>9 - Source Settings button</b></dt>
 		<dd>
-		Open the settings dialog for the source file.
+		Opens the settings dialog for the source file.
 		</dd>
 
 		<dt><b>10 - Source Original data button</b></dt>
 		<dd>
-		Open the Original data dialog with the text source data.
+		Opens the Original data dialog with an original source data.
 		</dd>
 
 		<dt><b>11 - Preview button</b></dt>
 		<dd>
-		Display a preview of the source data in the <i>Source data table</i>.
+		Displays a preview of the source data in the <i>Source data table</i>.
 		</dd>
 
 		<dt><b>12 - Info button</b></dt>
 		<dd>
-		Export statistics of the source data into a selected file.
+		Exports statistics of the source data into a selected file.
 		</dd>
 
 		<dt><b>13 - Target Settings button</b></dt>
 		<dd>
-		Open the settings dialog for the target file.
+		Opens the settings dialog for the target file.
 		</dd>
 
 		<dt><b>14 - Target Original data button</b></dt>
 		<dd>
-		Open the Original data dialog with the text source data.
+		Opens the Original data dialog with an original target data.
 		</dd>
 
 		<dt><b>15 - Preview after convert checkbox</b></dt>
 		<dd>
-		If is chacked and if conversion was successful, the target data will be displayed in the <i>target data table</i>.
+		If is checked and if a conversion was successful, the target data will be displayed in the <i>target data table</i>.
 		</dd>
 
 		<dt><b>16 - Split bar</b></dt>
 		<dd>
-		Allows to change width of <i>source/target data table</i>.
+		Allows to change width of <i>source/target data table</i> (with a mouse or with keys shortcut).
 		</dd>
 	</dl>
-	<h2>SHORTCUTS</h2>
+	<h2>KEYS SHORTCUT</h2>
 	<ul>
 		<li><b>Ctrl+s, Ctrl+c</b>: Start convert.</li>
 		<li><b>Ctrl+c</b>: Copy selected data in a table to the clipboard.</li>
@@ -114,22 +134,29 @@
 
 	<h2>DIALOGS</h2>
 	<h3>Source/Target settings dialog</h3>
-	<p class="screens"><img src="img/sourceargsempty.png"></p>
-	<p class="screens"><img src="img/targetargsempty.png"></p>
+	<p>Dialogs is possible to open by <i>settings</i> button. Input elements inside a dialog match Optional arguments described <a href="manual.html#opt_args">here</a>. Note that elements displayed in a dialog depends on the selected data format (by the source extenssion or by the Format combobox).</p>
+	Examples:
+	<p class="screens"><img src="img/sourceargsempty.png">
+	<img src="img/targetargsempty.png"></p>
 
 	<h3>Progress bar dialogs</h3>
-	<p class="screens"><img src="img/convert.png"></p>
+	<p>The progress bar dialog is displayed always if the program iterates through the source file. For some conversions is necessary to iterate through the source file twice. At the first interaction the program reads information about the source data (Prepare Data dialog) and at the second iteration converts the source data to the target data (Convert Data dialog). The iteration can be anytime stopped by the Cancel button.</p>
+	Examples:
 	<p class="screens"><img src="img/prepare.png"></p>
+	<p class="screens"><img src="img/convert.png"></p>
 
 	<h3>Warning/Error dialogs</h3>
+	The program produces Warnings and Errors. Warnings don't have to be critical and is possible to skip them if you are sure about what you do. Errors always stop an operation and provides detailed description, which can be shown/hidden by the Show/Hide button. All errors are listed <a href="manual.html#errors">here</a>.
 	<p class="screens"><img src="img/warning.png"></p>
 	<p class="screens"><img src="img/error.png"></p>
 	<p class="screens"><img src="img/errordetail.png"></p>
 
-	<h3>Find in table dialog</h3>
+	<h3>Find dialog</h3>
+	To find a value in the <i>source/target data table</i> press the shortcut: Ctrl+f.
 	<p class="screens"><img src="img/find.png"></p>
 
 	<h3>Original data dialog</h3>
+The Original data dialog is possible to open by the <i>Original data</i> button. In the dialog are displayed an original source/target data such as they are written on the disk. You can find an expression in a displayed data using the Find bar at the bottom. The displayed data are read only.
 	<p class="screens"><img src="img/orig.png"></p>
 
 	<h2>EXAMPLE</h2>
@@ -164,6 +191,22 @@
 		<li>Click on the <i>Convert</i> button.</li>
 	</ol>
 	<p class="screens"><img src="img/result.png"></p>
+
+	<h2>FEATURES</h2>
+	<h3>Copy data into the clipboard</h3>
+	<p>If you select some data in a data table and press Ctrl+c, the selected data are copied into the clipboard.</p>
+	Example:
+	<p class="screens"><img src="img/clipboard.png"></p>
+<pre><code>1991-06-13 54 true
+1990-04-23 98 false</code></pre>
+
+	<h3>More conversions at once</h3>
+	<p>Each operation runs on the separate thread, so there is no problem to run next operation while the previous is still running.</p>
+	Example:
+	<p class="screens"><img src="img/twoatonce.png"></p>
+
+	<h3>Browsing big files</h3>
+	The program is prepared for working with very big files. Into the source/target data table and Original data dialog, data are loaded dynamically, so you don't have to be worried about a data size.
 
 </div>
 
