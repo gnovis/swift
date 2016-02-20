@@ -12,6 +12,12 @@ from .swift_core.errors_fca import ErrorMessage, SwiftError
 import swift_fca.resources.resources_rc  # NOQA Resources file
 
 
+class ErrLog(object):
+    def write(self, text):
+        with open("swift.log", "a") as errlog:
+            errlog.write(text)
+
+
 class GuiSwift(QtGui.QWidget):
     STATUS_MESSAGE_DURRATION = 5000
     SCROLL_COUNT = 50
@@ -23,6 +29,7 @@ class GuiSwift(QtGui.QWidget):
 
     def __init__(self):
         super().__init__()
+        sys.stderr = ErrLog()
 
         self._source = None
         self._target = None
