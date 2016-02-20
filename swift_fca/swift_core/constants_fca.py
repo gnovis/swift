@@ -105,13 +105,18 @@ class Bival:
 
 
 class ShortCuts:
+    FIND = "Ctrl+f"
     CONVERT = "Ctrl+s, Ctrl+c"
     COPY = "Ctrl+c"
-    BROWSE = "Ctrl+b"
-    EXPORT = "Ctrl+e"
+    BROWSE = "Ctrl+p"
+    EXPORT = "Ctrl+i"
     SOURCE_FILE = "Ctrl+s, Ctrl+f"
     TARGET_FILE = "Ctrl+t, Ctrl+f"
     SOURCE_SETTINGS = "Ctrl+s, Ctrl+s"
     TARGET_SETTINGS = "Ctrl+t, Ctrl+s"
     SOURCE_ORIG_DATA = "Ctrl+s, Ctrl+o"
     TARGET_ORIG_DATA = "Ctrl+t, Ctrl+o"
+    SOURCE_FOCUS = "Alt+s"
+    TARGET_FOCUS = "Alt+t"
+    MOVE_SPLITTER_LEFT = "Alt+left"
+    MOVE_SPLITTER_RIGHT = "Alt+right"

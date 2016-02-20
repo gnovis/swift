@@ -55,7 +55,7 @@ class GuiSwift(QtGui.QWidget):
 
     def initUI(self):
 
-        st_find = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+f"), self)
+        st_find = QtGui.QShortcut(QtGui.QKeySequence(ShortCuts.FIND), self)
         st_find.activated.connect(lambda: FindDialog(self))
 
         def move_splitter_right():
@@ -66,10 +66,10 @@ class GuiSwift(QtGui.QWidget):
             sizes = self.splitter.sizes()
             self.splitter.setSizes([sizes[0]-10, sizes[1]+10])
 
-        st_move_splitter_right = QtGui.QShortcut(QtGui.QKeySequence("Alt+Right"), self)
+        st_move_splitter_right = QtGui.QShortcut(QtGui.QKeySequence(ShortCuts.MOVE_SPLITTER_RIGHT), self)
         st_move_splitter_right.activated.connect(move_splitter_right)
 
-        st_move_splitter_left = QtGui.QShortcut(QtGui.QKeySequence("Alt+Left"), self)
+        st_move_splitter_left = QtGui.QShortcut(QtGui.QKeySequence(ShortCuts.MOVE_SPLITTER_LEFT), self)
         st_move_splitter_left.activated.connect(move_splitter_left)
 
         # Widgets
@@ -90,9 +90,9 @@ class GuiSwift(QtGui.QWidget):
         self.line_source.textChanged.connect(self.check_state_source)
         self.line_target.textChanged.connect(self.check_state_target)
 
-        st_source_focus = QtGui.QShortcut(QtGui.QKeySequence("Alt+s"), self)
+        st_source_focus = QtGui.QShortcut(QtGui.QKeySequence(ShortCuts.SOURCE_FOCUS), self)
         st_source_focus.activated.connect(self.line_source.setFocus)
-        st_target_focus = QtGui.QShortcut(QtGui.QKeySequence("Alt+t"), self)
+        st_target_focus = QtGui.QShortcut(QtGui.QKeySequence(ShortCuts.TARGET_FOCUS), self)
         st_target_focus.activated.connect(self.line_target.setFocus)
 
         # Tables
@@ -250,7 +250,7 @@ class GuiSwift(QtGui.QWidget):
         self.setLayout(grid)
 
         # self.showMaximized()
-        self.resize(750, 500)
+        self.resize(900, 500)
         self.setWindowTitle(App.TITLE)
         self.setWindowIcon(QtGui.QIcon(':swift_icon.svg'))
         self.show()
@@ -458,7 +458,7 @@ class GuiSwift(QtGui.QWidget):
                 if len(errors) > 0:
                     pbar.cancel()
                     self.show_dialog("Convert Error",
-                                     "Wasn't possible to convert data, please check syntax in source file and specified arguments.",
+                                     "Wasn't possible to convert data, please check syntax in the source file and specified arguments.",
                                      errors=errors)
                     self.status_bar.showMessage("Conversion aborted.",
                                                 self.STATUS_MESSAGE_DURRATION)
