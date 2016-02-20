@@ -12,7 +12,7 @@
 <div id="header">
 	<div id="header_content">
 		<div>Swift</div>
-		<div style="font-weight:normal; font-size:30px">Relational Data Converter</div>
+		<div class="sub_header">Relational Data Converter</div>
 		<a href="index.html"><img id="icon"src="./img/swift_icon.svg"></a>
 	</div>
 </div>
@@ -23,7 +23,7 @@
 <pre><code>cd path/to/swift/
 ./swift.py
 </code></pre>
-	<h2>LAYOUT</h2>
+	<h2>MAIN WINDOW LAYOUT</h2>
 	<p class="screens"><img src="./img/mainblank.png"></p>
 	<h3>UI Elements</h3>
 	<dl>
@@ -93,12 +93,78 @@
 		Allows to change width of <i>source/target data table</i>.
 		</dd>
 	</dl>
+	<h2>SHORTCUTS</h2>
+	<ul>
+		<li><b>Ctrl+s, Ctrl+c</b>: Start convert.</li>
+		<li><b>Ctrl+c</b>: Copy selected data in a table to the clipboard.</li>
+		<li><b>Ctrl+p</b>: Preview.</li>
+		<li><b>Ctrl+i</b>: Info.</li>
+		<li><b>Ctrl+f</b>: Find in the <i>source/target data table</i>.</li>
+		<li><b>Ctrl+s, Ctrl+f</b>: Select the source file.</li>
+		<li><b>Ctrl+t, Ctrl+f</b>: Select the target file.</li>
+		<li><b>Ctrl+s, Ctrl+s</b>: Open the source settings.</li>
+		<li><b>Ctrl+t, Ctrl+s</b>: Open the target settings.</li>
+		<li><b>Ctrl+s, Ctrl+o</b>: Show the source original data.</li>
+		<li><b>Ctrl+t, Ctrl+o</b>: Show the target original data.</li>
+		<li><b>Atlt+s</b>: Set focus to the <i>Source file text box</i>.</li>
+		<li><b>Atlt+t</b>: Set focus to the <i>Target file text box</i>.</li>
+		<li><b>Alt+arrowleft</b>: Move the split bar to the left.</li>
+		<li><b>Alt+arrowright</b>: Move the split bar to the right.</li>
+	</ul>
+
+	<h2>DIALOGS</h2>
+	<h3>Source/Target settings dialog</h3>
+	<p class="screens"><img src="img/sourceargsempty.png"></p>
+	<p class="screens"><img src="img/targetargsempty.png"></p>
+
+	<h3>Progress bar dialogs</h3>
+	<p class="screens"><img src="img/convert.png"></p>
+	<p class="screens"><img src="img/prepare.png"></p>
+
+	<h3>Warning/Error dialogs</h3>
+	<p class="screens"><img src="img/warning.png"></p>
+	<p class="screens"><img src="img/error.png"></p>
+	<p class="screens"><img src="img/errordetail.png"></p>
+
+	<h3>Find in table dialog</h3>
+	<p class="screens"><img src="img/find.png"></p>
+
+	<h3>Original data dialog</h3>
+	<p class="screens"><img src="img/orig.png"></p>
+
 	<h2>EXAMPLE</h2>
 	Conversion CSV (<a href="manual.html#ex_csv">example.csv</a>) to CXT (<a href="manual.html#res_cxt">result.cxt</a>)
+	<h3>Main window</h3>
+	<ol>
+		<li>Select the source file</li>
+		<li>Show a preview of data.</li>
+		<li>Open the source settings dialog and fill relevant arguments.</li>
+		<li>Select the target file</li>
+		<li>Open the target settings dialog and fill relevant arguments.</li>
+	</ol>
 	<p class="screens"><img src="img/preview.png"></p>
+
+	<h3>The source settings dialog</h3>
+	<ol>
+		<li>Set the Target Attributes argument.</li>
+		<li>Set the Missing Value argument.</li>
+		<li>Confirm the form by click on the button OK.</li>
+	</ol>
 	<p class="screens"><img src="img/sourceargs.png"></p>
+
+	<h3>The target settings dialog</h3>
+	<ol>
+		<li>Set the Objects argemnts.</li>
+		<li>Confirm the form by click on the button OK.</li>
+	</ol>
 	<p class="screens"><img src="img/targetargs.png"></p>
+
+	<h3>Finish</h3>
+	<ol>
+		<li>Click on the <i>Convert</i> button.</li>
+	</ol>
 	<p class="screens"><img src="img/result.png"></p>
+
 </div>
 
 <div id="footer">
