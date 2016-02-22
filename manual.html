@@ -83,15 +83,15 @@
 	<h2>DESCRIPTION</h2>
 	Swift - Relational Data Converter is a program for converting data files in six different <a href="#formats">formats</a>. All accepted formats are text and can be converted with each other, it means 36 possible conversions. Swift is focused on working with a table data where rows represent objects (instances) and columns their attributes (properties). Beside the data conversion, program supports also:
 	<ul>
-		<li><b>Filtering</b> - changing column order, changing columns occurrences, skipping columns and rows.</li>
-		<li><b>Scaling</b>  - necessary for conversion multivalent formats (such as CSV, ARFF, C4.5) to bivalent formats (such as Burmeister, FIMI, DTL), but can be used for any converssion.</li>
+		<li><b>Filtering</b> - changing column order, changing column occurrences, skipping columns and rows.</li>
+		<li><b>Scaling</b>  - necessary for conversion multivalent formats (such as CSV, ARFF, DATA) to bivalent formats (such as CXT, DAT, DTL), but can be used for any conversion.</li>
 		<li><b>Analyzing</b> - produces statistics of data.</li>
 		<li><b>Preview</b> of data parts.</li>
 	</ul>
 	All operations work with data of any size, only limitation is a space of hard drive (not RAM).
 
 	<p>
-	Swift provides Command-line interface (swift-cli.py) and also Graphical user interface (swift.py), which is described in a seperate <a href="guimanual.html">GUI Manual</a> section. For quick use without useless reading, go to <a href="#examples">examples</a> section which contains examples of common use cases.
+	Swift provides Command-line interface (swift-cli.py) and also Graphical user interface (swift.py), which is described in a separate <a href="guimanual.html">GUI Manual</a>. For a quick usage without useless reading, go to <a href="#examples">examples</a> section, which contains examples of common use cases.
 	</p>
 	<h3>Positional arguments</h3>
 	<dl>
@@ -112,19 +112,19 @@
 
 		<dt><b>-ta </b>target_attributes, <b>--target_attributes</b> target_attributes</dt>
 		<dd>
-		The list of formulas seperated by ";",
+		The list of formulas separated by ";",
 		<pre><code>formulas ::= formula | (formula ";" formulas)</code></pre>
-		where formula is the definition of attribute in the target file. The formula is of the form:
+		where formula is a definition of attribute in the target file. The formula is of the form:
 		<pre><code>formula ::= (new-names "=")? old-names ((":" type ("[" scale "]")?) | "[]")?</code></pre>
 		<u>The first part</u> of the formula:
 		<pre><code>(new-names "=")? old-names</code></pre>
-		where new-names and old-names are the lists of names seperated by ",":
+		where new-names and old-names are the lists of names separated by ",":
 		<pre><code>names ::= name | (name "," names)</code></pre>
-		where name is the word or the interval:
+		where name is a word or an interval:
 		<pre><code>name ::= \w+ | ((\d+)? "-" (\d+)?) | "*"</code></pre>
-		has the following meaning: old-names refer to attributes in the source file by using their names (if are available) or indexes. New-names define new names of attributes used in the target file. If new-names are omitted, attributes in the target file have the same names as in the source file. New-names and old-names must have the same length, otherwise error is produced.
+		has the following meaning: old-names refer to attributes in the source file by using their names (if are available) or indexes. New-names define new names of attributes used in the target file. If new-names are omitted, attributes in the target file have same names as in the source file. New-names and old-names must have the same length, otherwise error is produced.
 		<p>
-		The interval determines range of indexes. If the lower bound is omitted, indexes range is from zero to upper bound. If the upper bound is omitted, indexes range is from lower bound to the maximum index of attribute in the target file. If both upper and lower bounds are omitted, indexes range is from zero to the maximum index of the attribute in the source file (for this case has been added alis "*", which has the same meaning as "-").
+		The interval determines a range of indexes. If the lower bound is omitted, indexes range is from zero to upper bound. If the upper bound is omitted, indexes range is from lower bound to the maximum index of attribute in the source file. If both upper and lower bounds are omitted, indexes range is from zero to the maximum index of the attribute in the source file (for this case has been added alias "*", which has the same meaning as "-").
 		</p>
 		Examples (seven attributes in source file):
 		<table>
@@ -156,7 +156,7 @@ date_format ::= "F="? "'" .+ "'"</code></pre>
 		where characters are aliases of data types:
 		<ul>
 			<li>n = numeric - all real numbers</li>
-			<li>e = enumeration - finite set of named values</li>
+			<li>e = enumeration (nominal) - finite set of named values</li>
 			<li>s = string - word</li>
 			<li>d = date - the default date format is ISO-8601 which combines date and time: YYYY-MM-DDThh:mm:ss. For using different date formats must be used <a href="https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior">python format codes</a>,</li>
 		</ul>
@@ -166,28 +166,28 @@ date_format ::= "F="? "'" .+ "'"</code></pre>
 		<p>In the <i>numeric scale</i>,</p>
 		<pre><code>num_scale ::= (var op num_val) | (num_val op var) | (num_val op var op num_val)</code></pre>
 		the numeric value is of the form:
-		<pre><code>num_val ::= int ("." number?)? ("e" int)?
+		<pre><code>num_val ::= int ("." int?)? ("e" int)?
 int ::= ("+" | "-")? \d+</code></pre>
 		Examples of numeric value: <code>5, -10, +47, 2.46, -2.31, +98.31, -78.4e-48, 3e8</code>
 		<pre><code>var ::= [a-z_]+</code></pre>
-		Variables (the form above) represent the current value of the scale evaluation and operations have the same meaning as in many programing languages such as C or Python.
+		Variable (the form above) represents a value of the scale evaluation. Operations have the same meaning as in many programming languages such as C or Python.
 		<pre><code>op ::= "<" | ">" | "<=" | ">=" | "==" | "!="</code></pre>
 		Examples of numeric scales (variable is x): <code>x!=10.3, -5<=x<=10, 50==x </code>
 		<p>The <i>enumeration scale</i></p>
 		<pre><code>enum_scale ::= "'" \w+ "'"</code></pre>
-		is the one of the value of enumeration, which must be quoted. If the value of the attribute is the exactly same as the scale, the result of the scaling is True, otherwise False.
+		is a one of enumeration values, which must be quoted. If the value of the attribute is exactly the same as the scale, the result of the scaling is True, otherwise False.
 		<p>The <i>string scale</i></p>
 		<pre><code>str_scale ::= "'" .+ "'"</code></pre>
 		is a quoted <a href="https://docs.python.org/2/library/re.html"> python regular expression</a>. If the regular expression matches any substring of the scaled value, result of scaling is True, otherwise False.
 		<p>Example of the string scale: <code>"foo[+-*]*bar"</code>, which matches "hellfoobar", "foo--barxyz" ... but doesn't match "foo/bar" ...</p>
 		<p>The <i>date scale</i></p>
 		<pre><code>date_scale ::= ((var op date_val) | (date_val op var) | (date_val op var op date_val))</code></pre>
-		is the exactly same expression as numeric scale, but values must be dates in valid date format.
+		is exactly the same expression as numeric scale, but values must be dates in valid date format.
 		<p><i>Binary values</i></p>
 		<pre><code>bin_vals ::= ("0="? "'" .* "'" ",")? "1="? "'" .+ "'"</code></pre>
 		allow to define new <i>binary values</i> for some bivalent attribute. The default values are 1 (True) and 0 (False). This can be useful for the conversion from multivalent format (which contains bivalent attribute, but values are different from 0 and 1) to bivalent format, without useless scaling (because values are bivalent already). Note that, this way is semantically the same as using enumeration for bivalent attribute, but use of <i>binary values</i> is prefered because is more time-efficient.
 		<p id="unpack">
-		The alternative to the scale is the <i>binary unpacking</i> (the total binarization) of the attribute, which can be used by "[]", writed just behind the names. This creates new attribute for every single value of the old attribute. Every new attribute is ot type enumeration with the scale: value. The order of new attributes is the same as the order of values in template attribute. If <i>binary unpacking</i> is used for more attributes, for example for two attribites, then every new attribute of the first old attribute has lower index then any of new attribute of the second old attribute.
+		The alternative to the scale is a <i>binary unpacking</i> (total binarization) of an attribute, which can be used by "[]", written just behind the names. This creates new attribute for every single value of the old attribute. Every new attribute is of a type enumeration with the scale: value. The order of new attributes is the same as the order of values in template attribute. If <i>binary unpacking</i> is used for more attributes, for example for two attributes, then every new attribute of the first old attribute has lower index then any of new attribute of the second old attribute.
 		</p>
 		<p>Example - <i>binary unpacking</i> of two attributes:</p>
 		<table>
@@ -230,11 +230,11 @@ bin_vals ::= ("0="? "'" .* "'" ",")? "1="? "'" .+ "'"
 var ::= [a-zA-Z_]+
 op ::= "<" | ">" | "<=" | ">=" | "==" | "!="
 date_val ::= "'" .+ "'"
-num_val ::= int ("." number?)? ("e" int)?
+num_val ::= int ("." int?)? ("e" int)?
 int ::= ("+" | "-")? \d+</code></pre>
 		<i>Notes: </i>
-		<p>If the <i>--target_attributes</i> argument is omitted, all attributes readed from the <i>source</i> are processed.</p>
-		<p>If the <i>--target_attributes</i> argument beginning with "-" (e.g interval: <code>'-4'</code>), the <i>--target_attributes</i> should be specified as: <code>-ta='-4'</code>. </p>
+		<p>If the <i>--target_attributes</i> argument is omitted, all attributes   from the <i>source</i> are processed.</p>
+		<p>If the <i>--target_attributes</i> argument beginning with "-" (e.g <code>'-4,8,9'</code>), the <i>--target_attributes</i> must be specified as: <code>-ta='-4,8,9'</code>. </p>
 		</dd>
 
 		<dt><b>-c</b> [rows_count], <b>--convert</b> [rows_count]</dt>
@@ -248,7 +248,7 @@ int ::= ("+" | "-")? \d+</code></pre>
 
 		<dt><b>-i, --info</b></dt>
 		<dd>
-		Prints the statistics of the <i>source</i> and for its each processed attribute. Statistics is of the form:
+		Prints a statistics of the <i>source</i> and for its each processed attribute. Statistics is of the form:
 <pre>Relation name:
 Objects count:
 Attributes count:
@@ -258,7 +258,7 @@ name:
 index:
 type: string/enumeration
 values appearance:
-    value: occurences-count/total-count = %
+    value: occurrences-count/total-count = %
 	.
 	.
 	.
@@ -268,7 +268,7 @@ index:
 type: numeric/date
 max: , min:
 values appearance:
-    value: occurences-count/total-count = %
+    value: occurrences-count/total-count = %
 	.
 	.
 	.
@@ -276,7 +276,7 @@ values appearance:
 .
 .
 .</pre>
-		The <i>--info</i> may be used as single action (the statistics is printed to the <i>stdout</i>) or in parallel with the conversion (if <i>--target</i> is <i>stdout</i>, the new file named same as the <i>source</i>, but with extension .info is produced). The usage <i>--info</i> in parallel with conversion is useful for the saving time if both actions are required.
+		The <i>--info</i> may be used as single action (the statistics is printed to the <i>stdout</i>) or in parallel with a conversion (if <i>--target</i> is <i>stdout</i>, the new file, named same as the <i>source</i>, but with extension .info is produced). The usage <i>--info</i> in parallel with conversion is useful for the saving time if both actions are required.
 		</dd>
 
 		<dt><b>-sf</b> {csv,arff,dat,data,cxt,dtl},
@@ -295,7 +295,7 @@ values appearance:
 			<b>--classes</b> classes
 		</dt>
 		<dd>
-		Selects attributes from the <i>source</i>, which will be used as classes in the <i>--target</i>. It can be specified using the interval of attribute indexes, or using names of attributes, or both in combination. <i>--classes</i> is of the form:
+		Selects attributes from the <i>source</i>, to be be used as classes in the <i>--target</i>. It can be specified using the interval of attribute indexes, or using names of attributes, or both in combination. <i>--classes</i> is of the form:
 		<pre><code>classes ::= element | (element "," classes)
 element = interval | key
 interval ::= ((\d+)? "-" (\d+)?)
@@ -315,7 +315,7 @@ key = \w+</code></pre>
 			<b>--target_separator</b> target_separator
 		</dt>
 		<dd>
-		Specifies the separator of attributes in the <i>--target</i> (it affects only the current action). Attributes in the <i>--target</i> will be seperated with this new value.
+		Specifies the separator of attributes in the <i>--target</i> (it affects only the current action). Attributes in the <i>--target</i> will be separated with this new value.
 		</dd>
 
 		<dt><b>-scs</b> source_classes_separator,
@@ -329,7 +329,7 @@ key = \w+</code></pre>
 			<b>--target_cls_separator</b> target_classes_separator
 		</dt>
 		<dd>
-		Specifies the  separator of attributes and classes in the <i>--target</i> (it affects only the current action). Attributes and classes in the <i>--target</i> will be seperated with this new value. This argument is relevant only in the case, when the <i>--target</i> format is <a href="#dtl">DTL</a>.
+		Specifies the  separator of attributes and classes in the <i>--target</i> (it affects only the current action). Attributes and classes in the <i>--target</i> will be separated with this new value. This argument is relevant only in the case, when the <i>--target</i> format is <a href="#dtl">DTL</a>.
 		</dd>
 
 		<dt><b>-sl</b> skip_lines,
@@ -345,14 +345,14 @@ key = \w+</code></pre>
 			<b>--skip_errors</b>
 		</dt>
 		<dd>
-		Erros produced by invalid lines in the <i>source</i> are skipped. Program continues and skipped erros are printed to the <i>stderr</i>.
+		Errors produced by invalid lines in the <i>source</i> are skipped. Program continues and skipped errors are printed to the <i>stderr</i>.
 		</dd>
 
 		<dt><b>-n</b> name,
 			<b>--name</b> name
 		</dt>
 		<dd>
-		Specifies the new name of relation (data).
+		Specifies a new name of relation (data).
 		</dd>
 
 		<dt><b>-mv</b> missing_value,
@@ -366,7 +366,7 @@ key = \w+</code></pre>
 			<b>--objects</b> objects
 		</dt>
 		<dd>
-		The list of object names seperated by comma:
+		The list of object names separated by comma:
 		<pre><code>objects ::= name | (name "," objects)</code></pre>
 		This argument is relevant only in the case, when <i>--target</i> format is <a href="#cxt">Burmeister</a>. If <i>--objects</i> is omitted, indexes of objects are used.
 		</dd>
@@ -375,14 +375,14 @@ key = \w+</code></pre>
 			<b>--source_no_header</b> source_no_header
 		</dt>
 		<dd>
-		The first row in the <a href="#csv">CSV</a>  <i>source</i> is interpreted as a object (not header).
+		The first row in the <a href="#csv">CSV</a>  <i>source</i> is interpreted as an object (not header).
 		</dd>
 
 		<dt><b>-tnh</b> target_no_header,
 			<b>--target_no_header</b> target_no_header
 		</dt>
 		<dd>
-		The <a href="#csv">CSV</a> <i>--target</i> will have the object on the first line.
+		The <a href="#csv">CSV</a> <i>--target</i> will have an object on the first line (not header).
 		</dd>
 
 	</dl>
@@ -393,10 +393,10 @@ key = \w+</code></pre>
 <pre><code>error_code: error_name
 	error_description
 </code></pre>
-	When an error is raised, program ends and returns the error code.
+	When an error is raised, program ends and returns an error code.
 	<dl>
 		<dt><b>1</b>: Swift Unknown Error</dt>
-		<dd>If you get this error, please <a href="#bugs">report</a> this bug with details printed below the error message. Thank you.</dd>
+		<dd>If you get this error, please <a href="#bugs">report</a> a bug with an error message printed below. Thank you.</dd>
 
 		<dt><b>2</b>: Argument Error</dt>
 		<dd>Some of required arguments are missing or aren't specified correctly.</dd>
@@ -441,22 +441,22 @@ key = \w+</code></pre>
 		<dd>The count of new names and the count of old names aren't equal.</dd>
 
 		<dt><b>16</b>: Sequence Error</dt>
-		<dd>The syntax error in the sequance (interval).</dd>
+		<dd>The syntax error in a sequence (interval).</dd>
 
 		<dt><b>17</b>: DATE Value Error</dt>
-		<dd>The invalid value of the date attribute.</dd>
+		<dd>The invalid value of a date attribute.</dd>
 
 		<dt><b>18</b>: NUMERIC Value Error</dt>
-		<dd>The invalid value of the numeric attribute.</dd>
+		<dd>The invalid value of a numeric attribute.</dd>
 
 		<dt><b>19</b>: STRING Value Error</dt>
-		<dd>The invalid value of the string attribute.</dd>
+		<dd>The invalid value of a string attribute.</dd>
 
 		<dt><b>20</b>: NOMINAL Value Error</dt>
-		<dd>The invalid value of the nominal (enumeration) attribute.</dd>
+		<dd>The invalid value of a nominal (enumeration) attribute.</dd>
 
 		<dt><b>21</b>: DATE Error</dt>
-		<dd>The invalid syntax of the date.</dd>
+		<dd>The invalid syntax of a date.</dd>
 
 		<dt><b>22</b>: Formula Date Value/Format Error</dt>
 		<dd>The value and the format of the date doesn't match.</dd>
@@ -502,12 +502,12 @@ key = \w+</code></pre>
 1993-12-03
 1989-03-31</code></pre>
 
-<p>When converting from the arff file with some relational attributes to some other format, relational attributes are linearized (using dot notation, see example).</p>
+<p>When converting from an arff file with some relational attributes to some other format, relational attributes are linearized (using dot notation, see example).</p>
 Example:
 <pre><code>@attribute humidity relational
     @attribute absolute relational
         @attribute day numeric
-        @attribute nigth numeric
+        @attribute night numeric
     @end absolute
 @end humidity</code></pre>
 
@@ -516,17 +516,17 @@ The relational attribute humidity (above) will be converted to attributes (e.g f
 
 		<h3 id="data">C4.5 File Format (.data .names)</h3>
 		The description of the format with examples can be found <a href="http://www.cs.washington.edu/dm/vfml/appendixes/c45.htm">here</a>.
-		<p><i>Notes: </i>With the class, must be worked exactly the same as with the attributes at any conversion (class can be scaled, total binarized, ...). The key used in the <i>--target_attributes</i> is the class index or the name: "class".</p>
+		<p><i>Notes: </i>With a class, must be worked exactly the same as with an attribute at any conversion (class can be scaled, total binarized, ...). The key used in the <i>--target_attributes</i> is the class index or the name: "class".</p>
 
 		<h3 id="cxt">Burmeister (.cxt)</h3>
 		The description of the format with examples can be found <a href="http://www.upriss.org.uk/fca/fcafileformats.html#Burmeister">here</a>.
 
 		<h3 id="dat">FIMI File Format (.dat)</h3>
 		The description of the format with examples can be found <a href="http://fcalgs.sourceforge.net/format.html">here</a>.
-		<p><i>Notes: </i>The blank lines are readed (from FIMI source) as objects, with all attributes of the value 0 (False). And conversely objects with all attributes of the value 0 (False), are writed (to FIMI target) as blank lines. It differs from the official format documentation, which ignore blank lines and objects with all attributes of value 0.</p>
+		<p><i>Notes: </i>The blank lines are interpreted (from FIMI source) as objects, with all attributes of the value 0 (False). And conversely objects with all attributes of the value 0 (False), are written (to FIMI target) as blank lines. It differs from the official format documentation, which ignore blank lines and objects with all attributes of value 0.</p>
 
 		<h3 id="dtl">DTL File Format (.dtl)</h3>
-		<p>This format is very similiar to FIMI, but it supports specification of classes for each object. The file consists of rows of the form:
+		<p>This format is very similar to FIMI, but it supports specification of classes for each object. The file consists of rows, which are of the form:
 		<pre><code>attributes "|" classes</code></pre>
 		where attributes part is exactly the same as attributes in the FIMI format (values are indexes of attributes with value 1) and "|" separates attributes and classes. The classes part consists of various values, separated with the same separator as attributes are.</p>
 		Example (<code>class1={a,b}, class2={aa,bb}</code>):
@@ -539,7 +539,7 @@ The relational attribute humidity (above) will be converted to attributes (e.g f
 		<p>With classes must be worked exactly the same as with the attributes at any conversion (class can be scaled, total binarized, ...). The key used in the <i>--target_attributes</i> is the class index or the name: "class1", "class2"... .</p>
 
 	<h2 id="examples">EXAMPLES</h2>
-	All examples is this section uses following sample data.
+	All examples is this section use following sample data.
 	<h3>Sample data</h3>
 	<dl>
 		<dt id="ex_csv">CSV - example.csv</dt>
@@ -1053,12 +1053,12 @@ values appearance:
 	</ul>
 	<h3 id="download">Download</h3>
 
-	This program can be obtined from the <a href="https://github.com/gnovis/swift">repository</a> using git:
+	This program can be obtained from the <a href="https://github.com/gnovis/swift">repository</a> using git:
 	<pre><code>git clone git@github.com:gnovis/swift.git</code></pre>
 	or by the direct <a href="https://github.com/gnovis/swift/zipball/master/">link</a>.
 
 	<h3>Unpack</h3>
-	If you download the source through a direct link, you need to unpack the ZIP archive. For example by using the <a href="http://www.info-zip.org/mans/unzip.html">unzip</a> program (on Linux):
+	If you download the source through the direct link, you need to unpack the ZIP archive. For example by using the <a href="http://www.info-zip.org/mans/unzip.html">unzip</a> program (on Linux):
 <pre><code>cd ~/Downloads
 unzip swift-master
 mv swift-master swift</code></pre>
@@ -1071,7 +1071,7 @@ mv swift-master swift</code></pre>
 	<h2 id="contribute">CONTRIBUTING</h2>
 	You are welcome to participate in development of this project. Join us on <a href="https://github.com/gnovis/swift">github</a>.
 	<h2 id="authors">AUTHORS</h2>
-	Developed by Jan Novacek &ltnovacekj5@gmail.com&gt and Jan Outrata &ltjan.outrata@upol.cz&gt.
+	Developed by Jan Novacek &lt;novacekj5@gmail.com&gt; and Jan Outrata &lt;jan.outrata@upol.cz&gt;.
 	<h2>WEBSITE</h2>
 	The project website: <a href="http://gnovis.github.io/swift/">http://gnovis.github.io/swift/</a>.
 	<h2 id="licence">LICENSE</h2>

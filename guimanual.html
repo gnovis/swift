@@ -41,7 +41,7 @@
 		</dd>
 		<dt><b>2 - Target file text box</b></dt>
 		<dd>
-		<p>Write or select (with the <i>Target Select button</i>) the path to the target file (can't be the same as source file).</p>
+		<p>Write or select (with the <i>Target Select button</i>) the path to the target file (can't be the same as a source file).</p>
 
 		Background colors:
 		<ul>
@@ -52,20 +52,20 @@
 
 		</dd>
 		<dt><b>3 - Source data table</b></dt>
-		<dd>Displays the source data as a table, use button <i>Preview</i>.</dd>
+		<dd>Displays a source data as a table, use button <i>Preview</i>.</dd>
 		<dt><b>4 - Target data table</b></dt>
-		<dd>Displays the target data as a table if the <i>Preview after convert</i> checkbox is checked.</dd>
+		<dd>Displays a target data as a table if the <i>Preview after convert</i> checkbox is checked.</dd>
 		<dt><b>5 - Infobar.</b></dt>
 		<dd>Shows info messages.</dd>
 
 		<dt><b>6 - Source Select button</b></dt>
 		<dd>
-		Selects the path to the source file.
+		Selects the path to a source file.
 		</dd>
 
 		<dt><b>7 - Target Select button</b></dt>
 		<dd>
-		Selects the path to the target file.
+		Selects the path to a target file.
 		</dd>
 
 		<dt><b>8 - Convert button</b></dt>
@@ -105,18 +105,18 @@
 
 		<dt><b>15 - Preview after convert checkbox</b></dt>
 		<dd>
-		If is checked and if a conversion was successful, the target data will be displayed in the <i>target data table</i>.
+		If is checked and if the conversion was successful, the target data will be displayed in the <i>target data table</i>.
 		</dd>
 
 		<dt><b>16 - Split bar</b></dt>
 		<dd>
-		Allows to change width of <i>source/target data table</i> (with a mouse or with keys shortcut).
+		Allows to change width of the <i>source/target data table</i> (with a mouse or with keys shortcut).
 		</dd>
 	</dl>
 	<h2>KEYS SHORTCUT</h2>
 	<ul>
 		<li><b>Ctrl+s, Ctrl+c</b>: Start convert.</li>
-		<li><b>Ctrl+c</b>: Copy selected data in a table to the clipboard.</li>
+		<li><b>Ctrl+c</b>: Copy selected data in a table into the clipboard.</li>
 		<li><b>Ctrl+p</b>: Preview.</li>
 		<li><b>Ctrl+i</b>: Info.</li>
 		<li><b>Ctrl+f</b>: Find in the <i>source/target data table</i>.</li>
@@ -126,27 +126,27 @@
 		<li><b>Ctrl+t, Ctrl+s</b>: Open the target settings.</li>
 		<li><b>Ctrl+s, Ctrl+o</b>: Show the source original data.</li>
 		<li><b>Ctrl+t, Ctrl+o</b>: Show the target original data.</li>
-		<li><b>Atlt+s</b>: Set focus to the <i>Source file text box</i>.</li>
-		<li><b>Atlt+t</b>: Set focus to the <i>Target file text box</i>.</li>
-		<li><b>Alt+arrowleft</b>: Move the split bar to the left.</li>
-		<li><b>Alt+arrowright</b>: Move the split bar to the right.</li>
+		<li><b>Alt+s</b>: Set focus to the <i>Source file text box</i>.</li>
+		<li><b>Alt+t</b>: Set focus to the <i>Target file text box</i>.</li>
+		<li><b>Alt+left</b>: Move the split bar to the left.</li>
+		<li><b>Alt+right</b>: Move the split bar to the right.</li>
 	</ul>
 
-	<h2>DIALOGS</h2>
+	<h2>DIALOG BOXES</h2>
 	<h3>Source/Target settings dialog</h3>
-	<p>Dialogs is possible to open by <i>settings</i> button. Input elements inside a dialog match Optional arguments described <a href="manual.html#opt_args">here</a>. Note that elements displayed in a dialog depends on the selected data format (by the source extenssion or by the Format combobox).</p>
+	<p>The dialog is possible to open by <i>settings</i> button. Input elements inside the dialog match Optional arguments described <a href="manual.html#opt_args">here</a>. Elements displayed in the dialog depends on the selected data format (by the source extension or by the Format combobox).</p>
 	Examples:
 	<p class="screens"><img src="img/sourceargsempty.png">
 	<img src="img/targetargsempty.png"></p>
 
 	<h3>Progress bar dialogs</h3>
-	<p>The progress bar dialog is displayed always if the program iterates through the source file. For some conversions is necessary to iterate through the source file twice. At the first interaction the program reads information about the source data (Prepare Data dialog) and at the second iteration converts the source data to the target data (Convert Data dialog). The iteration can be anytime stopped by the Cancel button.</p>
+	<p>The progress bar dialog is displayed always if the program iterates through the source file. For some conversions is necessary to iterate through the source file twice. At the first interaction the program reads information about the source data (Prepare Data dialog) and at the second iteration converts the source data to the target data (Convert Data dialog). The iteration can be stopped by the Cancel button anytime.</p>
 	Examples:
 	<p class="screens"><img src="img/prepare.png"></p>
 	<p class="screens"><img src="img/convert.png"></p>
 
 	<h3>Warning/Error dialogs</h3>
-	The program produces Warnings and Errors. Warnings don't have to be critical and is possible to skip them if you are sure about what you do. Errors always stop an operation and provides detailed description, which can be shown/hidden by the Show/Hide button. All errors are listed <a href="manual.html#errors">here</a>.
+	The program produces Warnings and Errors. Warnings don't have to be critical and is possible to skip them if you are sure what you do. Errors always stop an operation and provides detailed description, which can be shown/hidden by the Show/Hide button. All errors are listed <a href="manual.html#errors">here</a>.
 	<p class="screens"><img src="img/warning.png"></p>
 	<p class="screens"><img src="img/error.png"></p>
 	<p class="screens"><img src="img/errordetail.png"></p>
@@ -163,10 +163,10 @@ The Original data dialog is possible to open by the <i>Original data</i> button.
 	Conversion CSV (<a href="manual.html#ex_csv">example.csv</a>) to CXT (<a href="manual.html#res_cxt">result.cxt</a>)
 	<h3>Main window</h3>
 	<ol>
-		<li>Select the source file</li>
+		<li>Select a source file.</li>
 		<li>Show a preview of data.</li>
 		<li>Open the source settings dialog and fill relevant arguments.</li>
-		<li>Select the target file</li>
+		<li>Select a target file.</li>
 		<li>Open the target settings dialog and fill relevant arguments.</li>
 	</ol>
 	<p class="screens"><img src="img/preview.png"></p>
@@ -175,14 +175,14 @@ The Original data dialog is possible to open by the <i>Original data</i> button.
 	<ol>
 		<li>Set the Target Attributes argument.</li>
 		<li>Set the Missing Value argument.</li>
-		<li>Confirm the form by click on the button OK.</li>
+		<li>Click on the button OK, to confirm the form.</li>
 	</ol>
 	<p class="screens"><img src="img/sourceargs.png"></p>
 
 	<h3>The target settings dialog</h3>
 	<ol>
-		<li>Set the Objects argemnts.</li>
-		<li>Confirm the form by click on the button OK.</li>
+		<li>Set the Objects arguments.</li>
+		<li>Click on the button OK, to confirm the form.</li>
 	</ol>
 	<p class="screens"><img src="img/targetargs.png"></p>
 
