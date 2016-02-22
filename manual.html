@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>Swift - Manual</title>
+		<title>Swift - Main manual</title>
 		<link rel="stylesheet" href="./style.css" type="text/css"/>
 		<link rel="shortcut icon" href='./img/swift_icon.svg'>
 	</head>
@@ -19,12 +19,64 @@
 
 <div id="content">
 
-	<h1>Manual</h1>
+	<h1>Main manual</h1>
 
-	<h2>NAME</h2>
+<ul>
+<li><a href="#name">1 NAME</a></li>
+<li><a href="#synopsis">2 SYNOPSIS</a></li>
+<li><a href="#description">3 DESCRIPTION</a></li>
+<ul>
+<li><a href="#pos_args">3.1 Positional arguments</a></li>
+<li><a href="#opt_args">3.2 Optional arguments</a></li>
+<li><a href="#errors">3.3 Errors</a></li>
+</ul>
+<li><a href="#formats">4 SUPPORTED FORMATS</a></li>
+<ul>
+<li><a href="#csv">4.1 Comma-separated values (.csv)</a></li>
+<li><a href="#arff">4.2 Attribute-Relation File Format (.arff)</a></li>
+<li><a href="#data">4.3 C4.5 File Format (.data .names)</a></li>
+<li><a href="#cxt">4.4 Burmeister (.cxt)</a></li>
+<li><a href="#dat">4.5 FIMI File Format (.dat)</a></li>
+<li><a href="#dtl">4.6 DTL File Format (.dtl)</a></li>
+</ul>
+<li><a href="#examples">5 EXAMPLES</a></li>
+<ul>
+<li><a href="#sample_data">5.1 Sample data</a></li>
+<li><a href="#convert">5.2 Convert</a></li>
+<ul>
+<li><a href="#simple">5.2.1 Simple Conversion</a></li>
+<li><a href="#type_spec">5.2.2 Types specification</a></li>
+<li><a href="#cls_spec">5.2.3 Classes specification</a></li>
+<li><a href="#types_cls_spec">5.2.4 Types, classes specification</a></li>
+<li><a href="#obj_atrr_spec">5.2.5 Object names and attribute names specification</a></li>
+<li><a href="#scale">5.2.6 Scale</a></li>
+<li><a href="#scale_obj_spec">5.2.7 Scale and object names specification</a></li>
+<li><a href="#scale_cls_spec">5.2.8 Scale and classes specification</a></li>
+<li><a href="#scale_obj_attr_spec">5.2.9 Scale, object names and attribute names specification</a></li>
+</ul>
+<li><a href="#bin_unpack">5.3 Binary Unpacking</a></li>
+<li><a href="#filter">5.4 Filter</a></li>
+<li><a href="#info">5.5 Info</a></li>
+<li><a href="#preview">5.6 Preview</a></li>
+</ul>
+<li><a href="#installation">6 INSTALLATION</a></li>
+<ul>
+<li><a href="#requirements">6.1 Requirements</a></li>
+<li><a href="#download">6.2 Download</a></li>
+<li><a href="#unpackzip">6.3 Unpack</a></li>
+<li><a href="#finish">6.4 Finish</a></li>
+</ul>
+<li><a href="#bugs">7 REPORTING BUGS</a></li>
+<li><a href="#contribute">8 CONTRIBUTING</a></li>
+<li><a href="#authors">9 AUTHORS</a></li>
+<li><a href="#website">10 WEBSITE</a></li>
+<li><a href="#licence">11 LICENSE</a></li>
+</ul>
+
+	<h2 id="name">NAME</h2>
 	<p>Swift - Relational Data Converter</p>
 
-	<h2>SYNOPSIS</h2>
+	<h2 id="synopsis">SYNOPSIS</h2>
 	<table>
 		<tr>
 			<td><b>swift-cli.py</b></td>
@@ -80,7 +132,7 @@
 		</tr>
 	</table>
 
-	<h2>DESCRIPTION</h2>
+	<h2 id="description">DESCRIPTION</h2>
 	Swift - Relational Data Converter is a program for converting data files in six different <a href="#formats">formats</a>. All accepted formats are text and can be converted with each other, it means 36 possible conversions. Swift is focused on working with a table data where rows represent objects (instances) and columns their attributes (properties). Beside the data conversion, program supports also:
 	<ul>
 		<li><b>Filtering</b> - changing column order, changing column occurrences, skipping columns and rows.</li>
@@ -93,7 +145,7 @@
 	<p>
 	Swift provides Command-line interface (swift-cli.py) and also Graphical user interface (swift.py), which is described in a separate <a href="guimanual.html">GUI Manual</a>. For a quick usage without useless reading, go to <a href="#examples">examples</a> section, which contains examples of common use cases.
 	</p>
-	<h3>Positional arguments</h3>
+	<h3 id="pos_args">Positional arguments</h3>
 	<dl>
 		<dt><b>source</b></dt>
 		<dd>
@@ -540,7 +592,7 @@ The relational attribute humidity (above) will be converted to attributes (e.g f
 
 	<h2 id="examples">EXAMPLES</h2>
 	All examples is this section use following sample data.
-	<h3>Sample data</h3>
+	<h3 id="sample_data">Sample data</h3>
 	<dl>
 		<dt id="ex_csv">CSV - example.csv</dt>
 		<dd>
@@ -586,7 +638,7 @@ example.data
 		</dd>
 
 	</dl>
-	<h3>Convert</h3>
+	<h3 id="convert">Convert</h3>
 	This section is divided into nine subsections according arguments, which are required in the particular conversion. Each of the subsections contains the list of the required arguments, one illustrative example and the list of next conversions, which can be used similarly.
 	<p>For the quick navigation, you can use the following table of all possible conversions.</p>
 	<dl>
@@ -951,7 +1003,7 @@ XXXXX.X
 ....XXX</code></pre>
 	</dd>
 	</dl>
-	<h3>Binary Unpacking</h3>
+	<h3 id="bin_unpack">Binary Unpacking</h3>
 	<dl>
 	<dt>CSV (<a href="#ex_csv">example.csv</a>) to CSV</dt>
 	<dd>
@@ -964,7 +1016,7 @@ XXXXX.X
 	</dd>
 	</dl>
 
-	<h3>Filter</h3>
+	<h3 id="filter">Filter</h3>
 
 	<dl>
 	<dt>CSV (<a href="#ex_csv">example.csv</a>) to CSV</dt>
@@ -976,7 +1028,7 @@ false,Monica</code></pre>
 	</dd>
 	</dl>
 
-	<h3>Info</h3>
+	<h3 id="info">Info</h3>
 
 	<dl>
 	<dt>DATA (<a href="#ex_data">example.data</a>)</dt>
@@ -1022,7 +1074,7 @@ values appearance:
 	</dd>
 	</dl>
 
-	<h3>Preview</h3>
+	<h3 id="preview">Preview</h3>
 
 	<dl>
 	<dt>DAT (<a href="#ex_dat">example.dat</a>)</dt>
@@ -1038,7 +1090,7 @@ values appearance:
 
 	<h2 id="installation">INSTALLATION</h2>
 
-	<h3>Requirements</h3>
+	<h3 id="requirements">Requirements</h3>
 	Make sure that following dependencies are installed in your computer:
 	<ul>
 	<li>
@@ -1057,13 +1109,13 @@ values appearance:
 	<pre><code>git clone git@github.com:gnovis/swift.git</code></pre>
 	or by the direct <a href="https://github.com/gnovis/swift/zipball/master/">link</a>.
 
-	<h3>Unpack</h3>
+	<h3 id="unpackzip">Unpack</h3>
 	If you download the source through the direct link, you need to unpack the ZIP archive. For example by using the <a href="http://www.info-zip.org/mans/unzip.html">unzip</a> program (on Linux):
 <pre><code>cd ~/Downloads
 unzip swift-master
 mv swift-master swift</code></pre>
 
-	<h3>Finish</h3>
+	<h3 id="finish">Finish</h3>
 	Go to the swift directory <code>cd path/to/swift/</code> and start using swift with <code>swift-cli.py</code> or <code>swift.py</code> scripts.
 
 	<h2 id="bugs">REPORTING BUGS</h2>
@@ -1072,7 +1124,7 @@ mv swift-master swift</code></pre>
 	You are welcome to participate in development of this project. Join us on <a href="https://github.com/gnovis/swift">github</a>.
 	<h2 id="authors">AUTHORS</h2>
 	Developed by Jan Novacek &lt;novacekj5@gmail.com&gt; and Jan Outrata &lt;jan.outrata@upol.cz&gt;.
-	<h2>WEBSITE</h2>
+	<h2 id="website">WEBSITE</h2>
 	The project website: <a href="http://gnovis.github.io/swift/">http://gnovis.github.io/swift/</a>.
 	<h2 id="licence">LICENSE</h2>
 	Swift  is  distributed  under the <a href="http://www.gnu.org/licenses/gpl-3.0.html">GNU GPL v3</a>.

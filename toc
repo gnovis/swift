@@ -1,0 +1,55 @@
+#!/bin/python3
+
+from html.parser import HTMLParser
+
+
+class MyHTMLParser(HTMLParser):
+
+    def __init__(self):
+        super().__init__()
+        self.toc = ""
+        self.want_data = False
+        self.prev_level = 1
+        self.levels = [0, 0, 0, 0]
+
+    h = ['h2', 'h3', 'h4', 'h5']
+
+    def handle_starttag(self, tag, attrs):
+        if tag in self.h:
+            self.want_data = True
+            href = "#"
+            if attrs:
+                href += attrs[0][1]
+
+            level = int(tag[1])
+            if self.prev_level < level:
+                self.toc += "<ul>\n"
+            if self.prev_level > level:
+                self.toc += "</ul>\n"
+                self.levels[self.prev_level-2] = 0
+
+            self.prev_level = level
+
+            self.levels[level-2] += 1
+            self.toc += '<li><a href="{}">{} '.format(href, ".".join(map(str, filter(lambda x: x != 0, self.levels))))
+        else:
+            self.want_data = False
+
+    def handle_endtag(self, tag):
+        if tag in self.h:
+            self.toc += "</a></li>\n"
+        self.want_data = False
+
+    def handle_data(self, data):
+        if self.want_data:
+            self.toc += "{}".format(data)
+
+    def add_ul_ends(self):
+        for l in range(self.prev_level-1):
+            self.toc += "</ul>\n"
+
+with open("./guimanual.html") as f:
+    parser = MyHTMLParser()
+    parser.feed(f.read())
+    parser.add_ul_ends()
+    print(parser.toc)

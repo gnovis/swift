@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>Swift - GUI Manual</title>
+	<title>Swift - GUI manual</title>
 	<link rel="shortcut icon" href='./img/swift_icon.svg'>
 	<link rel="stylesheet" href="./style.css" type="text/css"/>
 </head>
@@ -18,14 +18,51 @@
 </div>
 
 <div id="content">
-	<h1>GUI Manual</h1>
-	To run swift GUI interface, use <code>swift.py</code> script.
+	<h1>GUI manual</h1>
+
+<ul>
+<li><a href="#intro">1 INTRODUCTION</a></li>
+<ul>
+<li><a href="#run">1.1 Start program</a></li>
+</ul>
+<li><a href="#layout">2 LAYOUT</a></li>
+<ul>
+<li><a href="#ui_elems">2.1 UI Elements</a></li>
+</ul>
+<li><a href="#keys_short">3 KEYS SHORTCUT</a></li>
+<li><a href="#dial_boxes">4 DIALOG BOXES</a></li>
+<ul>
+<li><a href="#source_target_sett_dial">4.1 Source/Target settings dialog</a></li>
+<li><a href="#progress_dial">4.2 Progress bar dialogs</a></li>
+<li><a href="#warning_err_dial">4.3 Warning/Error dialogs</a></li>
+<li><a href="#find_dial">4.4 Find dialog</a></li>
+<li><a href="#orig_data_dial">4.5 Original data dialog</a></li>
+</ul>
+<li><a href="#example">5 EXAMPLE</a></li>
+<ul>
+<li><a href="#main_ex">5.1 Main window</a></li>
+<li><a href="#source_sett_dial_ex">5.2 The source settings dialog</a></li>
+<li><a href="#target_sett_dial_ex">5.3 The target settings dialog</a></li>
+<li><a href="#finish_ex">5.4 Finish</a></li>
+</ul>
+<li><a href="#features">6 FEATURES</a></li>
+<ul>
+<li><a href="#copy_to_clip">6.1 Copy data into the clipboard</a></li>
+<li><a href="#more_convert">6.2 More conversions at once</a></li>
+<li><a href="#browse_big_files">6.3 Browsing big files</a></li>
+</ul>
+</ul>
+
+	<h2 id="intro">INTRODUCTION</h2>
+	<p>This site describes the program usage through a GUI interface. Sections below, cover only a functionality, which is specific for a GUI. The complete description of program is in the <a href="manual.html">Main Manual</a>.</p>
+	<h3 id="run">Start program</h3>
+	To start the GUI interface, use <code>swift.py</code> script.
 <pre><code>cd path/to/swift/
 ./swift.py
 </code></pre>
-	<h2>LAYOUT</h2>
+	<h2 id="layout">LAYOUT</h2>
 	<p class="screens"><img src="./img/mainblank.png"></p>
-	<h3>UI Elements</h3>
+	<h3 id="ui_elems">UI Elements</h3>
 	<dl>
 		<dt><b>1 - Source file text box</b></dt>
 		<dd>
@@ -113,7 +150,7 @@
 		Allows to change width of the <i>source/target data table</i> (with a mouse or with keys shortcut).
 		</dd>
 	</dl>
-	<h2>KEYS SHORTCUT</h2>
+	<h2 id="keys_short">KEYS SHORTCUT</h2>
 	<ul>
 		<li><b>Ctrl+s, Ctrl+c</b>: Start convert.</li>
 		<li><b>Ctrl+c</b>: Copy selected data in a table into the clipboard.</li>
@@ -132,36 +169,36 @@
 		<li><b>Alt+right</b>: Move the split bar to the right.</li>
 	</ul>
 
-	<h2>DIALOG BOXES</h2>
-	<h3>Source/Target settings dialog</h3>
+	<h2 id="dial_boxes">DIALOG BOXES</h2>
+	<h3 id="source_target_sett_dial">Source/Target settings dialog</h3>
 	<p>The dialog is possible to open by <i>settings</i> button. Input elements inside the dialog match Optional arguments described <a href="manual.html#opt_args">here</a>. Elements displayed in the dialog depends on the selected data format (by the source extension or by the Format combobox).</p>
 	Examples:
 	<p class="screens"><img src="img/sourceargsempty.png">
 	<img src="img/targetargsempty.png"></p>
 
-	<h3>Progress bar dialogs</h3>
+	<h3 id="progress_dial">Progress bar dialogs</h3>
 	<p>The progress bar dialog is displayed always if the program iterates through the source file. For some conversions is necessary to iterate through the source file twice. At the first interaction the program reads information about the source data (Prepare Data dialog) and at the second iteration converts the source data to the target data (Convert Data dialog). The iteration can be stopped by the Cancel button anytime.</p>
 	Examples:
 	<p class="screens"><img src="img/prepare.png"></p>
 	<p class="screens"><img src="img/convert.png"></p>
 
-	<h3>Warning/Error dialogs</h3>
+	<h3 id="warning_err_dial">Warning/Error dialogs</h3>
 	The program produces Warnings and Errors. Warnings don't have to be critical and is possible to skip them if you are sure what you do. Errors always stop an operation and provides detailed description, which can be shown/hidden by the Show/Hide button. All errors are listed <a href="manual.html#errors">here</a>.
 	<p class="screens"><img src="img/warning.png"></p>
 	<p class="screens"><img src="img/error.png"></p>
 	<p class="screens"><img src="img/errordetail.png"></p>
 
-	<h3>Find dialog</h3>
+	<h3 id="find_dial">Find dialog</h3>
 	To find a value in the <i>source/target data table</i> press the shortcut: Ctrl+f.
 	<p class="screens"><img src="img/find.png"></p>
 
-	<h3>Original data dialog</h3>
+	<h3 id="orig_data_dial">Original data dialog</h3>
 The Original data dialog is possible to open by the <i>Original data</i> button. In the dialog are displayed an original source/target data such as they are written on the disk. You can find an expression in a displayed data using the Find bar at the bottom. The displayed data are read only.
 	<p class="screens"><img src="img/orig.png"></p>
 
-	<h2>EXAMPLE</h2>
+	<h2 id="example">EXAMPLE</h2>
 	Conversion CSV (<a href="manual.html#ex_csv">example.csv</a>) to CXT (<a href="manual.html#res_cxt">result.cxt</a>)
-	<h3>Main window</h3>
+	<h3 id="main_ex">Main window</h3>
 	<ol>
 		<li>Select a source file.</li>
 		<li>Show a preview of data.</li>
@@ -171,7 +208,7 @@ The Original data dialog is possible to open by the <i>Original data</i> button.
 	</ol>
 	<p class="screens"><img src="img/preview.png"></p>
 
-	<h3>The source settings dialog</h3>
+	<h3 id="source_sett_dial_ex">The source settings dialog</h3>
 	<ol>
 		<li>Set the Target Attributes argument.</li>
 		<li>Set the Missing Value argument.</li>
@@ -179,33 +216,33 @@ The Original data dialog is possible to open by the <i>Original data</i> button.
 	</ol>
 	<p class="screens"><img src="img/sourceargs.png"></p>
 
-	<h3>The target settings dialog</h3>
+	<h3 id="target_sett_dial_ex">The target settings dialog</h3>
 	<ol>
 		<li>Set the Objects arguments.</li>
 		<li>Click on the button OK, to confirm the form.</li>
 	</ol>
 	<p class="screens"><img src="img/targetargs.png"></p>
 
-	<h3>Finish</h3>
+	<h3 id="finish_ex">Finish</h3>
 	<ol>
 		<li>Click on the <i>Convert</i> button.</li>
 	</ol>
 	<p class="screens"><img src="img/result.png"></p>
 
-	<h2>FEATURES</h2>
-	<h3>Copy data into the clipboard</h3>
+	<h2 id="features">FEATURES</h2>
+	<h3 id="copy_to_clip">Copy data into the clipboard</h3>
 	<p>If you select some data in a data table and press Ctrl+c, the selected data are copied into the clipboard.</p>
 	Example:
 	<p class="screens"><img src="img/clipboard.png"></p>
 <pre><code>1991-06-13 54 true
 1990-04-23 98 false</code></pre>
 
-	<h3>More conversions at once</h3>
+	<h3 id="more_convert">More conversions at once</h3>
 	<p>Each operation runs on the separate thread, so there is no problem to run next operation while the previous is still running.</p>
 	Example:
 	<p class="screens"><img src="img/twoatonce.png"></p>
 
-	<h3>Browsing big files</h3>
+	<h3 id=browse_big_files>Browsing big files</h3>
 	The program is prepared for working with very big files. Into the source/target data table and Original data dialog, data are loaded dynamically, so you don't have to be worried about a data size.
 
 </div>
