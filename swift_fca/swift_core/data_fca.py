@@ -388,7 +388,7 @@ class DataArff(Data):
         self._header_attrs = self._parser.attributes
 
     def prepare_line(self, line, index, scale=True, update=False):
-        return super().prepare_line(self._parser.parse_line(line), index,  scale, update)
+        return super().prepare_line(self._parser.parse_line(line, index), index,  scale, update)
 
     def _get_header_str(self):
         header_to_parse = ''

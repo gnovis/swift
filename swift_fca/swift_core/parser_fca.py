@@ -236,12 +236,14 @@ class ArffParser(Parser):
         self._data_start = result.data_start
         self._index = 0
 
-    def parse_line(self, line):
+    def parse_line(self, line, index):
+        if not line.strip():
+            return []
         self._index = 0
         try:
             result = self._rel_delim_list_parser.parseString(line, parseAll=True).asList()
         except ParseException as e:
-            raise LineError(FileType.ARFF, e.lineno, e.col, line, e)
+            raise LineError(FileType.ARFF, index, e.col, line, e)
         return result
 
     def show_result(self):
