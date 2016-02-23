@@ -13,13 +13,6 @@ img{
 	padding:15px
 }
 
-#icon{
-	width: 80px;
-	float: left;
-	margin-left: 200px;
-	margin-top: -80px;
-}
-
 div#header {
     width:auto;
     height:auto;
@@ -46,9 +39,9 @@ code{
 }
 h1, h2, h3, h4, h5 {
 	color:#262626;
-	font-family:"DejaVu Sans";}
+}
 
-h2 {
+h1, h2 {
 	border-bottom: 1px solid #eee;
 	padding-bottom: 5px;
 }
@@ -58,6 +51,10 @@ a {
 	color: #cc0052;
 	font-weight: bold;
 	text-decoration: none;
+	outline: 0;
+}
+a:hover{
+	color: #800033;
 }
 dd {margin-bottom: 10px}
 ul {margin-bottom: 10px}
@@ -67,6 +64,7 @@ body {
 	margin: 0 !important;
 	padding: 0 !important;
 	background-color: #ededed;
+	font-family:"Helvetica Neue", Helvetica, "Segoe UI", Arial, freesans, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
 h1 {counter-reset: subsection;}
 h2 {counter-reset :subsubsection}
@@ -87,16 +85,15 @@ h4:before {
 }
 #header_content{
 	width: 900px;
-	font-family:"DejaVu Sans";
 	margin: 0 auto;
-	text-align: center;
-	padding: 20px;
-	font-size: 40px;
+	font-size: 34px;
 	font-weight: bold;
 	color: whitesmoke;
+	padding-top:15px;
+	padding-bottom:5px;
 }
 
-.sub_header{
-	font-weight:normal;
-	font-size:25px;
+#icon{
+	width: 60px;
+	margin-right:5px;
 }
