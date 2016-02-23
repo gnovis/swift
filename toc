@@ -48,7 +48,7 @@ class MyHTMLParser(HTMLParser):
         for l in range(self.prev_level-1):
             self.toc += "</ul>\n"
 
-with open("./guimanual.html") as f:
+with open("./manual.html") as f:
     parser = MyHTMLParser()
     parser.feed(f.read())
     parser.add_ul_ends()

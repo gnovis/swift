@@ -68,6 +68,9 @@
 <li><a href="#bugs">7 REPORTING BUGS</a></li>
 <li><a href="#contribute">8 CONTRIBUTING</a></li>
 <li><a href="#authors">9 AUTHORS</a></li>
+<ul>
+<li><a href="#correctors">9.1 Correctors</a></li>
+</ul>
 <li><a href="#website">10 WEBSITE</a></li>
 <li><a href="#licence">11 LICENSE</a></li>
 </ul>
@@ -148,7 +151,7 @@
 	<dl>
 		<dt><b>source</b></dt>
 		<dd>
-		The name of the file (program reads and processes this file) in one of the supported <a href="#formats">formats</a>. The <i>source</i> must ends with a valid format extension or the optional <i>--source_format</i> argument must be used. If the <i>source</i> is omitted or if it equals to "-", the program reads the input from the <i>stdin</i>.
+		The name of the file (program reads and processes this file) in one of the supported <a href="#formats">formats</a>. The <i>source</i> must end with a valid format extension or the optional <i>--source_format</i> argument must be used. If the <i>source</i> is omitted or if it equals to "-", the program reads the input from the <i>stdin</i>.
 		</dd>
 	</dl>
 	<h3 id="opt_args">Optional arguments</h3>
@@ -158,7 +161,7 @@
 
 		<dt><b>-t</b> target, <b>--target</b> target</dt>
 		<dd>
-		The name of the file (program writes to this file) in one of the supported <a href="#formats">format</a>. The <i>--target</i> must ends with a valid format extension or the optional <i>--target_format</i> argument must be used. If the <i>--target</i> is omitted or if it equals to "-", the program writes the input to the <i>stdout</i>.
+		The name of the file (program writes to this file) in one of the supported <a href="#formats">format</a>. The <i>--target</i> must end with a valid format extension or the optional <i>--target_format</i> argument must be used. If the <i>--target</i> is omitted or if it equals to "-", the program writes the input to the <i>stdout</i>.
 		</dd>
 
 		<dt><b>-ta </b>target_attributes, <b>--target_attributes</b> target_attributes</dt>
@@ -346,7 +349,7 @@ values appearance:
 			<b>--classes</b> classes
 		</dt>
 		<dd>
-		Selects attributes from the <i>source</i>, to be be used as classes in the <i>--target</i>. It can be specified using the interval of attribute indexes, or using names of attributes, or both in combination. <i>--classes</i> is of the form:
+		Selects attributes from the <i>source</i>, to be used as classes in the <i>--target</i>. It can be specified using the interval of attribute indexes, or using names of attributes, or both in combination. <i>--classes</i> is of the form:
 		<pre><code>classes ::= element | (element "," classes)
 element = interval | key
 interval ::= ((\d+)? "-" (\d+)?)
@@ -1122,7 +1125,9 @@ mv swift-master swift</code></pre>
 	<h2 id="contribute">CONTRIBUTING</h2>
 	You are welcome to participate in development of this project. Join us on <a href="https://github.com/gnovis/swift">github</a>.
 	<h2 id="authors">AUTHORS</h2>
-	Developed by Jan Novacek &lt;novacekj5@gmail.com&gt; and Jan Outrata &lt;jan.outrata@upol.cz&gt;.
+	Created by Jan Novacek &lt;novacekj5@gmail.com&gt; and Jan Outrata &lt;jan.outrata@upol.cz&gt;.
+	<h3 id="correctors">Correctors</h3>
+	Veronika Novackova &lt;veronika.novackovaa@gmail.com&gt;
 	<h2 id="website">WEBSITE</h2>
 	The project website: <a href="http://gnovis.github.io/swift/">http://gnovis.github.io/swift/</a>.
 	<h2 id="licence">LICENSE</h2>
