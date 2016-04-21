@@ -1,4 +1,4 @@
-# **Swift - Relational Data Converter** ![](swift_fca/resources/images/swift_icon.ico?raw=true "Swift FCA")
+# ![](swift_fca/resources/images/swift_icon.ico?raw=true "Swift FCA") **Swift - Relational Data Converter** 
 
 Swift is a converter of data formats used in Formal Concept Analysis (FCA) and public repositories. Swift provides a Command-line `swift-cli.py` and GUI `swift.py` interfaces. Supported formats are: [CSV](https://en.wikipedia.org/wiki/Comma-separated_values),
 [ARFF](http://weka.wikispaces.com/ARFF+%28book+version%29),
