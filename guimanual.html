@@ -88,9 +88,9 @@
 
 		</dd>
 		<dt><b>3 - Source data table</b></dt>
-		<dd>Displays a source data as a table, use button <i>Preview</i>.</dd>
+		<dd>Displays a source data as a table, use button <i>Preview</i>. Display of the table uses the "infinite" vertical scrollbar, i.e. as the scrollbar reaches its lower edge position, further data are loaded and the scrollbar shrinks and jumps up.</dd>
 		<dt><b>4 - Target data table</b></dt>
-		<dd>Displays a target data as a table if the <i>Preview after convert</i> checkbox is checked.</dd>
+		<dd>Displays a target data as a table if the <i>Preview after convert</i> checkbox is checked. Display of the table uses the "infinite" vertical scrollbar.</dd>
 		<dt><b>5 - Infobar.</b></dt>
 		<dd>Shows info messages.</dd>
 
@@ -151,17 +151,17 @@
 	</dl>
 	<h2 id="keys_short">KEYS SHORTCUT</h2>
 	<ul>
-		<li><b>Ctrl+s, Ctrl+c</b>: Start convert.</li>
+		<li><b>Ctrl+s Ctrl+c</b>: Start convert.</li>
 		<li><b>Ctrl+c</b>: Copy selected data in a table into the clipboard.</li>
 		<li><b>Ctrl+p</b>: Preview.</li>
 		<li><b>Ctrl+i</b>: Info.</li>
 		<li><b>Ctrl+f</b>: Find in the <i>source/target data table</i>.</li>
-		<li><b>Ctrl+s, Ctrl+f</b>: Select the source file.</li>
-		<li><b>Ctrl+t, Ctrl+f</b>: Select the target file.</li>
-		<li><b>Ctrl+s, Ctrl+s</b>: Open the source settings.</li>
-		<li><b>Ctrl+t, Ctrl+s</b>: Open the target settings.</li>
-		<li><b>Ctrl+s, Ctrl+o</b>: Show the source original data.</li>
-		<li><b>Ctrl+t, Ctrl+o</b>: Show the target original data.</li>
+		<li><b>Ctrl+s Ctrl+f</b>: Select the source file.</li>
+		<li><b>Ctrl+t Ctrl+f</b>: Select the target file.</li>
+		<li><b>Ctrl+s Ctrl+s</b>: Open the source settings.</li>
+		<li><b>Ctrl+t Ctrl+s</b>: Open the target settings.</li>
+		<li><b>Ctrl+s Ctrl+o</b>: Show the source original data.</li>
+		<li><b>Ctrl+t Ctrl+o</b>: Show the target original data.</li>
 		<li><b>Alt+s</b>: Set focus to the <i>Source file text box</i>.</li>
 		<li><b>Alt+t</b>: Set focus to the <i>Target file text box</i>.</li>
 		<li><b>Alt+left</b>: Move the split bar to the left.</li>
@@ -170,7 +170,7 @@
 
 	<h2 id="dial_boxes">DIALOG BOXES</h2>
 	<h3 id="source_target_sett_dial">Source/Target settings dialog</h3>
-	<p>The dialog is possible to open by <i>settings</i> button. Input elements inside the dialog match Optional arguments described <a href="manual.html#opt_args">here</a>. Elements displayed in the dialog depends on the selected data format (by the source extension or by the Format combobox).</p>
+	<p>The dialog is possible to open by <i>settings</i> button. Input elements inside the dialog match exactly optional arguments described <a href="manual.html#opt_args">here</a>. Elements displayed in the dialog depends on the selected data format (by the source extension or by the Format combobox).</p>
 	Examples:
 	<p class="screens"><img src="img/sourceargsempty.png">
 	<img src="img/targetargsempty.png"></p>
@@ -192,7 +192,7 @@
 	<p class="screens"><img src="img/find.png"></p>
 
 	<h3 id="orig_data_dial">Original data dialog</h3>
-The Original data dialog is possible to open by the <i>Original data</i> button. In the dialog are displayed an original source/target data as they are written on the disk. You can find an expression in a displayed data using the Find bar at the bottom. The displayed data are read only.
+The Original data dialog is possible to open by the <i>Original data</i> button. In the dialog are displayed an original source/target data as they are written on the disk. You can find an expression in a displayed data using the Find bar at the bottom. The displayed data are read only and the display uses the "infinite" vertical scrollbar. Note the syntax highlighting for the individual data file formats.
 	<p class="screens"><img src="img/orig.png"></p>
 
 	<h2 id="example">EXAMPLE</h2>
@@ -209,7 +209,7 @@ The Original data dialog is possible to open by the <i>Original data</i> button.
 
 	<h3 id="source_sett_dial_ex">The source settings dialog</h3>
 	<ol>
-		<li>Set the Target Attributes argument.</li>
+		<li>Set the Target Attributes argument exactly as it would be given for the <i>--target_attributes</i> optional argument described <a href="manual.html#target_attrs">here</a>.</li>
 		<li>Set the Missing Value argument.</li>
 		<li>Click on the button OK, to confirm the form.</li>
 	</ol>
