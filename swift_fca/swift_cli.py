@@ -2,6 +2,7 @@ from __future__ import print_function
 import argparse
 import sys
 import traceback
+import os
 from .swift_core.managers_fca import Convertor, Browser, Printer, ManagerFca
 from .swift_core.constants_fca import RunParams, FileType, App
 from .swift_core.errors_fca import SwiftError, ErrorMessage, ErrorCode, ArgError
@@ -11,6 +12,23 @@ SOURCE = 0
 TARGET = 1
 OTHERS = 2
 ADDITIONAL_ACTION_ARG = 3
+
+
+class SwiftFileType(argparse.FileType):
+    F_NAME = 0
+    EXT = 1
+
+    def __call__(self, string):
+
+        # if an input file name has .names extension,
+        # then extension is renamed to .data
+        parts = os.path.splitext(string)
+        ext = parts[self.EXT]
+        fname = parts[self.F_NAME]
+        if ext == FileType.NAMES_EXT:
+            string = "{}{}".format(fname, FileType.DATA_EXT)
+
+        return super().__call__(string)
 
 
 def convert(*args):
@@ -84,7 +102,7 @@ def get_args():
 
     parser = argparse.ArgumentParser(prog=App.NAME, description=App.DESCRIPTION)
 
-    parser.add_argument("source", nargs="?", type=argparse.FileType('r'), default=sys.stdin, help="Name of source file.")
+    parser.add_argument("source", nargs="?", type=SwiftFileType('r'), default=sys.stdin, help="Name of a source file.")
     parser.add_argument("-ss", "--source_separator",
                         help="Separator which is used in source file. Default is ','.")
     parser.add_argument("-ta", "--target_attributes", help="Attributes Formula used for filtering, reordering and converting attributes.")
@@ -98,7 +116,7 @@ def get_args():
                         action='store_false',
                         help="Attributes wont't be specified on first line in csv data file.")
 
-    parser.add_argument("-t", "--target", nargs="?", type=argparse.FileType('w'), default=sys.stdout, help="Name of target file.")
+    parser.add_argument("-t", "--target", nargs="?", type=SwiftFileType('w'), default=sys.stdout, help="Name of a target file.")
     parser.add_argument("-ts", "--target_separator",
                         help="Separator which will be used in target file. Default is ','.")
     parser.add_argument("-o", "--objects", help="Target file (new) objects. Only for CXT format.")

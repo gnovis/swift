@@ -151,40 +151,41 @@ class GuiSwift(QtGui.QWidget):
                                                     lambda: self.copy_table_data(self.table_view_target), context=QtCore.Qt.WidgetShortcut)
 
         # Buttons tool-tip
+        replace_comma = lambda sc: sc.replace(",", " ")
         tooltip_format = "({})\n{}"
         btn_s_select.setToolTip(
-            tooltip_format.format(ShortCuts.SOURCE_FILE,
+            tooltip_format.format(replace_comma(ShortCuts.SOURCE_FILE),
                                   "Select existing data file in one of the format: {}.".format(", ".join(FileType.ALL_REPR))))
         btn_t_select.setToolTip(
-            tooltip_format.format(ShortCuts.TARGET_FILE,
+            tooltip_format.format(replace_comma(ShortCuts.TARGET_FILE),
                                   ("Select name for new data file, supported formats: " +
                                    "{}.\nThis file will be created or rewrited by converted data.".format(", ".join(FileType.ALL_REPR)))))
 
         self.btn_s_orig_data.setToolTip(
-            tooltip_format.format(ShortCuts.SOURCE_ORIG_DATA,
+            tooltip_format.format(replace_comma(ShortCuts.SOURCE_ORIG_DATA),
                                   "Display original source data."))
         self.btn_t_orig_data.setToolTip(
-            tooltip_format.format(ShortCuts.TARGET_ORIG_DATA,
+            tooltip_format.format(replace_comma(ShortCuts.TARGET_ORIG_DATA),
                                   "Display original target data."))
 
         self.btn_s_params.setToolTip(
-            tooltip_format.format(ShortCuts.SOURCE_SETTINGS,
+            tooltip_format.format(replace_comma(ShortCuts.SOURCE_SETTINGS),
                                   "Set arguments which will be used for Source Data in selected operation."))
 
         self.btn_t_params.setToolTip(
-            tooltip_format.format(ShortCuts.TARGET_SETTINGS,
+            tooltip_format.format(replace_comma(ShortCuts.TARGET_SETTINGS),
                                   "Set arguments which will be used for Target Data in conversion."))
 
         self.btn_browse.setToolTip(
-            tooltip_format.format(ShortCuts.BROWSE,
+            tooltip_format.format(replace_comma(ShortCuts.BROWSE),
                                   "Display and browse Source Data"))
 
         self.btn_export_info.setToolTip(
-            tooltip_format.format(ShortCuts.EXPORT,
+            tooltip_format.format(replace_comma(ShortCuts.EXPORT),
                                   "Select file for export informations about Source Data"))
 
         self.btn_convert.setToolTip(
-            tooltip_format.format(ShortCuts.CONVERT,
+            tooltip_format.format(replace_comma(ShortCuts.CONVERT),
                                   "Convert Source Data to Target Data"))
 
         self.btn_export_info.clicked.connect(self.export_info)
