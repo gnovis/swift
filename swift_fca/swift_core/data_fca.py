@@ -244,7 +244,6 @@ class Data:
         result = []
         for attr in self._attributes:
             index = self._template_attrs[attr.key]
-
             try:
                 new_value = attr.process(values[index], self._none_val, scale, update)
             except IndexError:

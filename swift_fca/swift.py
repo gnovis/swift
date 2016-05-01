@@ -1203,19 +1203,19 @@ class Highlighter(QtGui.QSyntaxHighlighter):
 
 
 class SourceParamsDialog(ParamsDialog):
-    format_poss_args = {FileType.ARFF_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP,
+    format_poss_args = {FileType.ARFF_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP, RunParams.CLASSES,
                                             RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS, RunParams.NONE_VALUE),
-                        FileType.CSV_EXT: (RunParams.FORMAT, RunParams.SOURCE_SEP, RunParams.NFL, RunParams.NONE_VALUE,
+                        FileType.CSV_EXT: (RunParams.FORMAT, RunParams.SOURCE_SEP, RunParams.NFL, RunParams.NONE_VALUE, RunParams.CLASSES,
                                            RunParams.SOURCE_ATTRS, RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS),
-                        FileType.CXT_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SKIPPED_LINES,
+                        FileType.CXT_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SKIPPED_LINES, RunParams.CLASSES,
                                            RunParams.SKIP_ERRORS),
-                        FileType.DAT_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SKIPPED_LINES,
+                        FileType.DAT_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SKIPPED_LINES, RunParams.CLASSES,
                                            RunParams.SKIP_ERRORS, RunParams.SOURCE_SEP),
-                        FileType.DTL_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SKIPPED_LINES,
+                        FileType.DTL_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SKIPPED_LINES, RunParams.CLASSES,
                                            RunParams.SKIP_ERRORS, RunParams.SOURCE_SEP, RunParams.CLS_SEPARATOR),
-                        FileType.DATA_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP,
+                        FileType.DATA_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP, RunParams.CLASSES,
                                             RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS, RunParams.NONE_VALUE),
-                        FileType.NAMES_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP,
+                        FileType.NAMES_EXT: (RunParams.FORMAT, RunParams.SOURCE_ATTRS, RunParams.SOURCE_SEP, RunParams.CLASSES,
                                              RunParams.SKIPPED_LINES, RunParams.SKIP_ERRORS, RunParams.NONE_VALUE)}
 
     def __init__(self, parent):
@@ -1228,6 +1228,7 @@ class SourceParamsDialog(ParamsDialog):
         self.skip_lines = FormLine("Skip Lines", validator=seq_validator)
         self.line_separator = FormLine("Separator")
         self.line_str_attrs = FormLine("Target Attributes")
+        self.line_classes = FormLine("Classes")
         self.line_missing_val = FormLine("Missing Value")
         self.line_cls_separator = FormLine("Class separator")
         # checkbox
@@ -1236,6 +1237,7 @@ class SourceParamsDialog(ParamsDialog):
 
         # layout
         self.widgets[RunParams.SOURCE_ATTRS] = self.line_str_attrs
+        self.widgets[RunParams.CLASSES] = self.line_classes
         self.widgets[RunParams.SOURCE_SEP] = self.line_separator
         self.widgets[RunParams.CLS_SEPARATOR] = self.line_cls_separator
         self.widgets[RunParams.SKIPPED_LINES] = self.skip_lines
@@ -1252,8 +1254,8 @@ class TargetParamsDialog(ParamsDialog):
                         FileType.CSV_EXT: (RunParams.FORMAT, RunParams.TARGET_SEP, RunParams.NFL),
                         FileType.CXT_EXT: (RunParams.FORMAT, RunParams.TARGET_OBJECTS, RunParams.RELATION_NAME),
                         FileType.DAT_EXT: (RunParams.FORMAT),
-                        FileType.DATA_EXT: (RunParams.FORMAT, RunParams.CLASSES, RunParams.TARGET_SEP),
-                        FileType.NAMES_EXT: (RunParams.FORMAT, RunParams.CLASSES, RunParams.TARGET_SEP)}
+                        FileType.DATA_EXT: (RunParams.FORMAT, RunParams.TARGET_SEP),
+                        FileType.NAMES_EXT: (RunParams.FORMAT, RunParams.TARGET_SEP)}
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -1261,13 +1263,8 @@ class TargetParamsDialog(ParamsDialog):
         self.line_separator = FormLine("Separator")
         self.line_str_objects = FormLine("Objects")
         self.line_rel_name = FormLine("Relation Name")
-        self.line_classes = FormLine("Classes")
         self.cb_nfl = FormCheckBox('Header Line')
-        # placeholders
-        self.line_str_objects.setPlaceholderText("obj1_name, obj2_name, obj3_name")
-        self.line_classes.setPlaceholderText("cls1_name, cls2_name, cls3_name")
         # layout
-        self.widgets[RunParams.CLASSES] = self.line_classes
         self.widgets[RunParams.TARGET_SEP] = self.line_separator
         self.widgets[RunParams.TARGET_OBJECTS] = self.line_str_objects
         self.widgets[RunParams.RELATION_NAME] = self.line_rel_name
