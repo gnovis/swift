@@ -293,11 +293,11 @@ int ::= ("+" | "-")? \d+</code></pre>
 
 		<dt><b>-c</b> [rows_count], <b>--convert</b> [rows_count]</dt>
 		<dd>
-			Converts the <i>source</i> to the <i>--target</i>. The optional argument rows_count defines how many rows of data should be processed.
+			Default action. Converts the <i>source</i> to the <i>--target</i>. The optional argument rows_count defines how many rows of data should be processed, with the default to be all rows of data.
 		</dd>
 
 		<dt><b>-p</b> [rows_count], <b>--preview</b> [rows_count]</dt>
-		<dd>Prints desired count of rows from the <i>source</i> table data in to the <i>stdout</i>. The default amount of printed rows is 20, but this value can be changed by using the optional argument rows_count.
+		<dd>Alternative action. Prints desired count of rows from the <i>source</i> table data in to the <i>stdout</i>. The default amount of printed rows is 20, but this value can be changed by using the rows_count optional argument.
 		</dd>
 
 		<dt><b>-i, --info</b></dt>
@@ -542,11 +542,11 @@ key = \w+</code></pre>
 	<h2 id="formats">SUPPORTED FORMATS</h2>
 	Swift supports following six formats: <a href="#csv">CSV</a>, <a href="#arff">ARFF</a>, <a href="#data">DATA</a>, <a href="#cxt">CXT</a>, <a href="#dat">DAT</a> and <a href="#dtl">DTL</a>.
 		<h3 id="csv">Comma-separated values (.csv)</h3>
-			The description of the format with examples can be found <a href="https://en.wikipedia.org/wiki/Comma-separated_values">here</a>.
-			<p><i>Notes: </i>The attribute separator inside the value must be always escaped by the backslash.</p>
+		The description of the format with examples can be found <a href="https://en.wikipedia.org/wiki/Comma-separated_values">here</a>. The default file format (class/attributes) separator is a comma.
+			<p><i>Notes: </i>The attributes separator inside the value must be always escaped by the backslash.</p>
 
 		<h3 id="arff">Attribute-Relation File Format (.arff)</h3>
-			The description of the format with examples can be found <a href="http://weka.wikispaces.com/ARFF+%28stable+version%29">here</a>.
+			The description of the format with examples can be found <a href="http://weka.wikispaces.com/ARFF+%28stable+version%29">here</a>. The default file format (class/attributes) separator is a comma.
 			<p><i>Notes:</i> The optional date format for the date attribute in the header, must be specified with python <a href="https://docs.python.org/3.5/library/datetime.html#strftime-and-strptime-behavior">format codes</a> (not in the Java SimpleDateFormat as specified in the official documentation).</p>
 			Example:
 <pre><code>@relation birthdays
@@ -569,20 +569,20 @@ The relational attribute humidity (above) will be converted to attributes (e.g f
 <pre><code>humidity.absolute.day, humidity.absolute.night</code></pre>
 
 		<h3 id="data">C4.5 File Format (.data .names)</h3>
-		The description of the format with examples can be found <a href="http://www.cs.washington.edu/dm/vfml/appendixes/c45.htm">here</a>.
+		The description of the format with examples can be found <a href="http://www.cs.washington.edu/dm/vfml/appendixes/c45.htm">here</a>. The default file format (class/attributes) separator is a comma.
 		<p><i>Notes: </i>With a class, must be worked exactly the same as with an attribute at any conversion (class can be scaled, total binarized, ...). The key used in the <i>--target_attributes</i> is the class index or the name: "class".</p>
 
 		<h3 id="cxt">Burmeister (.cxt)</h3>
 		The description of the format with examples can be found <a href="http://www.upriss.org.uk/fca/fcafileformats.html#Burmeister">here</a>.
 
 		<h3 id="dat">FIMI File Format (.dat)</h3>
-		The description of the format with examples can be found <a href="http://fcalgs.sourceforge.net/format.html">here</a>.
+		The description of the format with examples can be found <a href="http://fcalgs.sourceforge.net/format.html">here</a>. The default file format (class/attributes) separator is a white space.
 		<p><i>Notes: </i>The blank lines are interpreted (from FIMI source) as objects, with all attributes of the value 0 (False). And conversely objects with all attributes of the value 0 (False), are written (to FIMI target) as blank lines. It differs from the official format documentation, which ignore blank lines and objects with all attributes of value 0.</p>
 
 		<h3 id="dtl">DTL File Format (.dtl)</h3>
 		<p>This format is very similar to FIMI, but it supports specification of classes for each object. The file consists of rows, which are of the form:
 		<pre><code>attributes "|" classes</code></pre>
-		where attributes part is exactly the same as attributes in the FIMI format (values are indexes of attributes with value 1) and "|" separates attributes and classes. The classes part consists of various values, separated with the same separator as attributes are.</p>
+		where attributes part is exactly the same as attributes in the FIMI format (values are indexes of attributes with value 1) and "|" separates attributes and classes as the default class/attributes separator. The classes part consists of various values, separated with the same separator as attributes are.</p>
 		Example (<code>class1={a,b}, class2={aa,bb}</code>):
 <pre><code>0 1 2 3 4|a bb
 1 2 3 4|a aa
@@ -731,7 +731,7 @@ example.data
 0,0,0,1,1,a,bb
 0,0,0,0,1,b,bb
 </code></pre>
-	<i>Next possible conversions:</i>
+	<i>Further possible conversions:</i>
 	<ul>
 		<li>CSV to CSV</li>
 		<li>ARFF to ARFF</li>
@@ -801,7 +801,7 @@ class_prev: foo,bar.</code></pre>
 30,teacher,0,bar,bar
 35,?,1,foo,foo
 31,pilot,0,foo,foo</code></pre>
-	<i>Next possible conversions:</i>
+	<i>Further possible conversions:</i>
 	<ul>
 		<li>ARFF to DATA</li>
 		<li>DATA to DATA</li>
@@ -891,7 +891,7 @@ result.dat
 0 2 3
 3 4</code></pre>
 
-	<i>Next possible conversions:</i>
+	<i>Further possible conversions:</i>
 	<ul>
 		<li>ARFF to DAT</li>
 		<li>DATA to DAT</li>
@@ -933,7 +933,7 @@ X....
 X.XX.
 ...XX</code></pre>
 
-	<i>Next possible conversions:</i>
+	<i>Further possible conversions:</i>
 	<ul>
 		<li>ARFF to CXT</li>
 		<li>DATA to CXT</li>
@@ -961,7 +961,7 @@ X.XX.
 0 2 3|true woman
 3 4|true man</code></pre>
 
-	<i>Next possible conversions:</i>
+	<i>Further possible conversions:</i>
 	<ul>
 		<li>ARFF to DTL</li>
 		<li>DATA to DTL</li>
@@ -1009,7 +1009,7 @@ XXXXX.X
 	<dl>
 	<dt>CSV (<a href="#ex_csv">example.csv</a>) to CSV</dt>
 	<dd>
-	<pre><code>swift-cli.py example.csv -t result.csv csv -ta "*[]" -tnh</code></pre>
+	<pre><code>swift-cli.py example.csv -t result.csv -ta "*[]" -tnh</code></pre>
 	result.csv
 	<pre><code>1,0,0,0,1,0,0,0,1,0,0,0,1,0,1,0
 0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1
@@ -1099,10 +1099,10 @@ values appearance:
 	<a href="https://www.python.org/">Python3</a>
 	</li>
 	<li>
-	<a href="http://www.riverbankcomputing.co.uk/software/pyqt/intro">PyQt4</a>
+	<a href="https://pyparsing.wikispaces.com/">Pyparsing</a>
 	</li>
 	<li>
-	<a href="https://pyparsing.wikispaces.com/">Pyparsing</a>
+	<a href="http://www.riverbankcomputing.co.uk/software/pyqt/intro">PyQt4</a> &ndash; only for graphical user interface (swift.py)
 	</li>
 	</ul>
 	<h3 id="download">Download</h3>
