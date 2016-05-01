@@ -211,7 +211,7 @@ class ArffParser(Parser):
         relation_part = ZeroOrMore(comment) + relation + ZeroOrMore(comment)
         nominal = (Empty().copy().setParseAction(lambda t: self.ENUM) +
                    Suppress(Literal("{")) +
-                   Group(delimitedList(string, delim=self._separator))("next_arg").setParseAction(self.get_values) +
+                   Group(delimitedList(quotedString, delim=self._separator))("next_arg").setParseAction(self.get_values) +
                    Suppress(Literal("}")))
 
         date = CaselessLiteral("date") + Optional(CharsNotIn("{},\n"))("next_arg").setParseAction(self._adapt_date_format)
