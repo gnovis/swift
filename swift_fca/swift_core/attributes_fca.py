@@ -264,6 +264,9 @@ class AttrEnum(Attribute):
         else:
             return self._values.copy()
 
+    def clear_values(self):
+        self._values.clear()
+
     def scale(self, value):
         return super().scale(value == self._expr_pattern)
 

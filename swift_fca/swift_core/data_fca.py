@@ -188,6 +188,7 @@ class Data:
 
                 merged.append(attr)
                 if attr.unpack:
+                    attr.clear_values()
                     must_read_data = True
             self._attributes = merged
 
@@ -268,7 +269,7 @@ class Data:
         for attr in self._attributes:
             if attr.unpack:
                 i = 0
-                for v in attr.all_vals:
+                for v in attr.values:
                     new = AttrEnum(attr.index, '{}_{}_{}'.format(attr.name, i, v),
                                    attr_pattern=attr.attr_pattern,
                                    expr_pattern=v)
@@ -334,17 +335,7 @@ class Data:
 
 
 class DataArff(Data):
-    """
-    Attribute-Relation File Format
-
-    Pattern:
-    ========
-    @RELATION <relation-name>
-    @ATTRIBUTE <attribute-name> <attribute-type>
-    @DATA
-    <obj1-attr1>, <obj2-attr2> ....
-
-    """
+    """ Attribute-Relation File Format """
 
     FORMAT = FileType.ARFF
 
@@ -387,7 +378,7 @@ class DataArff(Data):
         self._header_attrs = self._parser.attributes
 
     def prepare_line(self, line, index, scale=True, update=False):
-        return super().prepare_line(self._parser.parse_line(line, index), index,  scale, update)
+        return super().prepare_line(self._parser.parse_line(line, index), index, scale, update)
 
     def _get_header_str(self):
         header_to_parse = ''

@@ -206,12 +206,14 @@ class ArffParser(Parser):
         comment = self._comment()
         quoted = quotedString.copy().setParseAction(removeQuotes)
         string = quoted | Word(printables,  excludeChars='{},%')
+        enum_value = quotedString | Word(printables,  excludeChars='{},%')
+
         relation = (Suppress(CaselessLiteral("@relation")) +
                     Optional(restOfLine, default='default_name')('rel_name').setParseAction(lambda t: t.rel_name.strip()))
         relation_part = ZeroOrMore(comment) + relation + ZeroOrMore(comment)
         nominal = (Empty().copy().setParseAction(lambda t: self.ENUM) +
                    Suppress(Literal("{")) +
-                   Group(delimitedList(quotedString, delim=self._separator))("next_arg").setParseAction(self.get_values) +
+                   Group(delimitedList(enum_value, delim=self._separator))("next_arg").setParseAction(self.get_values) +
                    Suppress(Literal("}")))
 
         date = CaselessLiteral("date") + Optional(CharsNotIn("{},\n"))("next_arg").setParseAction(self._adapt_date_format)
