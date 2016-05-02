@@ -100,9 +100,19 @@ def get_args():
                   "skipped_lines": RunParams.SKIPPED_LINES,
                   "skip_errors": RunParams.SKIP_ERRORS}
 
-    parser = argparse.ArgumentParser(prog=App.NAME, description=App.DESCRIPTION)
+    USAGE = """swift-cli.py [source]
+                    [-h] [-ss source_separator] [-ta target_attributesbutes] [-i]
+                    [-mv missing_value] [-snh] [-tnh] [-t [target]]
+                    [-ts target_attributeset_separator] [-to target_objects] [-n name]
+                    [-cls classes] [-sf {csv,arff,dat,data,cxt,dtl}]
+                    [-tf {csv,arff,dat,data,cxt,dtl}] [-c [rows_count]] [-p [rows_count]]
+                    [-sl skipped_lines] [-se] [-scs source_cls_separatorarator]
+                    [-tcs target_cls_separator]"""
 
-    parser.add_argument("source", nargs="?", type=SwiftFileType('r'), default=sys.stdin, help="Name of a source file.")
+    parser = argparse.ArgumentParser(prog=App.NAME, description=App.DESCRIPTION, usage=USAGE)
+
+    parser.add_argument("source", nargs="?", type=SwiftFileType('r'), default=sys.stdin,
+                        help="Name of the source file. If the source is omitted or if it equals to '-', the program reads the input from the stdin.")
     parser.add_argument("-ss", "--source_separator",
                         help="Separator which is used in source file. Default is ','.")
     parser.add_argument("-ta", "--target_attributes", help="Attributes Formula used for filtering, reordering and converting attributes.")
@@ -116,7 +126,9 @@ def get_args():
                         action='store_false',
                         help="Attributes wont't be specified on first line in csv data file.")
 
-    parser.add_argument("-t", "--target", nargs="?", type=SwiftFileType('w'), default=sys.stdout, help="Name of a target file.")
+    parser.add_argument("-t", "--target", nargs="?", type=SwiftFileType('w'), default=sys.stdout,
+                        help="Name of the target file. If the --target is omitted or if it equals to '-', the program writes the output to the stdout.")
+
     parser.add_argument("-ts", "--target_separator",
                         help="Separator which will be used in target file. Default is ','.")
     parser.add_argument("-o", "--objects", help="Target file (new) objects. Only for CXT format.")
@@ -131,7 +143,7 @@ def get_args():
                         help="Source file will be converted to target file, this is default option.")
     parser.add_argument("-{}".format(PREVIEW[0]), "--{}".format(PREVIEW), nargs='?', default=False, const=True,
                         help="Desired count of lines from source file will be displayed.")
-    parser.add_argument("-sl", "--skipped_lines", help="Interval of lines which will be skipped in any operation.")
+    parser.add_argument("-sl", "--skipped_lines", help="Intervals of source line indices, which will be skipped in any operation.")
     parser.add_argument("-se", "--skip_errors", action="store_true", help="Skip broken lines, which cause an errors.")
     parser.add_argument("-scs", "--source_cls_separator", help="Separator which separates attributes and classes in source (will be read) C4.5 file format.")
     parser.add_argument("-tcs", "--target_cls_separator", help="Separator which separates attributes and classes in target (will be written) C4.5 file format.")
