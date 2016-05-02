@@ -268,7 +268,7 @@ c y
 		</table>
 		<p>Complete grammar of the <i>--target_attributes</i> argument:</p>
 		<pre><code>formulas ::= formula | (formula ";" formulas)
-formula ::= (names "=")? names ((":" type ("[" scale "]")?) | "[]")?
+formula ::= (names "=")? names (((":" type)? ("[" scale "]")?) | "[]")?
 names ::= name | (name "," names)
 type ::= "n" | "e" | "s" | ("d" ("/" date_format)?)
 scale ::= num_scale | enum_scale | str_scale | date_scale | bin_vals
@@ -884,7 +884,7 @@ X...
 	<dt>CSV (<a href="#ex_csv">example.csv</a>) to DAT</dt>
 	<dd>
 	<pre><code>swift-cli.py example.csv -mv '?' -t result.dat -ta "name:s['M.+a']; birth_date:d/'%Y-%m-%d'[x&gt='1991-01-01'];
-             credits:n[50&lt=x&lt=90]; study:e['true']; sex:e['man']"</code></pre>
+             credits:n[50&lt=x&lt=90]; study[0='false', 1='true']; sex:e['man']"</code></pre>
 result.dat
 <pre><code>1 2 3 4
 0
@@ -912,7 +912,7 @@ result.dat
 	<dt>CSV (<a href="#ex_csv">example.csv</a>) to CXT</dt>
 	<dd>
 	<pre><code>swift-cli.py example.csv -mv '?' -t result.cxt -o a,b,c,d -ta "name:s['M.+a'];
-	     birth_date:d/'%Y-%m-%d'[x&gt='1991-01-01']; credits:n[50&lt=x&lt=90]; study:e['true']; sex:e['man']"</code></pre>
+	     birth_date:d/'%Y-%m-%d'[x&gt='1991-01-01']; credits:n[50&lt=x&lt=90]; study[0='false', 1='true']; sex:e['man']"</code></pre>
 	result.cxt
 
 <pre id="res_cxt"><code>B
@@ -954,7 +954,7 @@ X.XX.
 
 	<dd>
 	<pre><code>swift-cli.py example.csv -mv '?' -t result.dtl -cls 3,4 -ta "name:s['M.+a'];
-	     birth_date:d/'%Y-%m-%d'[x&gt='1991-01-01']; credits:n[50&lt=x&lt=90]; study:e['true']; sex:e['man']"</code></pre>
+	     birth_date:d/'%Y-%m-%d'[x&gt='1991-01-01']; credits:n[50&lt=x&lt=90]; study[0='false', 1='true']; sex:e['man']"</code></pre>
 	result.dtl
 <pre><code>1 2 3 4|true man
 0|false woman
