@@ -83,6 +83,13 @@
 		<tr>
 			<td><b>swift-cli.py</b></td>
 			<td>
+	             [source]
+			</td>
+		</tr>
+
+		<tr>
+			<td></td>
+			<td>
 				[<b>-h</b>] [<b>-ss</b> source_separator] [<b>-ta</b> target_attributes] [<b>-i</b>]
 			</td>
 		</tr>
@@ -120,12 +127,6 @@
 			<td></td>
 			<td>
 	             [<b>-tcs</b> target_cls_separator]
-			</td>
-		</tr>
-		<tr>
-			<td></td>
-			<td>
-	             [source]
 			</td>
 		</tr>
 		<tr>
@@ -267,8 +268,8 @@ c y
 			</tr>
 		</table>
 		<p>Complete grammar of the <i>--target_attributes</i> argument:</p>
-		<pre><code>formulas ::= formula | (formula ";" formulas)
-formula ::= (names "=")? names (((":" type)? ("[" scale "]")?) | "[]")?
+<pre><code>formulas ::= formula | (formula ";" formulas)
+formula ::= (names "=")? names ((":" type ("[" scale "]")?) | ("[" bin_vals "]") |"[]")?
 names ::= name | (name "," names)
 type ::= "n" | "e" | "s" | ("d" ("/" date_format)?)
 scale ::= num_scale | enum_scale | str_scale | date_scale | bin_vals
@@ -390,9 +391,11 @@ key = \w+</code></pre>
 			<b>--skip_lines</b> skip_lines
 		</dt>
 		<dd>
-		The interval of the form
-		<pre><code>interval ::= (\d+)? "-" (\d+)?</code></pre>
-		specifies <i>source</i> indexes of lines, which will be skipped in any action.
+		Intervals of the form
+<pre><code>
+intervals ::= interval | (interval "," intervals)
+interval ::= ((\d+)? "-" (\d+)?) | \d+</code></pre>
+		determine <i>source</i> line indices, which will be skipped in any operation.
 		</dd>
 
 		<dt><b>-se</b>,
