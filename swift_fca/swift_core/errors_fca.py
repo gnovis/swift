@@ -33,6 +33,7 @@ class ErrorCode(IntEnum):
     broken_pipe = 27
     names_file = 28
     dtl_header = 29
+    not_enough_lines = 30
 
 
 class ErrorMessage:
@@ -181,4 +182,10 @@ class BivalError(SwiftError):
 class NamesFileError(SwiftError):
     def __init__(self, file_name):
         super().__init__(ErrorCode.names_file, "Names File",
-                         "File '{}' doesn't exist. Files with extensions '.data' and '.names' must be in the same directory.".format(file_name))
+                         "The file '{}' doesn't exist. Files with extensions '.data' and '.names' must be in the same directory.".format(file_name))
+
+
+class NotEnoughLinesError(SwiftError):
+    def __init__(self, file_name):
+        super().__init__(ErrorCode.not_enough_lines, "Not Enough Lines",
+                         "The file '{}' doesn't have enough lines. Some required part of the file is missing or the file is empty.".format(file_name))

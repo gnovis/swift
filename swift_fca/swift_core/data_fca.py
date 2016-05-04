@@ -10,7 +10,7 @@ from .attributes_fca import (Attribute, AttrEnum)
 from .object_fca import Object
 from .parser_fca import FormulaParser, ArffParser, DataParser, parse_sequence
 from .constants_fca import Bival, FileType
-from .errors_fca import HeaderError, LineError, AttrError, InvalidValueError, FormulaKeyError, BivalError, NamesFileError
+from .errors_fca import HeaderError, LineError, AttrError, InvalidValueError, FormulaKeyError, BivalError, NamesFileError, NotEnoughLinesError
 
 
 class Class:
@@ -425,7 +425,10 @@ class DataCsv(Data):
 
     def _get_first_line(self, move=True):
         """Return first line from data file"""
-        line = next(self._source)
+        try:
+            line = next(self._source)
+        except StopIteration:
+            raise NotEnoughLinesError(self.source.name)
         if self._temp_source:
             self._temp_source.write(line)
         elif not move:
@@ -583,7 +586,10 @@ class DataCxt(Data):
     def get_not_empty_line(self):
         file_iter = iter(self.source)
         while True:
-            line = next(file_iter).strip()
+            try:
+                line = next(file_iter).strip()
+            except StopIteration:
+                raise NotEnoughLinesError(self.source.name)
             self.current_line += 1
             if line:
                 return line
