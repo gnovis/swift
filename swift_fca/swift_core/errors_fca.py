@@ -40,6 +40,7 @@ class ErrorMessage:
     MISSING_ARGS_ERROR = "Some of required arguments are missing or aren't specified correctly."
     SKIPPED_ERRORS = "Following errors were skipped: "
     SKIPPED_ERRORS_HEADER = "Skipped Errors"
+    SAME_ST_NAME_ERROR = "The target file and the source file can't have the same name."""
 
 
 class SwiftError(Exception):

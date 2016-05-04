@@ -1,5 +1,6 @@
 from .constants_fca import RunParams
 from .managers_fca import ManagerFca
+from .errors_fca import ErrorMessage
 
 
 class ConvertValidator:
@@ -37,7 +38,7 @@ class ConvertValidator:
 
         if source and target:
             if source == target:
-                self._warnings.append("Isn't possible to read and write to the same file, target and source can't be same.")
+                self._warnings.append(ErrorMessage.SAME_ST_NAME_ERROR)
                 return
             self._source_suff = ManagerFca.get_extension(source, source_params)
             self._target_suff = ManagerFca.get_extension(target, target_params)

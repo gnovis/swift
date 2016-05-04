@@ -18,8 +18,16 @@ class SwiftFileType(argparse.FileType):
     F_NAME = 0
     EXT = 1
 
-    def __call__(self, string):
+    # carefull, this is static variable
+    FILE_NAME = None
 
+    def __call__(self, string):
+        if SwiftFileType.FILE_NAME == string:
+            e = ArgError(message=ErrorMessage.SAME_ST_NAME_ERROR)
+            print(e, file=sys.stderr)
+            sys.exit(e.ident)
+        if SwiftFileType.FILE_NAME is None:
+            SwiftFileType.FILE_NAME = string
         # if an input file name has .names extension,
         # then extension is renamed to .data
         parts = os.path.splitext(string)
