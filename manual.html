@@ -272,7 +272,7 @@ c y
 formula ::= (names "=")? names ((":" type ("[" scale "]")?) | ("[" bin_vals "]") |"[]")?
 names ::= name | (name "," names)
 type ::= "n" | "e" | "s" | ("d" ("/" date_format)?)
-scale ::= num_scale | enum_scale | str_scale | date_scale | bin_vals
+scale ::= num_scale | enum_scale | str_scale | date_scale
 name ::= \w+ | ((\d+)? "-" (\d+)?) | "*"
 date_format ::= "F="? "'" .+ "'"
 num_scale ::= (var op num_val) | (num_val op var) |
