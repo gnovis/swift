@@ -7,14 +7,24 @@ class ConvertValidator:
     PARAMS_FILTER = {'.arff.cxt': [[RunParams.SOURCE_ATTRS], []],
                      '.arff.dat': [[RunParams.SOURCE_ATTRS], []],
                      '.arff.data': [[RunParams.CLASSES], []],
+                     '.arff.dtl': [[RunParams.SOURCE_ATTRS, RunParams.CLASSES], []],
                      '.csv.arff': [[RunParams.SOURCE_ATTRS], []],
                      '.csv.cxt': [[RunParams.SOURCE_ATTRS], []],
                      '.csv.dat': [[RunParams.SOURCE_ATTRS], []],
                      '.csv.data': [[RunParams.SOURCE_ATTRS, RunParams.CLASSES], []],
+                     '.csv.dtl': [[RunParams.SOURCE_ATTRS, RunParams.CLASSES], []],
                      '.cxt.data': [[RunParams.CLASSES], []],
+                     '.cxt.dtl': [[RunParams.CLASSES], []],
+                     '.dtl.dtl': [[RunParams.SOURCE_ATTRS, RunParams.CLASSES], []],
+                     '.dtl.dat': [[RunParams.SOURCE_ATTRS], []],
+                     '.dtl.cxt': [[RunParams.SOURCE_ATTRS], []],
+                     '.dtl.data': [[RunParams.CLASSES], []],
                      '.dat.data': [[RunParams.CLASSES], []],
+                     '.dat.dtl': [[RunParams.CLASSES], []],
                      '.data.dat': [[RunParams.SOURCE_ATTRS], []],
-                     '.data.cxt': [[RunParams.SOURCE_ATTRS], []]}
+                     '.data.cxt': [[RunParams.SOURCE_ATTRS], []],
+                     '.data.data': [[RunParams.CLASSES], []],
+                     '.data.dtl': [[RunParams.SOURCE_ATTRS, RunParams.CLASSES], []]}
 
     SOURCE_ARGS_DISPLAY = {RunParams.SOURCE: "Source file",
                            RunParams.SOURCE_SEP: "Source separator",
@@ -44,7 +54,7 @@ class ConvertValidator:
             self._target_suff = ManagerFca.get_extension(target, target_params)
             self._validate()
         else:
-            self._warnings.append("Source File and Target File are required for conversion.")
+            self._warnings.append("The source file and the target file are required for a conversion.")
 
     @property
     def warnings(self):
@@ -57,8 +67,8 @@ class ConvertValidator:
             oblig_target = self.PARAMS_FILTER[key][self.TARGET_PARAMS]
 
             def get_error(param):
-                return ("In conversion " + self._source_suff.upper() + " to " +
-                        self._target_suff.upper() + " must be set '" + param + "' argument.")
+                return "In a conversion {} to {} the '{}' argument must be set.".format(
+                    self._source_suff.upper(), self._target_suff.upper(), param)
 
             def validate_params(input_params, oblig_params, args_display):
                 for p in oblig_params:
