@@ -18,10 +18,10 @@ For more informations see the project home page http://gnovis.github.io/swift/.
 <a href="https://www.python.org/">Python 3</a>
 </li>
 <li>
-<a href="http://www.riverbankcomputing.co.uk/software/pyqt/intro">PyQt4</a>
+<a href="https://pyparsing.wikispaces.com/">Pyparsing</a>
 </li>
 <li>
-<a href="https://pyparsing.wikispaces.com/">Pyparsing</a>
+<a href="http://www.riverbankcomputing.co.uk/software/pyqt/intro">PyQt4</a> &ndash; only for graphical user interface (swift.py)  
 </li>
 </ul>
 <li>Download the source.</li>
