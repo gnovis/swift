@@ -34,6 +34,7 @@ class ErrorCode(IntEnum):
     names_file = 28
     dtl_header = 29
     not_enough_lines = 30
+    class_key = 31
 
 
 class ErrorMessage:
@@ -155,7 +156,12 @@ class FormulaNamesError(SwiftError):
 
 class FormulaKeyError(SwiftError):
     def __init__(self, key):
-        super().__init__(ErrorCode.formula_key, "Formula Attribute Key", "Attribute key used in Formula: '{}' doesn't exists.".format(key))
+        super().__init__(ErrorCode.formula_key, "Formula Attribute Key", "Attribute key used in Formula: '{}' doesn't exist.".format(key))
+
+
+class ClassKeyError(SwiftError):
+    def __init__(self, key):
+        super().__init__(ErrorCode.class_key, "Class Key", "Class key used in {} argument: '{}' doesn't exist.".format(RunParams.CLASSES, key))
 
 
 class FormulaRegexError(SwiftError):

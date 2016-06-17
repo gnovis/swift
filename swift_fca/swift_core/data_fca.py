@@ -10,7 +10,7 @@ from .attributes_fca import (Attribute, AttrEnum)
 from .object_fca import Object
 from .parser_fca import FormulaParser, ArffParser, DataParser, parse_sequence
 from .constants_fca import Bival, FileType
-from .errors_fca import HeaderError, LineError, AttrError, InvalidValueError, FormulaKeyError, BivalError, NamesFileError, NotEnoughLinesError
+from .errors_fca import HeaderError, LineError, AttrError, InvalidValueError, FormulaKeyError, BivalError, NamesFileError, NotEnoughLinesError, ClassKeyError
 
 
 class Class:
@@ -172,6 +172,7 @@ class Data:
                     header_attr_index = self._template_attrs[attr.key]
                 except KeyError:
                     raise FormulaKeyError(attr.key)
+
                 header_attr = copy.copy(self._header_attrs[header_attr_index])
 
                 # rename attributes to string names if has index names
@@ -254,10 +255,12 @@ class Data:
 
             result.append([new_value, attr.true, attr.false])
 
-        # TODO handle exception when key is invalid
         classes_values = []
         for cls in self._classes:
-            index = self._template_attrs[cls.key]
+            try:
+                index = self._template_attrs[cls.key]
+            except KeyError:
+                raise ClassKeyError(cls.key)
             val = values[index]
             cls.update_values(val)
             classes_values.append(val)
