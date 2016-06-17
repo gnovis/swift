@@ -38,7 +38,7 @@ class ManagerFca(MANAGER_PARENT):
                  ARFF+ARFF: False, ARFF+DAT: False, ARFF+CXT: True, ARFF+DATA: True, ARFF+CSV: False, ARFF+DTL: True,
                  DAT+DAT: True, DAT+CXT: True, DAT+DATA: True, DAT+CSV: True, DAT+ARFF: True, DAT+DTL: True,
                  DTL+DTL: True, DTL+CXT: True, DTL+DATA: True, DTL+CSV: True, DTL+ARFF: True, DTL+DAT: True,
-                 CXT+CXT: False, CXT+DATA: True, CXT+CSV: False, CXT+ARFF: False, CXT+DAT: False, CXT+DTL: True,
+                 CXT+CXT: False, CXT+DATA: True, CXT+CSV: False, CXT+ARFF: True, CXT+DAT: False, CXT+DTL: True,
                  DATA+DATA: True, DATA+CSV: False, DATA+ARFF: True, DATA+DAT: False, DATA+CXT: True, DATA+DTL: True}
 
     # Signals

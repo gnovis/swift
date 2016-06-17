@@ -221,7 +221,7 @@ class Data:
                         manager.add_error(e)
                         continue
                     raise e
-                if not str_values:  # current line is comment
+                if not str_values[0]:  # current line is comment
                     continue
                 self._obj_count += 1
 
@@ -261,7 +261,6 @@ class Data:
             val = values[index]
             cls.update_values(val)
             classes_values.append(val)
-
         return result, classes_values
 
     def unpack_attrs(self):
@@ -533,18 +532,10 @@ class DataCxt(Data):
         for k in range(columns):
             attr_name = self.get_not_empty_line()
             new = AttrEnum(k, attr_name)
-            new.update(Bival.true(), self._none_val)
-            new.update(Bival.false(), self._none_val)
             self._header_attrs.append(new)
 
         self._attr_count = columns
-        self._obj_count = rows
-        # no lines shoud be skipped, because skip was done by next() above!
-
-    def get_data_info(self, manager, read=False):
-        for cls in self._classes:
-            cls.update_values(Bival.true())
-            cls.update_values(Bival.false())
+        self._index_data_start = self.current_line
 
     def prepare_line(self, line, index, scale=True, update=False):
         splitted = list(line.strip())

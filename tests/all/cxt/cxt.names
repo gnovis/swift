@@ -1,7 +1,7 @@
 1,0.
-WINDY: 1,0.
+WINDY: 0,1.
 SUNNY: 1,0.
 ORDER: 1,0.
 TEMP: 1,0.
-HUM: 1,0.
+HUM: 0,1.
 NOTE: 1,0.
