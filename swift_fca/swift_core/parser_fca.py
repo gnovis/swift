@@ -1,7 +1,7 @@
 from pyparsing import (Or, Empty, CharsNotIn, ZeroOrMore, nums, LineEnd,
                        Group, removeQuotes, Literal, restOfLine, lineno, ParseException,
                        Optional, delimitedList, printables, OneOrMore, Forward,
-                       Suppress, Word, quotedString, CaselessLiteral)
+                       Suppress, Word, quotedString, CaselessLiteral, QuotedString)
 
 from .attributes_fca import (Attribute, AttrNumeric, AttrDate,
                              AttrEnum, AttrString)
@@ -122,10 +122,8 @@ class FormulaParser(Parser):
             self._attributes.append(attribute)
 
     def parse(self, str_args, max_attrs_i):
-
-        date_val = quotedString
-        quoted_str = quotedString.copy()
-        quoted_str.setParseAction(removeQuotes)
+        date_val = QuotedString(quoteChar="'", escChar="\\", escQuote="''", unquoteResults=False)
+        quoted_str = QuotedString(quoteChar="'", escChar="\\", escQuote="''")
         comma = Suppress(",")
         bin_vals = Group(Optional((Suppress("0=") + quoted_str("new_false") + comma)) + Optional(Suppress("1=")) + quoted_str("new_true"))
         date_format = Optional(Suppress(CaselessLiteral("F="))) + quoted_str
