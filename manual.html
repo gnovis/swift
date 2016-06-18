@@ -230,10 +230,10 @@ int ::= ("+" | "-")? \d+</code></pre>
 		Examples of numeric scales (variable is x): <code>x!=10.3, -5<=x<=10, 50==x </code>
 		<p>The <i>enumeration scale</i></p>
 		<pre><code>enum_scale ::= "'" \w+ "'"</code></pre>
-		is a one of enumeration values, which must be quoted. If the value of the attribute is exactly the same as the scale, the result of the scaling is True, otherwise False.
+		is a one of enumeration values, which must be quoted. If the value of the attribute is exactly the same as the scale, the result of the scaling is True, otherwise False. Embeded quotes must be escaped with the backslash or doubled. For example to scale value <code>'foo'</code> (with quotes) the expression: <code>'\'foo\''</code> or <code>'''foo'''</code> must be used.
 		<p>The <i>string scale</i></p>
 		<pre><code>str_scale ::= "'" .+ "'"</code></pre>
-		is a quoted <a href="https://docs.python.org/2/library/re.html"> python regular expression</a>. If the regular expression matches any substring of the scaled value, result of scaling is True, otherwise False.
+		is a quoted <a href="https://docs.python.org/2/library/re.html"> python regular expression</a>. If the regular expression matches any substring of the scaled value, result of scaling is True, otherwise False. Embeded quotes must be escaped with the backslash or doubled (same as an enumeration scale described above).
 		<p>Example of the string scale: <code>"foo[+-*]*bar"</code>, which matches "hellfoobar", "foo--barxyz" ... but doesn't match "foo/bar" ...</p>
 		<p>The <i>date scale</i></p>
 		<pre><code>date_scale ::= ((var op date_val) | (date_val op var) | (date_val op var op date_val))</code></pre>
